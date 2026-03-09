@@ -25,6 +25,24 @@
         .filter-bar { display:flex; flex-wrap:wrap; align-items:flex-end; gap:12px; margin-bottom:16px; }
         .filter-bar > div { display:flex; flex-direction:column; }
         .filter-bar label { font-size:13px; font-weight:600; margin-bottom:4px; }
+
+        /* Hide default processing */
+        .dataTables_processing { display: none !important; }
+
+        /* Skeleton loading */
+        .skeleton-row td { padding: 8px 10px !important; }
+        .skeleton-cell {
+            height: 16px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.2s infinite;
+        }
+        @keyframes shimmer {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
     </style>
 @endsection
 
@@ -109,8 +127,23 @@
 @section('script')
 <script>
 $(document).ready(function() {
+
+            // Skeleton loading
+            function showSkeleton() {
+                var rows = '';
+                for (var i = 0; i < 5; i++) {
+                    rows += '<tr class="skeleton-row">';
+                    for (var j = 0; j < 6; j++) {
+                        rows += '<td><div class="skeleton-cell"></div></td>';
+                    }
+                    rows += '</tr>';
+                }
+                $('#latetime-table tbody').html(rows);
+            }
+
     var table = $('#latetime-table').DataTable({
-        processing: true,
+        processing: false,
+        preDrawCallback: function() { showSkeleton(); },
         serverSide: false,
         ajax: {
             url: '/latetime/data',

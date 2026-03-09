@@ -55,13 +55,7 @@
                                     <td>{{ $employee->position }}</td>
                                     <td>{{ $employee->id }}</td>
 
-
-
-
-
-
                                     @for ($i = 1; $i < $today->daysInMonth + 1; ++$i)
-
 
                                         @php
                                             
@@ -72,7 +66,7 @@
                                                 ->where('attendance_date', $date_picker)
                                                 ->first();
                                             
-                                            $check_leave = \App\Models\Leave::query()
+                                            $check_leave = \App\Models\IzinDanCuti::query()
                                                 ->where('emp_id', $employee->id)
                                                 ->where('leave_date', $date_picker)
                                                 ->first();
@@ -110,7 +104,3 @@
         </div>
     </div>
 @endsection
-
-
-
-

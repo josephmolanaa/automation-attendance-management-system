@@ -226,7 +226,7 @@ function saveIzinDanCuti() {
     var note   = $('#izindancutiNote').val();
 
     if (!empId || !date) {
-        alert('Karyawan dan tanggal wajib diisi!');
+        swal({ title: 'Perhatian', text: 'Karyawan dan tanggal wajib diisi!', icon: 'warning', button: 'OK' });
         return;
     }
 
@@ -241,10 +241,10 @@ function saveIzinDanCuti() {
             $('#addIzinDanCutiModalDanCutiModal').modal('hide');
             location.reload();
         } else {
-            alert(res.message || 'Gagal menyimpan');
+            swal({ title: 'Gagal', text: res.message || 'Gagal menyimpan', icon: 'error', button: 'OK' });
         }
     }).fail(function() {
-        alert('Terjadi kesalahan, coba lagi');
+        swal({ title: 'Error', text: 'Terjadi kesalahan, coba lagi', icon: 'error', button: 'OK' });
     });
 }
 
@@ -255,8 +255,11 @@ function deleteIzinDanCuti(id) {
         type: 'DELETE',
         data: { _token: '{{ csrf_token() }}', id: id },
         success: function(res) {
-            if (res.success) location.reload();
-            else alert(res.message || 'Gagal menghapus');
+            if (res.success) {
+                swal({ title: 'Berhasil!', text: 'Data berhasil dihapus', icon: 'success', button: true, timer: 2500 })
+                    .then(function() { location.reload(); });
+            }
+            else swal({ title: 'Gagal', text: res.message || 'Gagal menghapus', icon: 'error', button: 'OK' });
         }
     });
 }

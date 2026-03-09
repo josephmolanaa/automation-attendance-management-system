@@ -1,5 +1,23 @@
 @extends('layouts.master')
 @section('css')
+    <style>
+        /* Hide default processing */
+        .dataTables_processing { display: none !important; }
+
+        /* Skeleton loading */
+        .skeleton-row td { padding: 8px 10px !important; }
+        .skeleton-cell {
+            height: 16px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.2s infinite;
+        }
+        @keyframes shimmer {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
     <link href="{{ URL::asset('plugins/RWD-Table-Patterns/dist/css/rwd-table.min.css') }}" rel="stylesheet" type="text/css" media="screen">
     <link href="{{ URL::asset('plugins/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet" type="text/css">
     <link href="{{ URL::asset('plugins/datatables/buttons.bootstrap4.min.css') }}" rel="stylesheet" type="text/css">
@@ -17,7 +35,7 @@
 @endsection
 
 @section('button')
-    <a href="/leave" class="btn btn-primary btn-sm btn-flat"><i class="mdi mdi-table mr-2"></i>Leave Table</a>
+    <a href="/izindancuti" class="btn btn-primary btn-sm btn-flat"><i class="mdi mdi-table mr-2"></i>Leave Table</a>
 @endsection
 
 @section('content')
@@ -71,17 +89,17 @@
                     </div>
 
                     <div class="table-rep-plugin">
-                        <div class="table-responsive mb-0" data-pattern="priority-columns">
+                        <div class="table-responsive mb-0">
                             <table id="datatable-buttons" class="table table-striped table-bordered dt-responsive nowrap" style="border-collapse: collapse; border-spacing: 0; width: 100%;">
                                 <thead>
                                     <tr>
-                                        <th data-priority="1">Date</th>
-                                        <th data-priority="2">Employee ID</th>
-                                        <th data-priority="3">Name</th>
-                                        <th data-priority="4">Shift</th>
-                                        <th data-priority="5">Schedule Time Out</th>
-                                        <th data-priority="6">Actual Time Out</th>
-                                        <th data-priority="7">Over Time</th>
+                                        <th>Date</th>
+                                        <th>Employee ID</th>
+                                        <th>Name</th>
+                                        <th>Shift</th>
+                                        <th>Schedule Time Out</th>
+                                        <th>Actual Time Out</th>
+                                        <th>Over Time</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -112,13 +130,28 @@
 <script src="{{ URL::asset('plugins/datatables/vfs_fonts.js') }}"></script>
 <script>
 $(function () {
+
+            // Skeleton loading
+            function showSkeleton() {
+                var rows = '';
+                for (var i = 0; i < 5; i++) {
+                    rows += '<tr class="skeleton-row">';
+                    for (var j = 0; j < 7; j++) {
+                        rows += '<td><div class="skeleton-cell"></div></td>';
+                    }
+                    rows += '</tr>';
+                }
+                $('#datatable-buttons tbody').html(rows);
+            }
+
     $('.table-responsive').responsiveTable({
         addDisplayAllBtn: 'btn btn-secondary'
     });
 
     var table = $('#datatable-buttons').DataTable({
         destroy: true,
-        processing: true,
+        processing: false,
+        preDrawCallback: function() { showSkeleton(); },
         ajax: {
             url: '/overtime/data',
             type: 'GET',

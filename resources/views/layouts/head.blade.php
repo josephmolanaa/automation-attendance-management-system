@@ -10,6 +10,11 @@
 <link href="{{ URL::asset('assets/css/style.css') }}" rel="stylesheet" type="text/css" />
 
 {{-- <link href="{{ URL::asset('plugins/sweet-alert2/sweetalert2.min.css') }}" rel="stylesheet" type="text/css"> --}}
+
+<style>
+    .focus-btn-group { display: none !important; }
+</style>
+
 <link href="{{ asset('plugins/sweetalert.min.css') }}" rel="stylesheet">
 <!-- Table css -->
 <link href="{{ URL::asset('plugins/RWD-Table-Patterns/dist/css/rwd-table.min.css') }}" rel="stylesheet" type="text/css" media="screen">
