@@ -264,7 +264,7 @@
                 ],
                 order: [[4, 'desc']],
                 language: {
-                    zeroRecords: 'Tidak ada data ditemukan',
+                    zeroRecords: 'Loading...',
                     emptyTable: 'Tidak ada data tersedia',
                     info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',
                     infoEmpty: 'Menampilkan 0 data',

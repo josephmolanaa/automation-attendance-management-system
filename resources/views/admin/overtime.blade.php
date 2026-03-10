@@ -1,27 +1,22 @@
 @extends('layouts.master')
 @section('css')
-    <style>
-        /* Hide default processing */
-        .dataTables_processing { display: none !important; }
-
-        /* Skeleton loading */
-        .skeleton-row td { padding: 8px 10px !important; }
-        .skeleton-cell {
-            height: 16px;
-            border-radius: 4px;
-            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.2s infinite;
-        }
-        @keyframes shimmer {
-            0%   { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-    </style>
-    <link href="{{ URL::asset('plugins/RWD-Table-Patterns/dist/css/rwd-table.min.css') }}" rel="stylesheet" type="text/css" media="screen">
-    <link href="{{ URL::asset('plugins/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet" type="text/css">
     <link href="{{ URL::asset('plugins/datatables/buttons.bootstrap4.min.css') }}" rel="stylesheet" type="text/css">
-    <link href="{{ URL::asset('plugins/datatables/responsive.bootstrap4.min.css') }}" rel="stylesheet" type="text/css">
+    <style>
+        .dataTables_length label,
+        .dataTables_filter label,
+        .dataTables_length select,
+        .dataTables_filter input { font-size: 14px !important; }
+        .dataTables_length select {
+            height: 36px !important; width: 75px !important; padding: 4px 8px !important;
+            background-image: none !important; -webkit-appearance: auto !important; appearance: auto !important;
+        }
+        .dataTables_filter input {
+            height: 36px !important; padding: 4px 10px !important;
+            border-radius: 6px !important; border: 1px solid #ced4da !important;
+        }
+        .dt-buttons { display: flex !important; align-items: center !important; gap: 6px !important; }
+        .dt-buttons .btn { height: 38px !important; font-size: 14px !important; display: flex !important; align-items: center !important; }
+    </style>
 @endsection
 
 @section('breadcrumb')
@@ -39,14 +34,13 @@
 @endsection
 
 @section('content')
-@include('includes.flash')
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
 
                     {{-- Filter Bar --}}
-                    <div class="d-flex flex-wrap mb-3" style="gap:10px">
+                    <div class="d-flex flex-wrap" style="gap:10px; align-items:flex-end; margin-bottom:16px;">
                         <div>
                             <label>Bulan</label>
                             <select id="filterMonth" class="form-control">
@@ -70,7 +64,7 @@
                             <select id="filterYear" class="form-control">
                                 <option value="">Semua Tahun</option>
                                 @foreach(range(date('Y'), 2024) as $year)
-                                    <option value="{{ $year }}">{{ $year }}</option>
+                                    <option value="{{ $year }}" {{ $year == date('Y') ? 'selected' : '' }}>{{ $year }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -90,7 +84,7 @@
 
                     <div class="table-rep-plugin">
                         <div class="table-responsive mb-0">
-                            <table id="datatable-buttons" class="table table-striped table-bordered dt-responsive nowrap" style="border-collapse: collapse; border-spacing: 0; width: 100%;">
+                            <table id="overtime-table" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%;font-size:14px;">
                                 <thead>
                                     <tr>
                                         <th>Date</th>
@@ -113,45 +107,13 @@
     </div>
 @endsection
 
-@section('script')
-@endsection
-
 @section('script-bottom')
-<script src="{{ URL::asset('plugins/datatables/jquery.dataTables.min.js') }}"></script>
-<script src="{{ URL::asset('plugins/datatables/dataTables.bootstrap4.min.js') }}"></script>
-<script src="{{ URL::asset('plugins/datatables/dataTables.buttons.min.js') }}"></script>
-<script src="{{ URL::asset('plugins/datatables/buttons.bootstrap4.min.js') }}"></script>
-<script src="{{ URL::asset('plugins/datatables/buttons.html5.min.js') }}"></script>
-<script src="{{ URL::asset('plugins/datatables/buttons.print.min.js') }}"></script>
-<script src="{{ URL::asset('plugins/datatables/dataTables.responsive.min.js') }}"></script>
-<script src="{{ URL::asset('plugins/datatables/responsive.bootstrap4.min.js') }}"></script>
-<script src="{{ URL::asset('plugins/RWD-Table-Patterns/dist/js/rwd-table.min.js') }}"></script>
-<script src="{{ URL::asset('plugins/datatables/pdfmake.min.js') }}"></script>
-<script src="{{ URL::asset('plugins/datatables/vfs_fonts.js') }}"></script>
 <script>
 $(function () {
-
-            // Skeleton loading
-            function showSkeleton() {
-                var rows = '';
-                for (var i = 0; i < 5; i++) {
-                    rows += '<tr class="skeleton-row">';
-                    for (var j = 0; j < 7; j++) {
-                        rows += '<td><div class="skeleton-cell"></div></td>';
-                    }
-                    rows += '</tr>';
-                }
-                $('#datatable-buttons tbody').html(rows);
-            }
-
-    $('.table-responsive').responsiveTable({
-        addDisplayAllBtn: 'btn btn-secondary'
-    });
-
-    var table = $('#datatable-buttons').DataTable({
+    var table = $('#overtime-table').DataTable({
         destroy: true,
         processing: false,
-        preDrawCallback: function() { showSkeleton(); },
+        serverSide: false,
         ajax: {
             url: '/overtime/data',
             type: 'GET',
@@ -180,6 +142,14 @@ $(function () {
             { extend: 'pdf',   text: '<i class="mdi mdi-file-pdf mr-1"></i> PDF',       className: 'btn btn-sm btn-danger',  title: 'Overtime Data', orientation: 'landscape', pageSize: 'A4' },
         ],
         order: [[0, 'desc']],
+        language: {
+            emptyTable: 'Tidak ada data tersedia',
+            info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',
+            infoEmpty: 'Menampilkan 0 data',
+            search: 'Cari:',
+            lengthMenu: 'Tampilkan _MENU_ data',
+            paginate: { next: 'Selanjutnya', previous: 'Sebelumnya' }
+        },
     });
 
     $('#filterMonth, #filterYear, #filterDateFrom, #filterDateTo').on('change', function() {
@@ -187,7 +157,8 @@ $(function () {
     });
 
     $('#btnReset').on('click', function() {
-        $('#filterMonth, #filterYear').val('');
+        $('#filterMonth').val('');
+        $('#filterYear').val('{{ date("Y") }}');
         $('#filterDateFrom, #filterDateTo').val('');
         table.ajax.reload();
     });

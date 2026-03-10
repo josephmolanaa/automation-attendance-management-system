@@ -1,9 +1,22 @@
 @extends('layouts.master')
 @section('css')
-    <link href="{{ URL::asset('plugins/RWD-Table-Patterns/dist/css/rwd-table.min.css') }}" rel="stylesheet" type="text/css" media="screen">
-    <link href="{{ URL::asset('plugins/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet" type="text/css">
     <link href="{{ URL::asset('plugins/datatables/buttons.bootstrap4.min.css') }}" rel="stylesheet" type="text/css">
-    <link href="{{ URL::asset('plugins/datatables/responsive.bootstrap4.min.css') }}" rel="stylesheet" type="text/css">
+    <style>
+        .dataTables_length label,
+        .dataTables_filter label,
+        .dataTables_length select,
+        .dataTables_filter input { font-size: 14px !important; }
+        .dataTables_length select {
+            height: 36px !important; width: 75px !important; padding: 4px 8px !important;
+            background-image: none !important; -webkit-appearance: auto !important; appearance: auto !important;
+        }
+        .dataTables_filter input {
+            height: 36px !important; padding: 4px 10px !important;
+            border-radius: 6px !important; border: 1px solid #ced4da !important;
+        }
+        .dt-buttons { display: flex !important; align-items: center !important; gap: 6px !important; }
+        .dt-buttons .btn { height: 38px !important; font-size: 14px !important; display: flex !important; align-items: center !important; }
+    </style>
 @endsection
 
 @section('breadcrumb')
@@ -23,14 +36,13 @@
 @endsection
 
 @section('content')
-@include('includes.flash')
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
 
                     {{-- Filter Bar --}}
-                    <div class="d-flex flex-wrap mb-3" style="gap:10px">
+                    <div class="d-flex flex-wrap" style="gap:10px; align-items:flex-end; margin-bottom:16px;">
                         <div>
                             <label>Bulan</label>
                             <select id="filterMonth" class="form-control">
@@ -48,7 +60,7 @@
                             <select id="filterYear" class="form-control">
                                 <option value="">Semua Tahun</option>
                                 @foreach(range(date('Y'), 2024) as $year)
-                                    <option value="{{ $year }}">{{ $year }}</option>
+                                    <option value="{{ $year }}" {{ $year == date('Y') ? 'selected' : '' }}>{{ $year }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -59,16 +71,16 @@
                     </div>
 
                     <div class="table-rep-plugin">
-                        <div class="table-responsive mb-0" data-pattern="priority-columns">
-                            <table id="datatable-buttons" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%">
+                        <div class="table-responsive mb-0">
+                            <table id="izindancuti-table" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%;font-size:14px;">
                                 <thead>
                                     <tr>
-                                        <th data-priority="1">Date</th>
-                                        <th data-priority="2">Employee ID</th>
-                                        <th data-priority="3">Name</th>
-                                        <th data-priority="4">Reason</th>
-                                        <th data-priority="5">Note</th>
-                                        <th data-priority="6">Action</th>
+                                        <th>Date</th>
+                                        <th>Employee ID</th>
+                                        <th>Name</th>
+                                        <th>Reason</th>
+                                        <th>Note</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -88,8 +100,7 @@
                                         </td>
                                         <td>{{ $izindancuti->note ?? '-' }}</td>
                                         <td>
-                                            <button class="btn btn-danger btn-sm btn-delete"
-                                                data-id="{{ $izindancuti->id }}"
+                                            <button class="btn btn-danger btn-sm"
                                                 onclick="deleteIzinDanCuti({{ $izindancuti->id }})">
                                                 <i class="mdi mdi-delete"></i>
                                             </button>
@@ -106,7 +117,7 @@
         </div>
     </div>
 
-    {{-- Modal Add Izin & Cuti --}}
+    {{-- Modal Add --}}
     <div class="modal fade" id="addIzinDanCutiModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -117,8 +128,8 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <label>Karyawan</label>
-                        <input type="text" id="izindancutiEmpName" class="form-control" 
-                               placeholder="Ketik nama karyawan..." 
+                        <input type="text" id="izindancutiEmpName" class="form-control"
+                               placeholder="Ketik nama karyawan..."
                                list="employeeList" autocomplete="off">
                         <input type="hidden" id="izindancutiEmpId">
                         <datalist id="employeeList">
@@ -155,26 +166,10 @@
 
 @endsection
 
-@section('script')
-@endsection
-
 @section('script-bottom')
-<script src="{{ URL::asset('plugins/datatables/jquery.dataTables.min.js') }}"></script>
-<script src="{{ URL::asset('plugins/datatables/dataTables.bootstrap4.min.js') }}"></script>
-<script src="{{ URL::asset('plugins/datatables/dataTables.buttons.min.js') }}"></script>
-<script src="{{ URL::asset('plugins/datatables/buttons.bootstrap4.min.js') }}"></script>
-<script src="{{ URL::asset('plugins/datatables/buttons.html5.min.js') }}"></script>
-<script src="{{ URL::asset('plugins/datatables/buttons.print.min.js') }}"></script>
-<script src="{{ URL::asset('plugins/datatables/dataTables.responsive.min.js') }}"></script>
-<script src="{{ URL::asset('plugins/datatables/responsive.bootstrap4.min.js') }}"></script>
-<script src="{{ URL::asset('plugins/RWD-Table-Patterns/dist/js/rwd-table.min.js') }}"></script>
-<script src="{{ URL::asset('plugins/datatables/pdfmake.min.js') }}"></script>
-<script src="{{ URL::asset('plugins/datatables/vfs_fonts.js') }}"></script>
 <script>
 $(function() {
-    $('.table-responsive').responsiveTable({ addDisplayAllBtn: 'btn btn-secondary' });
-
-    var table = $('#datatable-buttons').DataTable({
+    var table = $('#izindancuti-table').DataTable({
         destroy: true,
         pageLength: 10,
         lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
@@ -185,10 +180,18 @@ $(function() {
             { extend: 'pdf',   text: '<i class="mdi mdi-file-pdf mr-1"></i> PDF',       className: 'btn btn-sm btn-danger',  title: 'Izin & Cuti Data', orientation: 'landscape' },
         ],
         order: [[0, 'desc']],
+        language: {
+            emptyTable: 'Tidak ada data tersedia',
+            info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',
+            infoEmpty: 'Menampilkan 0 data',
+            search: 'Cari:',
+            lengthMenu: 'Tampilkan _MENU_ data',
+            paginate: { next: 'Selanjutnya', previous: 'Sebelumnya' }
+        },
     });
 
-    // Filter bulan & tahun
     $.fn.dataTable.ext.search.push(function(settings, data) {
+        if (settings.nTable.id !== 'izindancuti-table') return true;
         var month = $('#filterMonth').val();
         var year  = $('#filterYear').val();
         var date  = data[0];
@@ -204,20 +207,15 @@ $(function() {
         $('#filterMonth, #filterYear').val('');
         table.draw();
     });
-});
 
-// Sync nama karyawan ke hidden emp_id
     $('#izindancutiEmpName').on('input change', function() {
         var val = $(this).val();
         var match = $('#employeeList option').filter(function() {
             return $(this).val() === val;
         });
-        if (match.length) {
-            $('#izindancutiEmpId').val(match.attr('data-id'));
-        } else {
-            $('#izindancutiEmpId').val('');
-        }
+        $('#izindancutiEmpId').val(match.length ? match.attr('data-id') : '');
     });
+});
 
 function saveIzinDanCuti() {
     var empId  = $('#izindancutiEmpId').val();
@@ -231,15 +229,16 @@ function saveIzinDanCuti() {
     }
 
     $.post('/izindancuti/store', {
-        _token:  '{{ csrf_token() }}',
-        emp_id:  empId,
-        date:    date,
-        reason:  reason,
-        note:    note,
+        _token: '{{ csrf_token() }}',
+        emp_id: empId,
+        date:   date,
+        reason: reason,
+        note:   note,
     }, function(res) {
         if (res.success) {
-            $('#addIzinDanCutiModalDanCutiModal').modal('hide');
-            location.reload();
+            $('#addIzinDanCutiModal').modal('hide');
+            swal({ title: 'Berhasil!', text: 'Data berhasil disimpan', icon: 'success', button: true, timer: 2000 })
+                .then(function() { location.reload(); });
         } else {
             swal({ title: 'Gagal', text: res.message || 'Gagal menyimpan', icon: 'error', button: 'OK' });
         }
@@ -249,18 +248,27 @@ function saveIzinDanCuti() {
 }
 
 function deleteIzinDanCuti(id) {
-    if (!confirm('Hapus data izin/cuti ini?')) return;
-    $.ajax({
-        url: '/izindancuti/delete',
-        type: 'DELETE',
-        data: { _token: '{{ csrf_token() }}', id: id },
-        success: function(res) {
-            if (res.success) {
-                swal({ title: 'Berhasil!', text: 'Data berhasil dihapus', icon: 'success', button: true, timer: 2500 })
-                    .then(function() { location.reload(); });
+    swal({
+        title: 'Hapus data ini?',
+        text: 'Data izin/cuti akan dihapus permanen.',
+        icon: 'warning',
+        buttons: ['Batal', 'Hapus'],
+        dangerMode: true,
+    }).then(function(confirm) {
+        if (!confirm) return;
+        $.ajax({
+            url: '/izindancuti/delete',
+            type: 'DELETE',
+            data: { _token: '{{ csrf_token() }}', id: id },
+            success: function(res) {
+                if (res.success) {
+                    swal({ title: 'Berhasil!', text: 'Data berhasil dihapus', icon: 'success', button: true, timer: 2000 })
+                        .then(function() { location.reload(); });
+                } else {
+                    swal({ title: 'Gagal', text: res.message || 'Gagal menghapus', icon: 'error', button: 'OK' });
+                }
             }
-            else swal({ title: 'Gagal', text: res.message || 'Gagal menghapus', icon: 'error', button: 'OK' });
-        }
+        });
     });
 }
 </script>

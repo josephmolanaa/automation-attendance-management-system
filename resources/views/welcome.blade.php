@@ -17,10 +17,11 @@
 
         <div class="content">
             <div class="title m-b-md">
-                <div class="clockStyle" id="clock">123</div>
+                <div class="title m-b-md">
+                    <div class="clockStyle" id="clock">123</div>
+                    <div id="date" style="color:#fff;font-size:24px;text-align:center;margin-top:10px;opacity:0.8;"></div>
+                </div>            
             </div>
-
-            
         </div>
     </div>
 
