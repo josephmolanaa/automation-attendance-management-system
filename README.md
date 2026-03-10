@@ -1,104 +1,114 @@
-<p align="center"><a href="https://ams.aliatayee.com" target="_blank"><h1>Attendance Management System</h1></a></p>
+<p align="center"><a href="https://your-domain.com" target="_blank"><h1>Sistem Manajemen Absensi Karyawan</h1></a></p>
 
-## About Attendance Management System
+## Tentang Sistem Ini
+Sistem Manajemen Absensi ini adalah aplikasi web berbasis **Laravel** yang digunakan untuk mencatat jam kerja karyawan secara akurat. Aplikasi ini dikembangkan berdasarkan proyek open-source Attendance Management System (clone dari https://github.com/aliatayee/Attendance_Management_System), namun telah **dimodifikasi dan dikembangkan lebih lanjut** sesuai kebutuhan saya.
 
-Attendance Management System is a web application based on Laravel which keeps track of employee hours. It is the system you use to document the time your employees work and the time they take off.
+Fitur utama termasuk:
+- Integrasi dengan **mesin absensi fingerprint Fingerspot** (menggunakan API/SDK Fingerspot.io untuk sinkronisasi realtime attlog, userinfo, dll.)
+- Pencatatan absensi manual sebagai cadangan
+- Manajemen karyawan, laporan kehadiran, cuti, lembur, dll.
+- Dashboard admin dan user-friendly untuk karyawan
 
-## Major Technologies
-- HTML5
-- CSS
-- JAVASCRIPT
-- BOOTSTRAP
-- PHP
-- LARAVEL
+Sistem ini cocok untuk perusahaan, kantor, atau sekolah yang menggunakan perangkat **Fingerspot** (seperti seri Revo, Compact, atau model cloud-enabled).
+
+## Teknologi Utama
+- **Backend**: PHP, Laravel (versi terbaru yang kompatibel)
+- **Frontend**: HTML5, CSS, JavaScript, Bootstrap
+- **Database**: MySQL / MariaDB
+- **Integrasi Device**: Fingerspot API / SDK (developer.fingerspot.io) untuk pull attlog realtime via webhook atau polling
 
 ## Demo
-<a href="http://ams.alihost.co">Demo link</a> 
+<a href="http://your-demo-link.com">Lihat Demo</a> (ganti dengan link demo kamu jika ada)
 
-  ### Admin credential
-    username:ali@aliatayee.com
-    password:ali123
+### Kredensial Admin (default, segera ganti setelah install)
+- Username: admin@perusahaan.com
+- Password: password123 (atau sesuai yang kamu set di seeder)
 
+## Cara Install & Setup
+Ikuti langkah-langkah berikut untuk menjalankan proyek di lokal atau server:
 
-### Install & Setup
-
-To setup and install Attendance Management System project, follow the below steps:
-- Clone this project by the command: 
-
-```
-$ git clone https://github.com/aliatayee/Attendance_Management_System
-```
-
-- Then switch to the project folder by the bellow query:
+1. Clone repository ini:
 
 ```
-$ cd Attendance_Management_System
-```
-
-- Then open ```env``` file and update database credentials.
-
-- Then run the below command to install composer dependencies
+git clone https://github.com/username-anda/nama-repo-anda.git
 
 ```
-$ composer install
-```
-
-- Then run the below command to install dependencies
+2. Masuk Ke Folder Proyek:
 
 ```
-$ npm i
+cd nama-repo-anda
+``` 
+3. Copy file `.env.example` menjadi `.env` dan sesuaikan konfigurasi database serta pengaturan Fingerspot (API key, mesin SN, webhook URL, dll.):
 ```
-- Then run the below command to migrate the tables.
-
-```
-$ php artisan migrate 
-```
-- Then run the below command to run seeder.
-
-```
-$ php artisan db:seed 
+cp .env.example .env
 ```
 
-- Finally, run the below command to start the project.
-
+4. Install dependencies PHP:
 ```
-$ php artisan serve
+composer install
 ```
 
-## Screenshots
-![1](https://user-images.githubusercontent.com/74867463/144262662-b7fbe66e-5c4c-46fb-8bab-9cf3121c2032.png)
-![2](https://user-images.githubusercontent.com/74867463/144262668-545c4d8d-8570-4e38-a769-4c26520e366d.png)
-![3](https://user-images.githubusercontent.com/74867463/144262431-32223a06-8c25-49fd-b969-56a4bab697f2.png)
-![4](https://user-images.githubusercontent.com/74867463/144262645-29d4bfa4-c737-4123-8c22-c8c1fd49477e.png)
+5. Install dependencies frontend:
+```
+npm install atau yarn install
+```
+6. Generate application key:
+```
+php artisan key:generate
+```
+7. jalankan migrasi database:
+```
+php artisan migrate
+```
+8. Jalankan seeder (untuk data dummy karyawan, admin, dll.);
+```
+php artisan db:seed
+```
+9. Jalankan server lokal:
+```
+php artisan serve
+```
+10.(Opsional) Compile asset frontend;
+```
+npm run dev atau npm run build untuk production
+```
 
 
-### Prerequisites
-- PHP installed
-- Composer installed
-- IDE to edit and run the code (We use Visual Studio Code 🔥).
-- Git to versionning your work.
+**Catatan khusus Fingerspot**:
+- Daftarkan mesin absensi kamu di https://developer.fingerspot.io/
+- Konfigurasi webhook untuk realtime attlog (kirim ke endpoint Laravel kamu, misal `/api/fingerspot/webhook`)
+- Tambahkan cron job atau Laravel scheduler untuk polling attlog jika webhook tidak aktif.
 
-### Authors
-👤 **Ali**
+## Screenshot
+![Dashboard]
+![Absensi]
+![Laporan]
+![Manajemen Karyawan]
 
-- GitHub: [@aliatayee](https://github.com/aliatayee)
-- Twitter: [@aqaatayee](https://twitter.com/aqaatayee)
+*(Update screenshot ini dengan tampilan terbaru setelah kamu integrasikan Fingerspot)*
 
+## Persyaratan Sistem
+- PHP ≥ 8.1
+- Composer
+- Node.js & NPM/Yarn
+- MySQL / MariaDB
+- Git
+- Akses ke mesin Fingerspot (cloud atau LAN dengan API aktif)
 
-## 🤝 Contributing
-Contributions, issues, and feature requests are welcome!
+## Penulis / Pengembang
+👤 **Joseph**
+- GitHub: [@josephmolanaa]([(https://github.com/josephmolanaa))  
 
-Feel free to check the [issues page](../../issues/).
+Proyek ini dibangun berdasarkan dari [Ali Atayee](https://github.com/aliatayee) — terima kasih atas basis awalnya!
 
-## Show your support
-Give a ⭐️ if you like this project!
+## Kontribusi
+Kontribusi, saran, issue, dan fitur baru sangat diterima!  
+Silakan buka [issues](../../issues/) atau pull request.
 
-## Acknowledgments
-- Hat tip to anyone whose code was used
-- Inspiration
-- etc
+## Dukungan
+Beri ⭐ jika proyek ini membantu kamu!
 
-## Contributing
+## Lisensi
+[MIT License](LICENSE) — bebas digunakan, dimodifikasi, dan didistribusikan (tetap cantumkan kredit asli jika memungkinkan).
 
-Thank you for considering contributing to the attendance management system!.
-
+Terima kasih telah menggunakan sistem ini!

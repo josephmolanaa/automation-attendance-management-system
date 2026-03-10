@@ -1,6 +1,7 @@
 <?php
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FingerDevicesControlller;
+use App\Http\Controllers\SheetReportController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -50,6 +51,12 @@ Route::group(['middleware' => ['auth', 'Role'], 'roles' => ['admin']], function 
         Route::post('/',         [App\Http\Controllers\HolidayOverrideController::class, 'store']);
         Route::delete('/',       [App\Http\Controllers\HolidayOverrideController::class, 'destroy']);
     });
+
+    Route::get('/sheet-report', [SheetReportController::class, 'index']);
+    Route::get('/sheet-report/data', [SheetReportController::class, 'ajaxData']);
+
+    // Export Sheet Report
+    Route::get('/sheet-report/export', [SheetReportController::class, 'export']);
 });
 
 Route::group(['middleware' => ['auth']], function () {

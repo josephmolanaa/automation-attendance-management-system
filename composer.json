@@ -16,6 +16,7 @@
         "laravel/sanctum": "^2.11",
         "laravel/tinker": "^2.5",
         "laravel/ui": "^3.3",
+        "maatwebsite/excel": "^3.1",
         "rats/zkteco": "^002.0"
     },
     "require-dev": {

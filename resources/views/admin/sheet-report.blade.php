@@ -1,83 +1,201 @@
 @extends('layouts.master')
+
+@section('css')
+    <link href="{{ URL::asset('plugins/datatables/buttons.bootstrap4.min.css') }}" rel="stylesheet" type="text/css">
+    <style>
+        .dataTables_length label,
+        .dataTables_filter label,
+        .dataTables_length select,
+        .dataTables_filter input { font-size: 14px !important; }
+        .dataTables_length select {
+            height: 36px !important; width: 75px !important; padding: 4px 8px !important;
+            background-image: none !important; -webkit-appearance: auto !important; appearance: auto !important;
+        }
+        .dataTables_filter input {
+            height: 36px !important; padding: 4px 10px !important;
+            border-radius: 6px !important; border: 1px solid #ced4da !important;
+        }
+        .dt-buttons { display: flex !important; align-items: center !important; gap: 6px !important; }
+        .dt-buttons .btn { height: 38px !important; font-size: 14px !important; display: flex !important; align-items: center !important; }
+    </style>
+@endsection
+
+@section('breadcrumb')
+    <div class="col-sm-6">
+        <h4 class="page-title text-left">Sheet Report</h4>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="javascript:void(0);">Home</a></li>
+            <li class="breadcrumb-item"><a href="javascript:void(0);">Sheet Report</a></li>
+        </ol>
+    </div>
+@endsection
+
 @section('content')
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
 
-    <div class="card">
-        <div class="card-header bg-success text-white">
-            TimeTable
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-sm" id="printTable">
-                    <thead>
-                        <tr>
-                            <th>Employee Name</th>
-                            <th>Employee Position</th>
-                            <th>Employee ID</th>
-                            @php
-                                $today = today();
-                                $dates = [];
-                                for ($i = 1; $i < $today->daysInMonth + 1; ++$i) {
-                                    $dates[] = \Carbon\Carbon::createFromDate($today->year, $today->month, $i)->format('Y-m-d');
-                                }
-                            @endphp
-                            @foreach ($dates as $date)
-                                <th>{{ $date }}</th>
-                            @endforeach
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($employees as $employee)
-                            <tr>
-                                <td>{{ $employee->name }}</td>
-                                <td>{{ $employee->position }}</td>
-                                <td>{{ $employee->emp_id }}</td>
+                    {{-- Filter Bar --}}
+                    <div class="d-flex flex-wrap" style="gap:10px; align-items:flex-end; margin-bottom:16px;">
+                        <div>
+                            <label>Bulan</label>
+                            <select id="filterMonth" class="form-control">
+                                <option value="01">Januari</option>
+                                <option value="02">Februari</option>
+                                <option value="03">Maret</option>
+                                <option value="04">April</option>
+                                <option value="05">Mei</option>
+                                <option value="06">Juni</option>
+                                <option value="07">Juli</option>
+                                <option value="08">Agustus</option>
+                                <option value="09">September</option>
+                                <option value="10">Oktober</option>
+                                <option value="11">November</option>
+                                <option value="12">Desember</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Tahun</label>
+                            <select id="filterYear" class="form-control">
+                                @foreach(range(date('Y'), 2024) as $year)
+                                    <option value="{{ $year }}" {{ $year == date('Y') ? 'selected' : '' }}>{{ $year }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label>&nbsp;</label>
+                            <button id="btnLoad" class="btn btn-primary d-block">
+                                <i class="mdi mdi-magnify mr-1"></i> Tampilkan
+                            </button>
+                        </div>
+                        <div>
+                            <label>&nbsp;</label>
+                            <button id="btnReset" class="btn btn-secondary d-block">Reset</button>
+                        </div>
+                        <div>
+                            <label>&nbsp;</label>
+                            <button id="btnExport" class="btn btn-success d-block">
+                                <i class="mdi mdi-file-excel mr-1"></i> Export Excel
+                            </button>
+                        </div>
+                    </div>
 
-                                @for ($i = 1; $i < $today->daysInMonth + 1; ++$i)
-                                    @php
-                                        $date_picker = \Carbon\Carbon::createFromDate($today->year, $today->month, $i)->format('Y-m-d');
+                    <div class="table-rep-plugin">
+                        <div class="table-responsive mb-0">
+                            <table id="sheet-report-table" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%;font-size:13px;">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nama</th>
+                                        <th>Jabatan</th>
+                                        <th>Hari</th>
+                                        <th>Tanggal</th>
+                                        <th>Scan 1</th>
+                                        <th>Scan 2</th>
+                                        <th>Scan 3</th>
+                                        <th>Normal</th>
+                                        <th>Double</th>
+                                        <th>Minggu</th>
+                                        <th>Izin/Cuti</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
 
-                                        // Scan 1 (attendance_time) dari checks table
-                                        $scan1 = \App\Models\Check::where('emp_id', $employee->id)
-                                            ->whereDate('attendance_time', $date_picker)
-                                            ->whereNotNull('attendance_time')
-                                            ->first();
-
-                                        // Scan 2 (leave_time) dari checks table
-                                        $scan2 = \App\Models\Check::where('emp_id', $employee->id)
-                                            ->whereDate('leave_time', $date_picker)
-                                            ->whereNotNull('leave_time')
-                                            ->first();
-
-                                        // Izin/Cuti dari leaves table
-                                        $izin = \App\Models\IzinDanCuti::where('emp_id', $employee->id)
-                                            ->where('leave_date', $date_picker)
-                                            ->first();
-                                    @endphp
-                                    <td style="text-align:center; white-space:nowrap;">
-                                        {{-- Scan In --}}
-                                        @if ($scan1)
-                                            <i class="fa fa-check text-success" title="Scan In: {{ \Carbon\Carbon::parse($scan1->attendance_time)->format('H:i') }}"></i>
-                                        @elseif ($izin)
-                                            <i class="fa fa-minus text-warning" title="{{ ucfirst($izin->reason) }}"></i>
-                                        @else
-                                            <i class="fas fa-times text-danger"></i>
-                                        @endif
-
-                                        {{-- Scan Out --}}
-                                        @if ($scan2)
-                                            <i class="fa fa-check text-success" title="Scan Out: {{ \Carbon\Carbon::parse($scan2->leave_time)->format('H:i') }}"></i>
-                                        @elseif ($izin)
-                                            <i class="fa fa-minus text-warning" title="{{ ucfirst($izin->reason) }}"></i>
-                                        @else
-                                            <i class="fas fa-times text-danger"></i>
-                                        @endif
-                                    </td>
-                                @endfor
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                </div>
             </div>
         </div>
     </div>
+@endsection
+
+@section('script-bottom')
+<script>
+$(function() {
+    // Set default bulan = bulan sekarang
+    var nowMonth = ('0' + (new Date().getMonth() + 1)).slice(-2);
+    $('#filterMonth').val(nowMonth);
+
+    var table = $('#sheet-report-table').DataTable({
+        processing: false,
+        serverSide: false,
+        ajax: {
+            url: '/sheet-report/data',
+            data: function(d) {
+                d.bulan = $('#filterMonth').val();
+                d.tahun = $('#filterYear').val();
+            }
+        },
+        columns: [
+            { data: 'emp_id' },
+            { data: 'name' },
+            { data: 'position' },
+            { data: 'hari' },
+            { data: 'tanggal' },
+            { data: 'scan_1' },
+            { data: 'scan_2' },
+            { data: 'scan_3' },
+            {
+                data: 'normal',
+                render: function(val) {
+                    return val && val !== '-' ? '<span class="badge badge-info" style="font-size:12px;padding:4px 8px">' + val + '</span>' : '-';
+                }
+            },
+            {
+                data: 'double',
+                render: function(val) {
+                    return val && val !== '-' ? '<span class="badge badge-warning" style="font-size:12px;padding:4px 8px">' + val + '</span>' : '-';
+                }
+            },
+            {
+                data: 'minggu',
+                render: function(val) {
+                    return val === 1 ? '<span class="badge badge-success" style="font-size:12px;padding:4px 8px">1</span>' : '-';
+                }
+            },
+            {
+                data: 'izin_cuti',
+                render: function(val) {
+                    if (!val || val === '-') return '-';
+                    var colors = { 'Sakit': 'danger', 'Izin': 'warning', 'Cuti': 'info', 'Dinas': 'primary' };
+                    var color = colors[val] || 'secondary';
+                    return '<span class="badge badge-' + color + ' badge-pill">' + val + '</span>';
+                }
+            },
+        ],
+        order: [[4, 'desc']],
+        pageLength: 25,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+        dom: '<"d-flex justify-content-between align-items-center mb-2"lBf>rtip',
+        buttons: [...amsExportButtons('Sheet Report')],
+        language: {
+            emptyTable: 'Pilih bulan & tahun lalu klik Tampilkan',
+            info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',
+            infoEmpty: 'Menampilkan 0 data',
+            search: 'Cari:',
+            lengthMenu: 'Tampilkan _MENU_ data',
+            paginate: { next: 'Selanjutnya', previous: 'Sebelumnya' }
+        },
+    });
+
+    $('#btnExport').on('click', function() {
+        var bulan = $('#filterMonth').val();
+        var tahun = $('#filterYear').val();
+        window.location.href = '/sheet-report/export?bulan=' + bulan + '&tahun=' + tahun;
+    });
+
+    $('#btnLoad').on('click', function() {
+        table.ajax.reload();
+    });
+
+    $('#btnReset').on('click', function() {
+        var nowMonth = ('0' + (new Date().getMonth() + 1)).slice(-2);
+        $('#filterMonth').val(nowMonth);
+        $('#filterYear').val('{{ date("Y") }}');
+        table.ajax.reload();
+    });
+});
+</script>
 @endsection
