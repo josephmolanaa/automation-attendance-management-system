@@ -16,6 +16,11 @@
                     <form method="POST" action="{{ route('employees.store') }}">
                         @csrf
                         <div class="form-group">
+                            <label for="emp_id">Employee ID</label>
+                            <input type="text" class="form-control" placeholder="Enter Employee ID" id="emp_id" name="emp_id"
+                                required />
+                        </div>
+                        <div class="form-group">
                             <label for="name">Name</label>
                             <input type="text" class="form-control" placeholder="Enter Employee Name" id="name" name="name"
                                 required />

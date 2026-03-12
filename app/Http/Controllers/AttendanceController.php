@@ -59,6 +59,7 @@ class AttendanceController extends Controller
             $dateStr = $refTime->format('Y-m-d');
 
             $dayType    = HolidayService::getDayType($dateStr);
+            $isFriday   = Carbon::parse($dateStr)->dayOfWeek === Carbon::FRIDAY && $dayType === 'weekday';
             $isSaturday = $dayType === 'saturday';
             $isHoliday  = $dayType === 'holiday';
             $isWeekday  = $dayType === 'weekday';
@@ -74,9 +75,10 @@ class AttendanceController extends Controller
                 foreach ($allSchedules as $schedule) {
                     $sDayType = $schedule->day_type ?? 'weekday';
                     $dayMatch = match($sDayType) {
+                        'friday'   => $isFriday,
                         'saturday' => $isSaturday,
                         'holiday'  => $isHoliday,
-                        'weekday'  => $isWeekday,
+                        'weekday'  => $isWeekday && !$isFriday,
                         default    => false,
                     };
                     if (!$dayMatch) continue;
@@ -95,15 +97,23 @@ class AttendanceController extends Controller
                     }
                 }
                 if (!$matchedSchedule) {
+                   if ($isFriday){
+                    $isNight = $scanHour !== null && $scanHour >= 16;
+                    $matchedSchedule = $isNight
+                        ? $allSchedules->where('slug', 'SHIFT_2_FRIDAY')->first()
+                        : $allSchedules->where('slug', 'SHIFT_1_WEEKDAY')->first();
+                   } else {
                     $matchedSchedule = $allSchedules->where('day_type', $dayType)->first();
                 }
             }
+        }
 
             $shiftSlug = optional($matchedSchedule)->slug ?? '-';
 
             $shiftColors = [
                 'SHIFT_1_WEEKDAY' => '#4A90D9',
                 'SHIFT_2_WEEKDAY' => '#1A3F6F',
+                'SHIFT_2_FRIDAY'  => '#1A3F6F',
                 'SHIFT_1_WEEKEND' => '#4CAF82',
                 'SHIFT_2_WEEKEND' => '#1E6645',
                 'LEMBUR_SHIFT_1'  => '#F0A500',
@@ -115,11 +125,10 @@ class AttendanceController extends Controller
             // Status
             $statusBadge = '<span class="badge badge-secondary badge-pill">No Scan In</span>';
             if ($scanIn && $matchedSchedule) {
-                // Parse time_in dengan tanggal yang sama dengan scanIn
                 $schedIn   = Carbon::parse($dateStr . ' ' . $matchedSchedule->time_in);
-                $tolerance = 1;
-                $diffMin   = $schedIn->diffInMinutes($scanIn, false); // positif = terlambat
-                if ($diffMin <= $tolerance) {
+                $toleranceSecs = 60;
+                $diffMin       = $schedIn->diffInSeconds($scanIn, false);
+                if ($diffMin <= $toleranceSecs) {
                     $statusBadge = '<span class="badge badge-success badge-pill">On Time</span>';
                 } else {
                     $statusBadge = '<span class="badge badge-danger badge-pill">Late</span>';
@@ -175,13 +184,13 @@ class AttendanceController extends Controller
             $scanIn  = Carbon::parse($check->attendance_time);
             $dateStr = $scanIn->format('Y-m-d');
 
-            $dayType   = HolidayService::getDayType($dateStr);
+            $dayType    = HolidayService::getDayType($dateStr);
+            $isFriday   = Carbon::parse($dateStr)->dayOfWeek === Carbon::FRIDAY && $dayType === 'weekday';
             $isSaturday = $dayType === 'saturday';
             $isHoliday  = $dayType === 'holiday';
             $isWeekday  = $dayType === 'weekday';
 
             $scanHour = (int) $scanIn->format('H');
-            $isMalam  = $scanHour >= 16;
 
             $matchedSchedule = null;
             $override = HolidayOverride::where('date', $dateStr)->first();
@@ -192,9 +201,10 @@ class AttendanceController extends Controller
                 foreach ($allSchedules as $schedule) {
                     $sDayType = $schedule->day_type ?? 'weekday';
                     $dayMatch = match($sDayType) {
+                        'friday'   => $isFriday,
                         'saturday' => $isSaturday,
                         'holiday'  => $isHoliday,
-                        'weekday'  => $isWeekday,
+                        'weekday'  => $isWeekday && !$isFriday,
                         default    => false,
                     };
                     if (!$dayMatch) continue;
@@ -211,20 +221,19 @@ class AttendanceController extends Controller
             if (!$matchedSchedule) continue;
 
             // Hitung apakah Late
-            $schedIn  = Carbon::parse($dateStr . ' ' . $matchedSchedule->time_in);
-            $diffMin  = $schedIn->diffInMinutes($scanIn, false);
-            if ($diffMin <= 1) continue; // bukan late, skip
+            $schedIn      = Carbon::parse($dateStr . ' ' . $matchedSchedule->time_in);
+            $totalSeconds = $schedIn->diffInSeconds($scanIn, false);
+            if ($totalSeconds <= 60) continue; // toleransi 60 detik
 
-            // Hitung durasi keterlambatan
-            $lateMinutes = (int) $diffMin;
-            $lateHours   = intdiv($lateMinutes, 60);
-            $lateMins    = $lateMinutes % 60;
-            $lateDuration = sprintf('%02d:%02d', $lateHours, $lateMins);
+            $lateHours    = floor($totalSeconds / 3600);
+            $lateMins     = floor(($totalSeconds % 3600) / 60);
+            $lateSecs     = $totalSeconds % 60;
+            $lateDuration = sprintf('%02d:%02d:%02d', $lateHours, $lateMins, $lateSecs);
 
-            $emp    = $check->employee;
-            $empId  = $emp ? ($emp->emp_id ?? '-') : '-';
-            $name   = $emp ? $emp->name : '-';
-            $timeIn = $scanIn->format('H:i:s');
+            $emp     = $check->employee;
+            $empId   = $emp ? ($emp->emp_id ?? '-') : '-';
+            $name    = $emp ? $emp->name : '-';
+            $timeIn  = $scanIn->format('H:i:s');
             $timeOut = $check->leave_time ? Carbon::parse($check->leave_time)->format('H:i:s') : '-';
 
             $data[] = [
@@ -260,12 +269,12 @@ class AttendanceController extends Controller
     {
         $query = Check::with(['employee'])->whereNotNull('leave_time');
 
-        if ($request->bulan) $query->whereMonth('leave_time', $request->bulan);
-        if ($request->tahun) $query->whereYear('leave_time', $request->tahun);
-        if ($request->dari)  $query->whereDate('leave_time', '>=', $request->dari);
+        if ($request->bulan)  $query->whereMonth('leave_time', $request->bulan);
+        if ($request->tahun)  $query->whereYear('leave_time', $request->tahun);
+        if ($request->dari)   $query->whereDate('leave_time', '>=', $request->dari);
         if ($request->sampai) $query->whereDate('leave_time', '<=', $request->sampai);
 
-        $checks      = $query->orderBy('leave_time', 'desc')->get();
+        $checks       = $query->orderBy('leave_time', 'desc')->get();
         $allSchedules = Schedule::all();
 
         $data = [];
@@ -276,6 +285,7 @@ class AttendanceController extends Controller
             $dateStr = $scanOut->format('Y-m-d');
 
             $dayType    = HolidayService::getDayType($dateStr);
+            $isFriday   = Carbon::parse($dateStr)->dayOfWeek === Carbon::FRIDAY && $dayType === 'weekday';
             $isSaturday = $dayType === 'saturday';
             $isHoliday  = $dayType === 'holiday';
             $isWeekday  = $dayType === 'weekday';
@@ -290,9 +300,10 @@ class AttendanceController extends Controller
                 foreach ($allSchedules as $schedule) {
                     $sDayType = $schedule->day_type ?? 'weekday';
                     $dayMatch = match($sDayType) {
+                        'friday'   => $isFriday,
                         'saturday' => $isSaturday,
                         'holiday'  => $isHoliday,
-                        'weekday'  => $isWeekday,
+                        'weekday'  => $isWeekday && !$isFriday,
                         default    => false,
                     };
                     if (!$dayMatch) continue;
@@ -306,7 +317,7 @@ class AttendanceController extends Controller
                     }
                 }
                 if (!$matchedSchedule) {
-                    $matchedSchedule = $allSchedules->where('day_type', $dayType)->first();
+                    $matchedSchedule = $allSchedules->where('day_type', $isFriday ? 'friday' : $dayType)->first();
                 }
             }
 
@@ -320,39 +331,42 @@ class AttendanceController extends Controller
                 $scheduleTimeOut->addDay();
             }
 
-            $toleranceMinutes = 15;
-            $diffMinutes = $scheduleTimeOut->diffInMinutes($scanOut, false);
+            $totalSeconds     = $scheduleTimeOut->diffInSeconds($scanOut, false);
+            $toleranceSeconds = 55 * 60; // 55 menit
 
-            // Hanya tampilkan kalau overtime > toleransi
-            if ($diffMinutes <= $toleranceMinutes) continue;
+            if ($totalSeconds <= $toleranceSeconds) continue;
 
-            $hours   = floor($diffMinutes / 60);
-            $minutes = $diffMinutes % 60;
-            $overtimeDuration = sprintf('%02d:%02d', $hours, $minutes);
+            $hours            = floor($totalSeconds / 3600);
+            $minutes          = floor(($totalSeconds % 3600) / 60);
+            $seconds          = $totalSeconds % 60;
+            $overtimeDuration = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
 
             $shiftSlug = optional($matchedSchedule)->slug ?? '-';
             $shiftColors = [
-                'SHIFT_1_WEEKDAY' => '#4A90D9', 'SHIFT_2_WEEKDAY' => '#1A3F6F',
-                'SHIFT_1_WEEKEND' => '#4CAF82', 'SHIFT_2_WEEKEND' => '#1E6645',
-                'LEMBUR_SHIFT_1'  => '#F0A500', 'LEMBUR_SHIFT_2'  => '#A05A00',
+                'SHIFT_1_WEEKDAY' => '#4A90D9',
+                'SHIFT_2_WEEKDAY' => '#1A3F6F',
+                'SHIFT_2_FRIDAY'  => '#1A3F6F',
+                'SHIFT_1_WEEKEND' => '#4CAF82',
+                'SHIFT_2_WEEKEND' => '#1E6645',
+                'LEMBUR_SHIFT_1'  => '#F0A500',
+                'LEMBUR_SHIFT_2'  => '#A05A00',
             ];
-            $color     = $shiftColors[$shiftSlug] ?? '#888';
+            $color      = $shiftColors[$shiftSlug] ?? '#888';
             $shiftBadge = "<span class='badge' style='background:{$color};color:#fff;padding:4px 8px;border-radius:4px;font-size:11px'>{$shiftSlug}</span>";
 
             $overtimeBadge = "<span class='badge badge-warning' style='font-size:13px;padding:5px 10px'>{$overtimeDuration}</span>";
 
             $data[] = [
-                'date'               => $dateStr,
-                'emp_id'             => optional($check->employee)->emp_id ?? $check->emp_id ?? '-',
-                'name'               => optional($check->employee)->name ?? '-',
-                'shift'              => $shiftBadge,
-                'schedule_time_out'  => Carbon::parse($matchedSchedule->time_out)->format('H:i:s'),
-                'actual_time_out'    => $scanOut->format('H:i:s'),
-                'overtime_duration'  => $overtimeBadge,
+                'date'              => $dateStr,
+                'emp_id'            => optional($check->employee)->emp_id ?? $check->emp_id ?? '-',
+                'name'              => optional($check->employee)->name ?? '-',
+                'shift'             => $shiftBadge,
+                'schedule_time_out' => Carbon::parse($matchedSchedule->time_out)->format('H:i:s'),
+                'actual_time_out'   => $scanOut->format('H:i:s'),
+                'overtime_duration' => $overtimeBadge,
             ];
         }
 
         return response()->json(['data' => $data]);
     }
-
 }

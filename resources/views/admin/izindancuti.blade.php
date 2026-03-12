@@ -65,6 +65,14 @@
                             </select>
                         </div>
                         <div>
+                            <label>Dari Tanggal</label>
+                            <input type="date" id="filterDateFrom" class="form-control">
+                        </div>
+                        <div>
+                            <label>Sampai Tanggal</label>
+                            <input type="date" id="filterDateTo" class="form-control">
+                        </div>
+                        <div>
                             <label>&nbsp;</label>
                             <button id="btnReset" class="btn btn-secondary d-block">Reset</button>
                         </div>
@@ -192,19 +200,28 @@ $(function() {
 
     $.fn.dataTable.ext.search.push(function(settings, data) {
         if (settings.nTable.id !== 'izindancuti-table') return true;
-        var month = $('#filterMonth').val();
-        var year  = $('#filterYear').val();
-        var date  = data[0];
+        var month    = $('#filterMonth').val();
+        var year     = $('#filterYear').val();
+        var dateFrom = $('#filterDateFrom').val();
+        var dateTo   = $('#filterDateTo').val();
+        var date     = data[0];
         if (!date || date === '-') return true;
         var parts = date.split('-');
         if (month && parts[1] !== month) return false;
         if (year  && parts[0] !== year)  return false;
+        if (dateFrom && date < dateFrom) return false;
+        if (dateTo   && date > dateTo)   return false;
         return true;
     });
 
-    $('#filterMonth, #filterYear').on('change', function() { table.draw(); });
+    $('#filterMonth, #filterYear, #filterDateFrom, #filterDateTo').on('change', function() {
+        table.draw();
+    });
+
     $('#btnReset').on('click', function() {
-        $('#filterMonth, #filterYear').val('');
+        $('#filterMonth').val('');
+        $('#filterYear').val('{{ date("Y") }}');
+        $('#filterDateFrom, #filterDateTo').val('');
         table.draw();
     });
 

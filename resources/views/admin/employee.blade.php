@@ -1,6 +1,7 @@
 @extends('layouts.master')
 
 @section('css')
+    <link href="{{ URL::asset('plugins/datatables/buttons.bootstrap4.min.css') }}" rel="stylesheet" type="text/css">
     <style>
         .dataTables_length,
         .dataTables_filter {
@@ -78,7 +79,7 @@
                         <tr>
                             <th>Employee ID</th>
                             <th>Name</th>
-                            <th>position</th>
+                            <th>Position</th>
                             <th>Email</th>
                             <th>Schedule</th>
                             <th>Member Since</th>
@@ -88,7 +89,7 @@
                     <tbody>
                         @foreach($employees as $employee)
                         <tr>
-                            <td>{{ $employee->id }}</td>
+                            <td>{{ $employee->emp_id ?? $employee->id }}</td>
                             <td>{{ $employee->name }}</td>
                             <td>{{ $employee->position }}</td>
                             <td>{{ $employee->email }}</td>
@@ -130,6 +131,7 @@ $(function () {
         pageLength: 25,
         lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'All']],
         dom: '<"d-flex justify-content-between align-items-center mb-2"lf>rtip',
+
         language: {
             lengthMenu: 'Tampilkan _MENU_ data',
             search: 'Cari:',

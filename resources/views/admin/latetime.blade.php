@@ -132,14 +132,10 @@ $(document).ready(function() {
             { data: 'time_out' },
         ],
         order: [[0, 'desc']],
-        pageLength: 10,
+        pageLength: 25,
         lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
-        dom: '<"d-flex justify-content-between align-items-center mb-2"lBf>rtip',
-        buttons: [
-            { extend: 'copy',  text: '<i class="mdi mdi-content-copy mr-1"></i> Copy',  className: 'btn btn-sm btn-secondary' },
-            { extend: 'excel', text: '<i class="mdi mdi-file-excel mr-1"></i> Excel',   className: 'btn btn-sm btn-success', title: 'Late Time Data' },
-            { extend: 'pdf',   text: '<i class="mdi mdi-file-pdf mr-1"></i> PDF',       className: 'btn btn-sm btn-danger',  title: 'Late Time Data', orientation: 'landscape', pageSize: 'A4' },
-        ],
+        dom: '<"d-flex justify-content-between align-items-center mb-2"lf>rtip',
+
         language: {
             zeroRecords: 'Loading...',
             emptyTable: 'Tidak ada data tersedia',

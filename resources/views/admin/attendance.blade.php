@@ -48,8 +48,16 @@
         .dataTables_paginate .paginate_button { font-size: 14px !important; }
         .dt-buttons { display: flex !important; align-items: center !important; gap: 6px !important; }
         .dt-buttons .btn { height: 38px !important; font-size: 14px !important; display: flex !important; align-items: center !important; }
+
+        /* Sticky header */
+        #attendance-table thead th {
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 10 !important;
+            background: #f8f9fa !important;
+            box-shadow: 0 2px 2px -1px rgba(0,0,0,0.15) !important;
+        }
     </style>
-    <link href="{{ URL::asset('plugins/RWD-Table-Patterns/dist/css/rwd-table.min.css') }}" rel="stylesheet" type="text/css" media="screen">
     <link href="{{ URL::asset('plugins/datatables/buttons.bootstrap4.min.css') }}" rel="stylesheet" type="text/css">
 @endsection
 
@@ -110,7 +118,7 @@
                             <input type="date" id="filterDateFrom" class="form-control">
                         </div>
                         <div>
-                            <label>Sampai Tanggal</label>
+                            <label>Sampai Tanggal</label>  
                             <input type="date" id="filterDateTo" class="form-control">
                         </div>
                         <div>
@@ -126,23 +134,21 @@
                     </div>
                     </div>
 
-                    <div class="table-rep-plugin">
-                        <div class="table-responsive mb-0">
-                            <table id="attendance-table" class="table table-striped table-bordered dt-responsive nowrap" style="border-collapse: collapse; border-spacing: 0; width: 100%; font-size: 14px;">
-                                <thead>
-                                    <tr>
-                                        <th>Employee ID</th>
-                                        <th>Name</th>
-                                        <th>Shift</th>
-                                        <th>Status</th>
-                                        <th>Date</th>
-                                        <th>Time In</th>
-                                        <th>Time Out</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
+                    <div class="table-responsive mb-0">
+                        <table id="attendance-table" class="table table-striped table-bordered nowrap" style="border-collapse: collapse; border-spacing: 0; width: 100%; font-size: 14px;">
+                            <thead>
+                                <tr>
+                                    <th style="min-width:120px">Employee ID</th>
+                                    <th style="min-width:180px">Name</th>
+                                    <th style="min-width:140px">Shift</th>
+                                    <th style="min-width:100px">Status</th>
+                                    <th style="min-width:110px">Date</th>
+                                    <th style="min-width:100px">Time In</th>
+                                    <th style="min-width:100px">Time Out</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
                     </div>
 
                 </div>
@@ -227,10 +233,6 @@
 @section('script-bottom')
     <script>
         $(function () {
-            $('.table-responsive').responsiveTable({
-                addDisplayAllBtn: 'btn btn-secondary'
-            });
-
             var table = $('#attendance-table').DataTable({
                 destroy: true,
                 processing: false,
@@ -254,7 +256,8 @@
                     { data: 'time_in' },
                     { data: 'time_out' },
                 ],
-                pageLength: 10,
+                autoWidth: false,
+                pageLength: 25,
                 lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
                 dom: '<"d-flex justify-content-between align-items-center mb-2"lBf>rtip',
                 buttons: [
@@ -275,12 +278,6 @@
             });
 
             window.attendanceTable = table;
-
-            setTimeout(function() {
-                $('.btn-focus-column').remove();
-                $('[id*="focus"]').remove();
-                $('button:contains("Focus")').remove();
-            }, 500);
 
             $('#filterMonth, #filterYear, #filterDateFrom, #filterDateTo').on('change', function() {
                 table.ajax.reload();

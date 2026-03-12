@@ -63,12 +63,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div>
-                            <label>&nbsp;</label>
-                            <button id="btnLoad" class="btn btn-primary d-block">
-                                <i class="mdi mdi-magnify mr-1"></i> Tampilkan
-                            </button>
-                        </div>
+
                         <div>
                             <label>&nbsp;</label>
                             <button id="btnReset" class="btn btn-secondary d-block">Reset</button>
@@ -168,10 +163,10 @@ $(function() {
         order: [[4, 'desc']],
         pageLength: 25,
         lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
-        dom: '<"d-flex justify-content-between align-items-center mb-2"lBf>rtip',
+        dom: '<"d-flex justify-content-between align-items-center mb-2"lf>rtip',
         buttons: [...amsExportButtons('Sheet Report')],
         language: {
-            emptyTable: 'Pilih bulan & tahun lalu klik Tampilkan',
+            emptyTable: 'Tidak ada data yang tersedia',
             info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',
             infoEmpty: 'Menampilkan 0 data',
             search: 'Cari:',
@@ -187,6 +182,10 @@ $(function() {
     });
 
     $('#btnLoad').on('click', function() {
+    table.ajax.reload();
+    });
+
+    $('#filterMonth, #filterYear').on('change', function() {
         table.ajax.reload();
     });
 

@@ -23,6 +23,7 @@ class EmployeeController extends Controller
         $request->validated();
 
         $employee = new Employee;
+        $employee->emp_id = $request->emp_id;
         $employee->name = $request->name;
         $employee->position = $request->position;
         $employee->email = $request->email;
@@ -50,6 +51,7 @@ class EmployeeController extends Controller
     {
         $request->validated();
 
+        $emp_id = $request->emp_id;
         $employee->name = $request->name;
         $employee->position = $request->position;
         $employee->email = $request->email;

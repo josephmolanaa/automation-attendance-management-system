@@ -29,9 +29,7 @@
     </div>
 @endsection
 
-@section('button')
-    <a href="/izindancuti" class="btn btn-primary btn-sm btn-flat"><i class="mdi mdi-table mr-2"></i>Leave Table</a>
-@endsection
+
 
 @section('content')
     <div class="row">
@@ -133,7 +131,7 @@ $(function () {
             { data: 'actual_time_out' },
             { data: 'overtime_duration', orderable: false },
         ],
-        pageLength: 10,
+        pageLength: 25,
         lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
         dom: '<"d-flex justify-content-between align-items-center mb-2"lBf>rtip',
         buttons: [

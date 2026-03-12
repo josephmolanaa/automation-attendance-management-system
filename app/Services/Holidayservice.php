@@ -11,8 +11,7 @@ class HolidayService
     const API_PRIMARY  = 'https://libur.deno.dev/api';
     const API_FALLBACK = 'https://api-hari-libur.vercel.app/api';
 
-    public static function isHoliday(string $date): bool
-    {
+    public static function isHoliday(string $date): bool {
         $carbon = \Carbon\Carbon::parse($date);
         return in_array($date, self::getHolidays($carbon->year, $carbon->month));
     }
@@ -103,3 +102,4 @@ class HolidayService
         }
     }
 }
+
