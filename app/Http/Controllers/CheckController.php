@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Employee;
-use App\Models\Attendance;
-use App\Models\Leave;
+use App\Models\Check;
+use Carbon\Carbon;
 
 class CheckController extends Controller
 {
@@ -14,68 +14,95 @@ class CheckController extends Controller
         return view('admin.check')->with(['employees' => Employee::all()]);
     }
 
+    /**
+     * ============================================================
+     * Store manual attendance — tulis ke tabel checks
+     * ============================================================
+     *
+     * Request format:
+     *   time_in[Y-m-d][emp_id]  = "HH:MM"  (dari input jam)
+     *   time_out[Y-m-d][emp_id] = "HH:MM"  (dari input jam)
+     *
+     * Logic:
+     *   - Kalau time_in diisi → cari atau buat baris checks untuk emp+date
+     *   - Kalau time_out diisi → isi leave_time di baris yang ada
+     *   - Kalau keduanya kosong → hapus baris jika ada (uncheck)
+     * ============================================================
+     */
     public function CheckStore(Request $request)
     {
-        if (isset($request->attd)) {
-            foreach ($request->attd as $keys => $values) {
-                foreach ($values as $key => $value) {
-                    if ($employee = Employee::whereId(request('emp_id'))->first()) {
-                        if (
-                            !Attendance::whereAttendance_date($keys)
-                                ->whereEmp_id($key)
-                                ->whereType(0)
-                                ->first()
-                        ) {
-                            $data = new Attendance();
-                            
-                            $data->emp_id = $key;
-                            $emp_req = Employee::whereId($data->emp_id)->first();
-                            $data->attendance_time = date('H:i:s', strtotime($emp_req->schedules->first()->time_in));
-                            $data->attendance_date = $keys;
-                            
-                            // $emps = date('H:i:s', strtotime($employee->schedules->first()->time_in));
-                            // if (!($emps >= $data->attendance_time)) {
-                            //     $data->status = 0;
-                           
-                            // }
-                            $data->save();
-                        }
+        $timeIns  = $request->input('time_in', []);   // [date => [emp_id => jam]]
+        $timeOuts = $request->input('time_out', []);  // [date => [emp_id => jam]]
+
+        // Kumpulkan semua tanggal & emp_id yang terlibat
+        $allDates = array_unique(array_merge(array_keys($timeIns), array_keys($timeOuts)));
+
+        foreach ($allDates as $date) {
+            $insForDate  = $timeIns[$date]  ?? [];
+            $outsForDate = $timeOuts[$date] ?? [];
+
+            $allEmpIds = array_unique(array_merge(array_keys($insForDate), array_keys($outsForDate)));
+
+            foreach ($allEmpIds as $empId) {
+                $timeIn  = trim($insForDate[$empId]  ?? '');
+                $timeOut = trim($outsForDate[$empId] ?? '');
+
+                if ($timeIn === '' && $timeOut === '') {
+                    // Keduanya kosong → hapus baris manual jika ada
+                    Check::where('emp_id', $empId)
+                        ->whereDate('attendance_time', $date)
+                        ->delete();
+                    continue;
+                }
+
+                // Cari baris existing untuk emp + date ini
+                $existing = Check::where('emp_id', $empId)
+                    ->whereDate('attendance_time', $date)
+                    ->orderBy('attendance_time', 'asc')
+                    ->first();
+
+                $attendanceTimestamp = $timeIn !== ''
+                    ? $date . ' ' . $timeIn . ':00'
+                    : ($existing ? $existing->attendance_time : $date . ' 08:00:00');
+
+                $leaveTimestamp = $timeOut !== ''
+                    ? $date . ' ' . $timeOut . ':00'
+                    : null;
+
+                // Handle overnight: kalau time_out < time_in → time_out hari berikutnya
+                if ($leaveTimestamp) {
+                    $attCarbon   = Carbon::parse($attendanceTimestamp);
+                    $leaveCarbon = Carbon::parse($leaveTimestamp);
+                    if ($leaveCarbon->lt($attCarbon)) {
+                        $leaveCarbon->addDay();
+                        $leaveTimestamp = $leaveCarbon->toDateTimeString();
                     }
+                }
+
+                if ($existing) {
+                    // Update baris yang sudah ada
+                    if ($timeIn !== '') {
+                        $existing->attendance_time = $attendanceTimestamp;
+                    }
+                    $existing->leave_time = $leaveTimestamp;
+                    $existing->save();
+                } else {
+                    // Buat baris baru
+                    Check::create([
+                        'emp_id'          => $empId,
+                        'attendance_time' => $attendanceTimestamp,
+                        'leave_time'      => $leaveTimestamp,
+                    ]);
                 }
             }
         }
-        if (isset($request->leave)) {
-            foreach ($request->leave as $keys => $values) {
-                foreach ($values as $key => $value) {
-                    if ($employee = Employee::whereId(request('emp_id'))->first()) {
-                        if (
-                            !Leave::whereLeave_date($keys)
-                                ->whereEmp_id($key)
-                                ->whereType(1)
-                                ->first()
-                        ) {
-                            $data = new Leave();
-                            $data->emp_id = $key;
-                            $emp_req = Employee::whereId($data->emp_id)->first();
-                            $data->leave_time = $emp_req->schedules->first()->time_out;
-                            $data->leave_date = $keys;
-                            // if ($employee->schedules->first()->time_out <= $data->leave_time) {
-                            //     $data->status = 1;
-                                
-                            // }
-                            // 
-                            $data->save();
-                        }
-                    }
-                }
-            }
-        }
-        flash()->success('Success', 'You have successfully submited the attendance !');
+
+        flash()->success('Success', 'Data kehadiran berhasil disimpan!');
         return back();
     }
+
     public function sheetReport()
     {
-
-    return view('admin.sheet-report')->with(['employees' => Employee::all()]);
+        return view('admin.sheet-report');
     }
 }

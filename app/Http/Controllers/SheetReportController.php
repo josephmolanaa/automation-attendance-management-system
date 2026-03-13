@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Check;
@@ -19,6 +20,38 @@ class SheetReportController extends Controller
         return view('admin.sheet-report');
     }
 
+    /**
+     * ============================================================
+     * AJAX endpoint untuk DataTables sheet-report
+     * ============================================================
+     *
+     * Kolom output:
+     *   emp_id, name, position, hari, tanggal,
+     *   scan_1, scan_2, scan_3,
+     *   normal, double, minggu, izin_cuti
+     *
+     * Logic scan per tanggal per karyawan:
+     *
+     *   KASUS 1 — Shift pagi / normal (1 sesi):
+     *     scan_1 = attendance_time sesi 1
+     *     scan_2 = leave_time sesi 1
+     *     scan_3 = -
+     *
+     *   KASUS 2 — Double shift (2 sesi dalam 1 hari, misal Sabtu):
+     *     scan_1 = leave_time sesi overnight (dari shift Jumat malam)
+     *     scan_2 = attendance_time sesi 2 (shift Sabtu)
+     *     scan_3 = leave_time sesi 2
+     *
+     *   KASUS 3 — Shift 2 Friday (di baris tanggal Jumat):
+     *     scan_1 = attendance_time shift malam Jumat
+     *     scan_2 = - (leave_time ada di Sabtu)
+     *     scan_3 = -
+     *
+     * Overnight detection:
+     *   Jika leave_time jatuh di tanggal berbeda dari attendance_time,
+     *   maka leave_time tersebut ditampilkan di baris tanggal leave_time (bukan attendance_time).
+     * ============================================================
+     */
     public function ajaxData(Request $request)
     {
         $bulan = $request->bulan ?? date('m');
@@ -27,145 +60,268 @@ class SheetReportController extends Controller
         $employees    = Employee::all();
         $allSchedules = Schedule::all();
 
-        // Semua checks bulan & tahun ini
-        $checks = Check::whereYear('attendance_time', $tahun)
-            ->whereMonth('attendance_time', $bulan)
+        // Ambil semua checks bulan ini + overnight dari bulan sebelumnya
+        // (ambil satu bulan penuh + 3 hari sebelum untuk handle overnight)
+        $startDate = Carbon::createFromDate($tahun, $bulan, 1)->subDays(3)->startOfDay();
+        $endDate   = Carbon::createFromDate($tahun, $bulan, 1)->endOfMonth()->endOfDay();
+
+        $allChecks = Check::whereBetween('attendance_time', [$startDate, $endDate])
+            ->orWhereBetween('leave_time', [
+                Carbon::createFromDate($tahun, $bulan, 1)->startOfDay(),
+                $endDate,
+            ])
+            ->orderBy('attendance_time', 'asc')
             ->get()
             ->groupBy('emp_id');
 
-        // Semua izin/cuti bulan & tahun ini
-        $leaves = IzinDanCuti::whereYear('leave_date', $tahun)
+        // Semua izin/cuti bulan ini
+        $allLeaves = IzinDanCuti::whereYear('leave_date', $tahun)
             ->whereMonth('leave_date', $bulan)
             ->get()
             ->groupBy('emp_id');
 
+        $daysInMonth = Carbon::createFromDate($tahun, $bulan, 1)->daysInMonth;
         $data = [];
 
         foreach ($employees as $employee) {
-            $empChecks = $checks->get($employee->id, collect());
-            $empLeaves = $leaves->get($employee->id, collect());
+            $empChecks = $allChecks->get($employee->id, collect());
+            $empLeaves = $allLeaves->get($employee->id, collect());
 
-            // Group checks by date
-            $checksByDate = $empChecks->groupBy(function($c) {
-                return Carbon::parse($c->attendance_time)->format('Y-m-d');
-            });
-
-            // Group leaves by date
-            $leavesByDate = $empLeaves->keyBy(function($l) {
+            // Buat lookup izin/cuti by date
+            $leaveByDate = $empLeaves->keyBy(function ($l) {
                 return Carbon::parse($l->leave_date)->format('Y-m-d');
             });
 
             // Loop setiap hari dalam bulan
-            $daysInMonth = Carbon::createFromDate($tahun, $bulan, 1)->daysInMonth;
-
             for ($d = 1; $d <= $daysInMonth; $d++) {
                 $dateStr  = Carbon::createFromDate($tahun, $bulan, $d)->format('Y-m-d');
                 $dateObj  = Carbon::parse($dateStr);
-                $dayName  = $dateObj->locale('id')->dayName;
+                $dayName  = $dateObj->locale('id')->isoFormat('dddd');
                 $dayOfWeek = $dateObj->dayOfWeek; // 0=Minggu, 6=Sabtu
 
-                $dayChecks = $checksByDate->get($dateStr, collect());
-                $leave     = $leavesByDate->get($dateStr);
+                // ── Kumpulkan sesi yang relevan untuk tanggal ini ──
+                //
+                // Sesi "milik" tanggal ini = checks dimana:
+                //   A. attendance_time di tanggal ini (sesi normal / shift malam mulai hari ini)
+                //   B. leave_time di tanggal ini tapi attendance_time di hari sebelumnya (overnight)
 
-                // Scan 1 & Scan 2
-                $scan1 = $dayChecks->sortBy('attendance_time')->first();
-                $scan2 = $dayChecks->sortBy('attendance_time')->last();
+                $sessionsThisDay = collect();
 
-                $scan1Time = $scan1 && $scan1->attendance_time
-                    ? Carbon::parse($scan1->attendance_time)->format('H:i:s') : '-';
-                $scan2Time = ($scan1 && $scan1->leave_time)
-                    ? Carbon::parse($scan1->leave_time)->format('H:i:s') : '-';
+                foreach ($empChecks as $check) {
+                    $attDate   = $check->attendance_time
+                        ? Carbon::parse($check->attendance_time)->format('Y-m-d')
+                        : null;
+                    $leaveDate = $check->leave_time
+                        ? Carbon::parse($check->leave_time)->format('Y-m-d')
+                        : null;
 
-                $scan3Time = ($scan1 && $scan1->second_leave_time)
-                    ? Carbon::parse($scan1->second_leave_time)->format('H:i:s') : '-';
+                    if ($attDate === $dateStr) {
+                        // Sesi yang mulai hari ini
+                        $sessionsThisDay->push([
+                            'type'       => 'normal',
+                            'check'      => $check,
+                            'att_time'   => $check->attendance_time,
+                            'leave_time' => $check->leave_time,
+                        ]);
+                    } elseif ($leaveDate === $dateStr && $attDate !== $dateStr) {
+                        // Overnight: sesi mulai kemarin, berakhir hari ini
+                        $sessionsThisDay->push([
+                            'type'       => 'overnight_end',
+                            'check'      => $check,
+                            'att_time'   => null, // mulai kemarin, tidak ditampilkan di baris ini
+                            'leave_time' => $check->leave_time,
+                        ]);
+                    }
+                }
 
-                // Hitung overtime untuk Normal/Double/Minggu
-                $normal = 0; $double = 0; $minggu = 0;
-                $izinCuti = '-';
+                $izinCutiData = $leaveByDate->get($dateStr);
+                $izinCuti     = '-';
+                if ($izinCutiData) {
+                    $izinCuti = ucfirst($izinCutiData->reason ?? 'Izin');
+                }
 
-                if ($leave) {
-                    $izinCuti = ucfirst($leave->reason ?? 'Izin');
-                } elseif ($scan1 && $scan1->leave_time) {
-                    $scanIn  = Carbon::parse($scan1->attendance_time);
-                    $scanOut = Carbon::parse($scan1->leave_time);
-                    $dateStr2 = $scanIn->format('Y-m-d');
+                // Skip hari tanpa data sama sekali
+                if ($sessionsThisDay->isEmpty() && !$izinCutiData) {
+                    continue;
+                }
 
-                    $dayType    = HolidayService::getDayType($dateStr2);
-                    $isSunday   = $dayOfWeek === 0;
+                // ── Susun scan_1, scan_2, scan_3 ──
+                //
+                // Urutan prioritas tampilan:
+                //   1. Kalau ada overnight_end → scan_1 = leave_time overnight
+                //   2. Sesi normal pertama → scan_1 (atau scan_2 jika overnight sudah pakai scan_1)
+                //   3. Sesi normal kedua → scan berikutnya
 
-                    // Cari matched schedule
-                    $matchedSchedule = null;
-                    $override = HolidayOverride::where('date', $dateStr2)->first();
-                    if ($override && $override->schedule_id) {
-                        $matchedSchedule = Schedule::find($override->schedule_id);
-                    } else {
-                        $scanHour = (int) $scanIn->format('H');
-                        foreach ($allSchedules as $schedule) {
-                            $sDayType = $schedule->day_type ?? 'weekday';
-                            $dayMatch = match($sDayType) {
-                                'saturday' => $dayType === 'saturday',
-                                'holiday'  => $dayType === 'holiday',
-                                'weekday'  => $dayType === 'weekday',
-                                default    => false,
-                            };
-                            if (!$dayMatch) continue;
-                            $schedHour = (int) Carbon::parse($schedule->time_in)->format('H');
-                            $diff = min(abs($scanHour - $schedHour), 24 - abs($scanHour - $schedHour));
-                            if ($diff <= 3) { $matchedSchedule = $schedule; break; }
-                        }
+                $scan1 = '-';
+                $scan2 = '-';
+                $scan3 = '-';
+
+                $overnightEnd = $sessionsThisDay->firstWhere('type', 'overnight_end');
+                $normalSessions = $sessionsThisDay->where('type', 'normal')->values();
+
+                if ($overnightEnd) {
+                    // scan_1 = time_out dari shift semalam
+                    $scan1 = Carbon::parse($overnightEnd['leave_time'])->format('H:i:s');
+
+                    // Sesi normal hari ini (shift sabtu / shift pagi)
+                    $sesi1 = $normalSessions->get(0);
+                    if ($sesi1) {
+                        $scan2 = $sesi1['att_time']
+                            ? Carbon::parse($sesi1['att_time'])->format('H:i:s')
+                            : '-';
+                        $scan3 = $sesi1['leave_time']
+                            ? Carbon::parse($sesi1['leave_time'])->format('H:i:s')
+                            : '-';
+                    }
+                } else {
+                    // Tidak ada overnight — sesi normal biasa
+                    $sesi1 = $normalSessions->get(0);
+                    $sesi2 = $normalSessions->get(1);
+
+                    if ($sesi1) {
+                        $scan1 = $sesi1['att_time']
+                            ? Carbon::parse($sesi1['att_time'])->format('H:i:s')
+                            : '-';
+                        $scan2 = $sesi1['leave_time']
+                            ? Carbon::parse($sesi1['leave_time'])->format('H:i:s')
+                            : '-';
                     }
 
-                    if ($matchedSchedule) {
-                        $schedOut = Carbon::parse($dateStr2 . ' ' . $matchedSchedule->time_out);
-                        if ($schedOut->lt(Carbon::parse($dateStr2 . ' ' . $matchedSchedule->time_in))) {
-                            $schedOut->addDay();
-                        }
-                        $diffMin = $schedOut->diffInMinutes($scanOut, false);
+                    if ($sesi2) {
+                        $scan3 = $sesi2['att_time']
+                            ? Carbon::parse($sesi2['att_time'])->format('H:i:s')
+                            : '-';
+                        // leave_time sesi2 tidak ada kolom, tapi bisa ditambah nanti
+                    }
+                }
 
-                        if ($isSunday) {
-                            $minggu = 1;
-                        } elseif ($diffMin > 15) {
-                            $totalOvertimeHours = floor($diffMin / 60);
-                            if ($totalOvertimeHours <= 3) {
-                                $normal = $totalOvertimeHours;
-                            } else {
-                                $normal = 3;
-                                $double = $totalOvertimeHours - 3;
+                // ── Hitung Normal / Double / Minggu ──
+                $normal = 0;
+                $double = 0;
+                $minggu = 0;
+
+                $dayType = HolidayService::getDayType($dateStr);
+                $isFriday = $dayOfWeek === Carbon::FRIDAY && $dayType === 'weekday';
+
+                if ($dayOfWeek === 0 || $dayType === 'holiday') {
+                    // Hari Minggu / tanggal merah → hitung sebagai minggu
+                    if ($sessionsThisDay->isNotEmpty()) {
+                        $minggu = 1;
+                    }
+                } else {
+                    // Hitung overtime dari sesi normal pertama
+                    $sesi1 = $normalSessions->get(0);
+                    if ($sesi1 && $sesi1['att_time'] && $sesi1['leave_time']) {
+                        $scanIn  = Carbon::parse($sesi1['att_time']);
+                        $scanOut = Carbon::parse($sesi1['leave_time']);
+
+                        // Deteksi schedule
+                        $matchedSchedule = $this->detectSchedule(
+                            $allSchedules, $dateStr, $dayType, $isFriday, $dayOfWeek,
+                            (int) $scanIn->format('H')
+                        );
+
+                        if ($matchedSchedule) {
+                            $schedOut = Carbon::parse($dateStr . ' ' . $matchedSchedule->time_out);
+                            // Handle overnight schedule
+                            if ($schedOut->lt(Carbon::parse($dateStr . ' ' . $matchedSchedule->time_in))) {
+                                $schedOut->addDay();
+                            }
+                            $diffMin = $schedOut->diffInMinutes($scanOut, false);
+
+                            if ($diffMin > 15) {
+                                $totalHours = floor($diffMin / 60);
+                                if ($totalHours <= 3) {
+                                    $normal = $totalHours;
+                                } else {
+                                    $normal = 3;
+                                    $double = $totalHours - 3;
+                                }
                             }
                         }
                     }
                 }
 
-                // Skip hari tanpa data sama sekali
-                if ($scan1Time === '-' && !$leave) continue;
-
                 $data[] = [
-                    'emp_id'   => $employee->emp_id ?? $employee->id,
-                    'name'     => $employee->name,
-                    'position' => $employee->position ?? '-',
-                    'hari'     => ucfirst($dayName),
-                    'tanggal'  => $dateStr,
-                    'scan_1'   => $scan1Time,
-                    'scan_2'   => $scan2Time,
-                    'scan_3'   => $scan3Time,
-                    'normal'   => $normal ?: 0,
-                    'double'   => $double ?: 0,
-                    'minggu'   => $minggu ?: 0,
-                    'izin_cuti'=> $izinCuti,
+                    'emp_id'    => $employee->emp_id ?? $employee->id,
+                    'name'      => $employee->name,
+                    'position'  => $employee->position ?? '-',
+                    'hari'      => $dayName,
+                    'tanggal'   => $dateStr,
+                    'scan_1'    => $scan1,
+                    'scan_2'    => $scan2,
+                    'scan_3'    => $scan3,
+                    'normal'    => $normal ?: '-',
+                    'double'    => $double ?: '-',
+                    'minggu'    => $minggu ?: '-',
+                    'izin_cuti' => $izinCuti,
                 ];
             }
         }
 
-        // Sort by tanggal desc
-        usort($data, fn($a, $b) => strcmp($b['tanggal'], $a['tanggal']));
+        // Sort by tanggal desc lalu emp_id
+        usort($data, function ($a, $b) {
+            $cmp = strcmp($b['tanggal'], $a['tanggal']);
+            return $cmp !== 0 ? $cmp : strcmp($a['name'], $b['name']);
+        });
 
         return response()->json(['data' => $data]);
     }
 
+    /**
+     * Detect schedule yang cocok untuk tanggal & jam scan tertentu
+     */
+    private function detectSchedule($allSchedules, $dateStr, $dayType, $isFriday, $dayOfWeek, $scanHour)
+    {
+        $override = HolidayOverride::where('date', $dateStr)->first();
+        if ($override && $override->schedule_id) {
+            return Schedule::find($override->schedule_id);
+        }
+
+        $isSaturday = $dayOfWeek === 6;
+        $isHoliday  = $dayType === 'holiday';
+        $isWeekday  = $dayType === 'weekday';
+
+        $matched = null;
+
+        foreach ($allSchedules as $schedule) {
+            $sDayType = $schedule->day_type ?? 'weekday';
+            $dayMatch = match ($sDayType) {
+                'friday'   => $isFriday,
+                'saturday' => $isSaturday,
+                'holiday'  => $isHoliday,
+                'weekday'  => $isWeekday && !$isFriday,
+                default    => false,
+            };
+            if (!$dayMatch) continue;
+
+            $schedHour = (int) Carbon::parse($schedule->time_in)->format('H');
+            $diff      = min(abs($scanHour - $schedHour), 24 - abs($scanHour - $schedHour));
+            if ($diff <= 3) {
+                $matched = $schedule;
+                break;
+            }
+        }
+
+        if (!$matched) {
+            // Fallback
+            if ($isFriday) {
+                $isNight = $scanHour >= 16;
+                $matched = $isNight
+                    ? $allSchedules->where('slug', 'SHIFT_2_FRIDAY')->first()
+                    : $allSchedules->where('slug', 'SHIFT_1_WEEKDAY')->first();
+            } else {
+                $matched = $allSchedules->where('day_type', $dayType)->first();
+            }
+        }
+
+        return $matched;
+    }
+
     public function export(Request $request)
     {
-        $bulan = $request->bulan ?? date('m');
-        $tahun = $request->tahun ?? date('Y');
+        $bulan    = $request->bulan ?? date('m');
+        $tahun    = $request->tahun ?? date('Y');
         $filename = 'Sheet_Report_' . $tahun . '_' . str_pad($bulan, 2, '0', STR_PAD_LEFT) . '.xlsx';
         return Excel::download(new SheetReportExport($bulan, $tahun), $filename);
     }
