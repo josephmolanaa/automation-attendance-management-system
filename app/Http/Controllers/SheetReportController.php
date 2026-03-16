@@ -64,15 +64,19 @@ class SheetReportController extends Controller
         // (ambil satu bulan penuh + 3 hari sebelum untuk handle overnight)
         $startDate = Carbon::createFromDate($tahun, $bulan, 1)->subDays(3)->startOfDay();
         $endDate   = Carbon::createFromDate($tahun, $bulan, 1)->endOfMonth()->endOfDay();
+        $monthStart = Carbon::createFromDate($tahun, $bulan, 1)->startOfDay();
 
-        $allChecks = Check::whereBetween('attendance_time', [$startDate, $endDate])
-            ->orWhereBetween('leave_time', [
-                Carbon::createFromDate($tahun, $bulan, 1)->startOfDay(),
-                $endDate,
-            ])
-            ->orderBy('attendance_time', 'asc')
-            ->get()
-            ->groupBy('emp_id');
+        $allChecks = Check::where(function($q) use ($startDate, $endDate, $monthStart) {
+            $q->whereBetween('attendance_time', [$startDate, $endDate])
+            ->orWhere(function($q2) use ($monthStart, $endDate) {
+                $q2->whereNull('attendance_time')
+                    ->whereBetween('leave_time', [$monthStart, $endDate]);
+            })
+            ->orWhereBetween('leave_time', [$monthStart, $endDate]);
+        })
+        ->orderBy('leave_time', 'asc')
+        ->get()
+        ->groupBy('emp_id');
 
         // Semua izin/cuti bulan ini
         $allLeaves = IzinDanCuti::whereYear('leave_date', $tahun)
@@ -248,9 +252,9 @@ class SheetReportController extends Controller
                     'position'  => $employee->position ?? '-',
                     'hari'      => $dayName,
                     'tanggal'   => $dateStr,
-                    'scan_1'    => $scan1,
-                    'scan_2'    => $scan2,
-                    'scan_3'    => $scan3,
+                    'scan_1'    => $scan1 ?? '-',
+                    'scan_2'    => $scan2 ?? '-',
+                    'scan_3'    => $scan3 ?? '-',
                     'normal'    => $normal ?: '-',
                     'double'    => $double ?: '-',
                     'minggu'    => $minggu ?: '-',

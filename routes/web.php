@@ -63,5 +63,4 @@ Route::group(['middleware' => ['auth']], function () {
     // Route::get('/home', 'HomeController@index')->name('home');
 });
 
-Route::get('/scanlog-import', [ScanlogImportController::class, 'index'])->name('scanlog.index');
-Route::post('/scanlog-import', [ScanlogImportController::class, 'import'])->name('scanlog.import');
+

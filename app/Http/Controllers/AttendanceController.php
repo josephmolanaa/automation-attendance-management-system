@@ -120,21 +120,21 @@ class AttendanceController extends Controller
                 'LEMBUR_SHIFT_2'  => '#A05A00',
             ];
             $color = $shiftColors[$shiftSlug] ?? '#888';
-            $shiftBadge = "<span class='badge' style='background:{$color};color:#fff;padding:4px 8px;border-radius:4px;font-size:11px'>{$shiftSlug}</span>";
+            $shiftBadge = "<span class='badge' style='background:{$color};color:#fff;padding:4px 8px;border-radius:4px;font-size:14px'>{$shiftSlug}</span>";
 
             // Status
-            $statusBadge = '<span class="badge badge-secondary badge-pill">No Scan In</span>';
+            $statusBadge = '<span class="badge badge-secondary badge-pill" style="font-size:14px">No Scan In</span>';
             if ($scanIn && $matchedSchedule) {
                 $schedIn   = Carbon::parse($dateStr . ' ' . $matchedSchedule->time_in);
                 $toleranceSecs = 60;
                 $diffMin       = $schedIn->diffInSeconds($scanIn, false);
                 if ($diffMin <= $toleranceSecs) {
-                    $statusBadge = '<span class="badge badge-success badge-pill">On Time</span>';
+                    $statusBadge = '<span class="badge badge-success badge-pill" style="font-size:14px">On Time</span>';
                 } else {
-                    $statusBadge = '<span class="badge badge-danger badge-pill">Late</span>';
+                    $statusBadge = '<span class="badge badge-danger badge-pill" style="font-size:14px">Late</span>';
                 }
             } elseif ($scanIn) {
-                $statusBadge = '<span class="badge badge-success badge-pill">On Time</span>';
+                $statusBadge = '<span class="badge badge-success badge-pill" style="font-size:14px">On Time</span>';
             }
 
             return [
@@ -240,7 +240,7 @@ class AttendanceController extends Controller
                 'date'          => $dateStr,
                 'emp_id'        => $empId,
                 'name'          => $name,
-                'late_duration' => '<span class="badge badge-pill" style="background:#E74C3C;color:#fff;padding:5px 10px">' . $lateDuration . '</span>',
+                'late_duration' => '<span class="badge badge-pill" style="background:#e74c4c;color:#fff;padding:4px 8px;border-radius:4px;font-size:14px">' . $lateDuration . '</span>',
                 'time_in'       => $timeIn,
                 'time_out'      => $timeOut,
             ];
@@ -352,9 +352,9 @@ class AttendanceController extends Controller
                 'LEMBUR_SHIFT_2'  => '#A05A00',
             ];
             $color      = $shiftColors[$shiftSlug] ?? '#888';
-            $shiftBadge = "<span class='badge' style='background:{$color};color:#fff;padding:4px 8px;border-radius:4px;font-size:11px'>{$shiftSlug}</span>";
+            $shiftBadge = "<span class='badge' style='background:{$color};color:#fff;padding:4px 8px;border-radius:4px;font-size:14px'>{$shiftSlug}</span>";
 
-            $overtimeBadge = "<span class='badge badge-warning' style='font-size:13px;padding:5px 10px'>{$overtimeDuration}</span>";
+            $overtimeBadge = "<span class='badge badge-warning' style='font-size:14px;padding:5px 10px'>{$overtimeDuration}</span>";
 
             $data[] = [
                 'date'              => $dateStr,
