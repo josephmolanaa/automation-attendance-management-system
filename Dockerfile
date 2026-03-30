@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     && rm -rf /var/lib/apt/lists/*
 
-RUN docker-php-ext-install pdo pdo_mysql bcmath ctype fileinfo json mbstring tokenizer xml
+RUN docker-php-ext-install pdo pdo_mysql mbstring
 
 RUN a2enmod rewrite
 
