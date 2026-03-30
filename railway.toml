@@ -1,0 +1,8 @@
+[build]
+builder = "heroku"
+
+[build.buildpacks]
+heroku = "https://github.com/heroku/heroku-buildpack-php.git"
+
+[start]
+cmd = "vendor/bin/heroku-php-apache2 public/"
