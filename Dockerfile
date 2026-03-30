@@ -1,71 +1,33 @@
-FROM php:8.2-apache
+FROM php:8.3-apache
 
-# Install system dependencies
+WORKDIR /app
+
 RUN apt-get update && apt-get install -y \
     git \
     curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    libzip-dev \
     zip \
     unzip \
-    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions required by Laravel and its dependencies
-RUN docker-php-ext-install \
-    pdo_mysql \
-    mbstring \
-    exif \
-    pcntl \
-    bcmath \
-    gd \
-    zip \
-    xml \
-    ctype \
-    fileinfo \
-    opcache \
-    sockets
+RUN docker-php-ext-install pdo pdo_mysql mbstring
 
-# Enable Apache mod_rewrite for Laravel routing
 RUN a2enmod rewrite
 
-# Configure Apache document root to Laravel's public/ directory
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
-
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
-    && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
-
-# Allow .htaccess overrides (required for Laravel's URL routing)
-RUN sed -i 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
-
-# Install Composer
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-
-WORKDIR /var/www/html
-
-# Copy dependency manifests first to leverage Docker layer caching
-COPY composer.json composer.lock ./
-
-# Install Composer dependencies (no dev, optimised autoloader)
-RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interaction
-
-# Copy the rest of the application
 COPY . .
 
-# Run post-install scripts now that the full app is present
-RUN composer run-script post-autoload-dump --no-interaction || true
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Create the .env file from the example if one is not already present
-RUN [ -f .env ] || cp .env.example .env
+RUN composer install --no-dev --optimize-autoloader
 
-# Generate application key if not already set
-RUN php artisan key:generate --no-interaction || true
+RUN mkdir -p storage/logs bootstrap/cache && \
+    chmod -R 755 storage bootstrap/cache
 
-# Set correct ownership and permissions for storage and cache
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache
+COPY .env.example .env
+
+RUN php artisan key:generate
+
+RUN sed -i 's|/var/www/html|/app/public|g' /etc/apache2/sites-available/000-default.conf
 
 EXPOSE 80
+
+CMD php artisan migrate --force; apache2-foreground
