@@ -1,4 +1,6 @@
 node_modules/
+package.json
+package-lock.json
 npm-debug.log
 yarn.lock
 .env
@@ -6,3 +8,4 @@ yarn.lock
 .git
 .gitignore
 README.md
+webpack.mix.js
