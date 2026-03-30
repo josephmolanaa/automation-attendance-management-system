@@ -1,27 +1,16 @@
 <?php
-
-use Iluminate\Database\Migrations\Migration;
+use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
 class MakeAttendanceTimeNullableInChecksTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
     public function up()
     {
-        DB::statement('ALTER TABLE checks MODIFY attendance_time DATETIME NULL');
+        DB::statement('ALTER TABLE checks MODIFY attendance_time TIMESTAMP NULL');
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down()
     {
-        DB::statement('ALTER TABLE checks MODIFY attendance_time DATETIME NOT NULL');
+        DB::statement('ALTER TABLE checks MODIFY attendance_time TIMESTAMP NOT NULL');
     }
 }
