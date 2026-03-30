@@ -45,6 +45,7 @@ RUN php artisan key:generate
 
 RUN sed -i 's|/var/www/html|/app/public|g' /etc/apache2/sites-available/000-default.conf
 
-EXPOSE 80
 RUN a2dismod mpm_event mpm_worker 2>/dev/null; a2enmod mpm_prefork
+EXPOSE 80
+
 CMD php artisan migrate --force && apache2-foreground
