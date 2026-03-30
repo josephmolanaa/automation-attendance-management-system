@@ -1,30 +1,33 @@
-FROM heroku/heroku:22-build as build
+FROM php:8.1-apache
 
 WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    zip \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN docker-php-ext-install pdo pdo_mysql bcmath ctype fileinfo json mbstring tokenizer xml
+
+RUN a2enmod rewrite
+
 COPY . .
 
-RUN curl --silent --show-error --fail --location \
-      --header "accept-encoding: gzip" \
-      -o /tmp/heroku-php-apache2.tar.gz \
-      "https://lang-php-apache2-prod.s3.us-east-1.amazonaws.com/heroku-php-apache2-7.2.tar.gz" && \
-    tar xzf /tmp/heroku-php-apache2.tar.gz -C / && \
-    rm /tmp/heroku-php-apache2.tar.gz
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 RUN composer install --no-dev --optimize-autoloader
 
-# Production image
-FROM heroku/heroku:22
+RUN mkdir -p storage/logs bootstrap/cache && \
+    chmod -R 755 storage bootstrap/cache
 
-WORKDIR /app
-COPY --from=build /app /app
-COPY --from=build /usr/local/bin /usr/local/bin
-COPY --from=build /usr/local/lib /usr/local/lib
+COPY .env.example .env
 
-RUN mkdir -p /app/storage/logs && \
-    mkdir -p /app/bootstrap/cache && \
-    chmod -R 755 /app/storage && \
-    chmod -R 755 /app/bootstrap/cache
+RUN php artisan key:generate
+
+RUN sed -i 's|/var/www/html|/app/public|g' /etc/apache2/sites-available/000-default.conf
 
 EXPOSE 80
 
-CMD vendor/bin/heroku-php-apache2 public/
+CMD php artisan migrate --force; apache2-foreground
