@@ -25,7 +25,6 @@ RUN docker-php-ext-install \
     xml \
     ctype \
     fileinfo \
-    tokenizer \
     opcache \
     sockets
 
