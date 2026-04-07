@@ -28,8 +28,8 @@ RUN pip3 install --no-cache-dir --break-system-packages -r ocr_service/requireme
 
 RUN mkdir -p storage/logs bootstrap/cache && chmod -R 755 storage bootstrap/cache
 
-COPY .env.example .env
-RUN php artisan key:generate
+# .env sudah dikopi dari COPY . . di atas (tidak perlu copy .env.example)
+RUN php artisan key:generate --no-interaction 2>/dev/null || true
 
 RUN sed -i 's|/var/www/html|/app/public|g' /etc/apache2/sites-available/000-default.conf
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf

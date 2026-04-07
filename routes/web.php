@@ -60,6 +60,7 @@ Route::group(['middleware' => ['auth', 'Role'], 'roles' => ['admin']], function 
 
     // Scanlog Upload (OCR PDF → Excel Lembur Harian)
     Route::get('/scanlog-upload', [\App\Http\Controllers\ScanlogUploadController::class, 'index'])->name('scanlog.upload');
+    Route::get('/scanlog-debug', [\App\Http\Controllers\ScanlogUploadController::class, 'debugInfo'])->name('scanlog.debug');
     Route::post('/scanlog-upload', [\App\Http\Controllers\ScanlogUploadController::class, 'upload'])->name('scanlog.process');
     Route::post('/scanlog-export-excel', [\App\Http\Controllers\ScanlogUploadController::class, 'exportExcel'])->name('scanlog.export');
 });
