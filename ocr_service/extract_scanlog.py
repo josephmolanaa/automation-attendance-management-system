@@ -29,199 +29,167 @@ def get_hari(date_obj):
 def normalize_time(time_str):
     if not time_str:
         return None
-    s = time_str.strip()
-    s = re.sub(r'[oOqQ]', '0', s)
-    s = re.sub(r'[lI|]', '1', s)
+    s = str(time_str).strip()
+    # Ganti karakter mirip angka
+    s = re.sub(r'[oOqQD]', '0', s)
+    s = re.sub(r'[lI|i!\]\[\{\}tT]', '1', s)
+    s = re.sub(r'[zZ]', '2', s)
+    s = re.sub(r'[aA\+]', '4', s) # kadang 4 dibaca A atau +
+    s = re.sub(r'[sS]', '5', s)
+    s = re.sub(r'[bB]', '8', s)
+    s = re.sub(r'[gG]', '9', s)
+    s = re.sub(r'[rR]', '7', s)
+    
+    # Hanya sisakan angka
     s = re.sub(r'[^0-9:]', '', s)
-    parts = s.split(':')
-    if len(parts) == 2:
-        s = f"{parts[0].zfill(2)}:{parts[1].zfill(2)}:00"
-    elif len(parts) == 3:
-        s = f"{parts[0].zfill(2)}:{parts[1].zfill(2)}:{parts[2].zfill(2)}"
+    
+    if len(s) == 4 and ':' not in s:  # e.g., 0750
+        s = f"{s[:2]}:{s[2:]}:00"
+    elif len(s) == 6 and ':' not in s: # e.g. 075037
+        s = f"{s[:2]}:{s[2:4]}:{s[4:]}"
+    elif len(s) >= 4:
+        parts = s.split(':')
+        if len(parts) == 2:
+            s = f"{parts[0].zfill(2)}:{parts[1].zfill(2)}:00"
+        elif len(parts) >= 3:
+            s = f"{parts[0].zfill(2)}:{parts[1].zfill(2)}:{parts[2][:2].zfill(2)}"
+        else:
+            return None
     else:
         return None
-    try:
-        datetime.strptime(s, '%H:%M:%S')
-        return s
-    except ValueError:
-        return None
-
-def normalize_date(date_str):
-    if not date_str:
-        return None
-    date_str = date_str.strip().replace(' ', '-')
-    # Handle various separators
-    m = re.match(r'(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})', date_str)
-    if m:
-        d, mo, y = m.group(1), m.group(2), m.group(3)
-        if len(y) == 2:
-            y = '20' + y
-        return f"{y}-{mo.zfill(2)}-{d.zfill(2)}"
-    m = re.match(r'(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})', date_str)
-    if m:
-        return f"{m.group(1)}-{m.group(2).zfill(2)}-{m.group(3).zfill(2)}"
+        
+    if len(s) == 8:
+        try:
+            h, m, sec = map(int, s.split(':'))
+            # Kadang OCR baca 07 jadi 17 atau 70. Batasi agar masuk akal
+            if h >= 24: h = h % 24
+            if m >= 60: m = 59
+            if sec >= 60: sec = 0
+            return f"{h:02d}:{m:02d}:{sec:02d}"
+        except:
+            pass
     return None
 
-def extract_via_pdftotext(pdf_path):
-    """Gunakan pdftotext (poppler) untuk ekstrak teks dari PDF."""
-    try:
-        result = subprocess.run(
-            ['pdftotext', '-layout', pdf_path, '-'],
-            capture_output=True, text=True, timeout=30
-        )
-        text = result.stdout
-        if text and len(text.strip()) > 50:
-            return text
-    except Exception:
-        pass
-    # Coba tanpa -layout
-    try:
-        result = subprocess.run(
-            ['pdftotext', pdf_path, '-'],
-            capture_output=True, text=True, timeout=30
-        )
-        return result.stdout
-    except Exception:
-        pass
-    return ''
-
-def extract_via_tesseract(pdf_path):
-    """Fallback: Gunakan Tesseract OCR."""
-    if not HAS_OCR:
-        return ''
-    try:
-        pages = convert_from_path(pdf_path, dpi=250)
-    except Exception as e:
-        return ''
-
-    full_text = ''
-    for page_img in pages:
-        page_gray = page_img.convert('L')
-        for lang in ['ind+eng', 'eng', 'ind']:
-            try:
-                text = pytesseract.image_to_string(
-                    page_gray,
-                    lang=lang,
-                    config='--psm 6 --oem 3'
-                )
-                full_text += '\n' + text
-                break
-            except Exception:
-                continue
-    return full_text
-
 def parse_text(full_text):
-    """
-    Parse teks Kartu Scanlog ke struktur data.
-    Mendukung berbagai format output OCR/pdftotext.
-    """
     employees = []
     current_emp = None
 
     lines = full_text.split('\n')
-
+    
     for line in lines:
-        raw_line = line
         line = line.strip()
         if not line:
             continue
 
-        # ── Deteksi nama karyawan ─────────────────────────────────────────
-        # Format 1: "Nama    : NASAR SUPRIANTO"
-        # Format 2: "NAMA: NASAR SUPRIANTO"
-        # Format 3: "Nama : NASAR SUPRIANTO"
-        nama_match = re.search(
-            r'(?:^|\s)(?:nama|name)\s*:+\s*(.{3,40}?)(?:\s*$)',
-            line, re.IGNORECASE
-        )
-        if nama_match:
-            nama_raw = nama_match.group(1).strip()
-            # Bersihkan karakter non-nama
-            nama = re.sub(r'[^A-Za-z\s\.\-\']', '', nama_raw).strip().upper()
-            if len(nama) >= 3 and not re.match(r'^(NIP|ID|NO|JABATAN|DEPT)', nama):
-                if current_emp and current_emp['records']:
-                    employees.append(current_emp)
-                elif current_emp and not current_emp['records']:
-                    # Update nama jika belum ada records
-                    current_emp['nama'] = nama
-                    continue
-                current_emp = {'nama': nama, 'nip': '', 'records': []}
+        # Format umum dari OCR CamScanner untuk tabel: 
+        # [Karakter sampah] [NAMA PEGAWAI] [TANGGAL] [JAM1] [JAM2]
+        # Contoh: "20 INasaR SUPRIANTO | — | __|or-04-2026 Jarang [19:07:10"
+        
+        # Ekstrak dengan regex memecah bagian line
+        # Mencari pola tanggal DD-MM-YYYY dulu
+        m = re.search(r'(.*?)\s*(\d{1,2}[-/\.]\d{1,2}[-/\.]\d{2,4})\s*(.*)', line)
+        if m:
+            name_raw = m.group(1).strip()
+            date_raw = m.group(2).strip()
+            times_raw = m.group(3).strip()
+            
+            # ── 1. Ekstrak & Rapihkan Nama ──
+            # Buang angka, simbol aneh di awal nama
+            name_clean = re.sub(r'^[^A-Za-z]+', '', name_raw) 
+            name_clean = re.sub(r'[^A-Za-z\s\.\']', '', name_clean).upper().strip()
+            
+            # Filter kata-kata header
+            if name_clean in ('NIP', 'NAMA', 'JABATAN', 'TANGGAL', 'SCAN', 'PEGAWAI', 'DATA SCANLOG'):
+                continue
+                
+            if len(name_clean) >= 3:
+                # Jika nama cukup valid
+                # Cek apakah ini karyawan baru atau masih yang lama (berdasarkan kemiripan suku kata)
+                if current_emp:
+                    c_parts = set(current_emp['nama'].split())
+                    n_parts = set(name_clean.split())
+                    # Jika ada irisan kata yang panjang (minimal 3 huruf) atau panjang total
+                    has_intersection = any(len(word) > 2 for word in c_parts.intersection(n_parts))
+                    
+                    if not has_intersection and len(name_clean) > 4:
+                        # Nama baru
+                        if current_emp['records']:
+                            employees.append(current_emp)
+                        elif len(current_emp['nama']) < len(name_clean):
+                            # Jika belum ada record, ini mungkin koreksi nama yang lebih lengkap
+                            c_parts = set() # skip
+                        else:
+                            pass # abaikan dan buat yang baru
+                        
+                        if not c_parts.intersection(n_parts):
+                            current_emp = {'nama': name_clean, 'nip': '', 'records': []}
+                else:
+                    current_emp = {'nama': name_clean, 'nip': '', 'records': []}
+                    
+            if not current_emp:
                 continue
 
-        # ── Deteksi NIP ────────────────────────────────────────────────────
-        nip_match = re.search(
-            r'(?:nip|nik|id)\s*:+\s*(\w+)',
-            line, re.IGNORECASE
-        )
-        if nip_match and current_emp is not None:
-            val = nip_match.group(1).strip()
-            if val.lower() not in ('none', 'null', '-', ''):
-                current_emp['nip'] = val
-            continue
-
-        # ── Deteksi baris tanggal + waktu ────────────────────────────────
-        # Format: "31-03-2026  07:50:37  20:04:29"
-        # Format: "31-03-2026 07:50:37"
-        # Format: "31/03/2026 07.50.37 20.04.29"
-        dt_match = re.search(
-            r'(\d{1,2}[\-/\.]\d{1,2}[\-/\.]\d{2,4})'
-            r'\s+'
-            r'(\d{1,2}[:\.\s]\d{2}(?:[:\.\s]\d{2})?)'
-            r'(?:\s+(\d{1,2}[:\.\s]\d{2}(?:[:\.\s]\d{2})?))?',
-            line
-        )
-        if dt_match and current_emp is not None:
-            date_raw  = dt_match.group(1)
-            scan1_raw = dt_match.group(2)
-            scan2_raw = dt_match.group(3)
-
-            # Normalize dot/space separators in times
-            scan1_raw = re.sub(r'[\.\s]', ':', scan1_raw.strip()) if scan1_raw else None
-            scan2_raw = re.sub(r'[\.\s]', ':', scan2_raw.strip()) if scan2_raw else None
-
+            # ── 2. Tanggal ──
             tanggal = normalize_date(date_raw)
-            scan1   = normalize_time(scan1_raw)
-            scan2   = normalize_time(scan2_raw) if scan2_raw else None
+            if not tanggal:
+                continue
 
-            if tanggal and scan1:
-                try:
-                    date_obj = datetime.strptime(tanggal, '%Y-%m-%d')
-                    hari = get_hari(date_obj)
-                except ValueError:
-                    hari = '-'
-
-                existing = next(
-                    (r for r in current_emp['records'] if r['tanggal'] == tanggal),
-                    None
-                )
-                if existing:
-                    if scan2 and not existing['scan2']:
-                        existing['scan2'] = scan2
-                    elif scan1 and not existing['scan2']:
-                        existing['scan2'] = scan1
+            try:
+                date_obj = datetime.strptime(tanggal, '%Y-%m-%d')
+                hari = get_hari(date_obj)
+            except ValueError:
+                hari = '-'
+                
+            # ── 3. Waktu ──
+            # Waktu bisa berada di dalam name_raw (sebelum tanggal) jika format berantakan
+            # atau di times_raw (sesudah tanggal). Kita gabung saja teks yang bukan nama.
+            remains = name_raw.replace(current_emp['nama'], '') + " " + times_raw
+            remains = re.sub(r'[A-Za-z]+', ' ', remains) # Buang sisa huruf (nama bulan dll)
+            
+            # Pecah berdasarkan spasi atau simbol pembatas
+            chunks = re.split(r'[\s\|\[\]\(\)_]+', remains)
+            times = []
+            for c in chunks:
+                if len(c) >= 4: # Minimal 4 karakter untuk waktu
+                    t = normalize_time(c)
+                    if t: times.append(t)
+                    
+            # Tentukan scan 1 dan 2
+            scan1 = None
+            scan2 = None
+            
+            if len(times) == 1:
+                # Tebak apakah ini masuk atau pulang berdasarkan jam
+                h = int(times[0].split(':')[0])
+                if h < 14:
+                    scan1 = times[0]
                 else:
-                    current_emp['records'].append({
-                        'tanggal': tanggal,
-                        'hari':    hari,
-                        'scan1':   scan1,
-                        'scan2':   scan2,
-                    })
-            continue
-
-        # ── Detect standalone time on next line (Scan 2 tanpa tanggal) ────
-        # Beberapa format PDF output waktu di baris terpisah setelah tanggal
-        if current_emp and current_emp['records']:
-            time_only = re.fullmatch(
-                r'(\d{1,2}[:\.\s]\d{2}(?:[:\.\s]\d{2})?)',
-                line.strip()
-            )
-            if time_only:
-                last_rec = current_emp['records'][-1]
-                if not last_rec['scan2']:
-                    last_rec['scan2'] = normalize_time(
-                        re.sub(r'[\.\s]', ':', time_only.group(1))
-                    )
-
+                    scan2 = times[0]
+            elif len(times) >= 2:
+                # Urutkan berdasarkan waktu
+                try:
+                    times.sort(key=lambda t: datetime.strptime(t, '%H:%M:%S'))
+                except:
+                    pass
+                scan1 = times[0]
+                scan2 = times[-1]
+                
+            # Simpan atau update record
+            existing = next((r for r in current_emp['records'] if r['tanggal'] == tanggal), None)
+            if existing:
+                if scan1 and not existing['scan1']: existing['scan1'] = scan1
+                if scan2 and not existing['scan2']: existing['scan2'] = scan2
+                elif scan1 and not existing['scan2'] and scan1 != existing['scan1']: 
+                    existing['scan2'] = scan1
+            else:
+                current_emp['records'].append({
+                    'tanggal': tanggal,
+                    'hari':    hari,
+                    'scan1':   scan1,
+                    'scan2':   scan2,
+                })
+                
+    # Jangan lupa masukkan karyawan terakhir
     if current_emp and current_emp['records']:
         employees.append(current_emp)
 
