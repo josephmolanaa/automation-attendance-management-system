@@ -69,6 +69,11 @@
                                     <i class="fas fa-fingerprint"></i> <span> Biometric Device </span>
                                 </a>
                             </li>
+                            <li class="">
+                                <a href="{{ route('scanlog.upload') }}" class="waves-effect {{ request()->is('scanlog-upload') ? 'mm active' : '' }}">
+                                    <i class="mdi mdi-file-upload-outline"></i> <span> Upload Scanlog PDF </span>
+                                </a>
+                            </li>
 
                         </ul>
 

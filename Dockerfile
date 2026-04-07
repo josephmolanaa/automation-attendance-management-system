@@ -5,6 +5,9 @@ RUN apt-get update && apt-get install -y \
     git curl zip unzip nodejs npm \
     libonig-dev libpng-dev libjpeg-dev libfreetype6-dev \
     libzip-dev libxml2-dev libssl-dev libicu-dev \
+    python3 python3-pip python3-venv \
+    tesseract-ocr tesseract-ocr-ind tesseract-ocr-eng \
+    poppler-utils \
     && rm -rf /var/lib/apt/lists/*
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
@@ -18,6 +21,10 @@ RUN npm install && npm run prod
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 RUN composer install --no-dev --optimize-autoloader
+
+# Install Python dependencies for OCR service
+RUN pip3 install --no-cache-dir --break-system-packages -r ocr_service/requirements.txt || \
+    pip3 install --no-cache-dir -r ocr_service/requirements.txt
 
 RUN mkdir -p storage/logs bootstrap/cache && chmod -R 755 storage bootstrap/cache
 
