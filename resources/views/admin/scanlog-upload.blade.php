@@ -255,6 +255,21 @@
                 <div class="alert alert-danger alert-ocr" id="alertError">
                     <i class="mdi mdi-alert-circle mr-2"></i>
                     <span id="errorMsg"></span>
+                    <div id="errorDebug" style="display:none; margin-top:10px;">
+                        <small><strong>Detail teknis:</strong></small>
+                        <pre id="errorDebugText" style="font-size:11px; max-height:200px; overflow:auto; background:#fff3f3; padding:8px; border-radius:6px; margin-top:4px;"></pre>
+                    </div>
+                </div>
+
+                {{-- Debug OCR Button --}}
+                <div id="debugSection" style="display:none; margin-top:12px; padding:12px; background:#fffbeb; border-radius:10px; border:1px solid #fde68a;">
+                    <div style="font-size:13px; color:#92400e; margin-bottom:8px; font-weight:600;">
+                        <i class="mdi mdi-bug mr-1"></i> Debug: Lihat teks mentah hasil OCR
+                    </div>
+                    <button id="btnDebugOcr" class="btn btn-warning btn-sm">
+                        <i class="mdi mdi-text-search mr-1"></i> Jalankan Debug OCR
+                    </button>
+                    <pre id="debugOcrResult" style="display:none; font-size:11px; max-height:300px; overflow:auto; background:#fefce8; padding:10px; border-radius:6px; margin-top:10px; white-space:pre-wrap;"></pre>
                 </div>
             </div>
         </div>
@@ -393,14 +408,49 @@ $(function() {
                 clearInterval(progTimer);
                 $('#progressSection').hide();
                 var msg = 'Gagal memproses PDF.';
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    msg = xhr.responseJSON.message;
-                } else if (xhr.status === 422) {
-                    msg = 'Validasi gagal. Pastikan file adalah PDF yang valid.';
+                var debugInfo = null;
+
+                if (xhr.responseJSON) {
+                    if (xhr.responseJSON.message) msg = xhr.responseJSON.message;
+                    if (xhr.responseJSON.debug)   debugInfo = JSON.stringify(xhr.responseJSON.debug, null, 2);
+                } else if (xhr.status === 0) {
+                    msg = 'Koneksi timeout atau request dibatalkan. Coba lagi.';
                 } else if (xhr.status === 500) {
-                    msg = 'Server error. Pastikan Tesseract OCR sudah terinstall.';
+                    msg = 'Server error. Cek log Railway.';
                 }
-                showError(msg);
+
+                showError(msg, debugInfo);
+
+                // Tampilkan tombol debug jika ada file
+                if (fileInput.files && fileInput.files[0]) {
+                    $('#debugSection').show();
+                }
+            }
+        });
+    });
+
+    // ── Debug OCR ────────────────────────────────────────────────────────
+    $('#btnDebugOcr').on('click', function() {
+        var $btn = $(this);
+        $btn.prop('disabled', true).text('Memproses...');
+        
+        var formData = new FormData();
+        formData.append('pdf_file', fileInput.files[0]);
+        formData.append('_token', '{{ csrf_token() }}');
+
+        $.ajax({
+            url: '{{ route("scanlog.debug.ocr") }}',
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(res) {
+                $('#debugOcrResult').text(res.raw_text).show();
+                $btn.prop('disabled', false).text('Jalankan Debug OCR');
+            },
+            error: function() {
+                alert('Gagal mengambil data debug.');
+                $btn.prop('disabled', false).text('Jalankan Debug OCR');
             }
         });
     });
@@ -595,13 +645,21 @@ $(function() {
         $('#progressBar').css('width', pct + '%').attr('aria-valuenow', pct);
     }
 
-    function showError(msg) {
+    function showError(msg, debugInfo) {
         $('#errorMsg').text(msg);
+        if (debugInfo) {
+            $('#errorDebugText').text(debugInfo);
+            $('#errorDebug').show();
+        } else {
+            $('#errorDebug').hide();
+        }
         $('#alertError').fadeIn(200);
     }
 
     function hideError() {
         $('#alertError').hide();
+        $('#debugSection').hide();
+        $('#debugOcrResult').hide().text('');
     }
 
     function escapeHtml(str) {

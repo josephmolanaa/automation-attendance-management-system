@@ -42,6 +42,34 @@ class ScanlogUploadController extends Controller
     }
 
     /**
+     * Debug OCR: upload PDF dan kembalikan raw text hasil OCR/pdftotext
+     */
+    public function debugOcr(Request $request)
+    {
+        $request->validate(['pdf_file' => 'required|file|mimes:pdf|max:20480']);
+
+        $fileName = 'debug_' . now()->format('YmdHis') . '.pdf';
+        $pdfPath  = $request->file('pdf_file')->storeAs('scanlog_uploads', $fileName);
+        $fullPath = storage_path('app/' . $pdfPath);
+
+        $pythonScript = base_path('ocr_service/extract_scanlog.py');
+        $pythonBin    = $this->getPythonBin();
+        $escapedPdf   = escapeshellarg($fullPath);
+        $escapedScript = escapeshellarg($pythonScript);
+
+        $command   = "{$pythonBin} {$escapedScript} {$escapedPdf} --debug 2>&1";
+        $rawOutput = shell_exec($command) ?? '';
+
+        // Try to parse JSON from output
+        if (preg_match('/(\{.*\})/s', $rawOutput, $m)) {
+            $data = json_decode($m[1], true);
+            if ($data) return response()->json($data);
+        }
+
+        return response()->json(['raw_output' => substr($rawOutput, 0, 3000)]);
+    }
+
+    /**
      * Proses upload PDF dan jalankan OCR via Python
      */
     public function upload(Request $request)
