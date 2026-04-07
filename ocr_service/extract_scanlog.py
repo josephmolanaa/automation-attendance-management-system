@@ -70,6 +70,22 @@ def normalize_time(time_str):
             pass
     return None
 
+def normalize_date(date_str):
+    if not date_str:
+        return None
+    date_str = date_str.strip().replace(' ', '-')
+    # Handle various separators
+    m = re.match(r'(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})', date_str)
+    if m:
+        d, mo, y = m.group(1), m.group(2), m.group(3)
+        if len(y) == 2:
+            y = '20' + y
+        return f"{y}-{mo.zfill(2)}-{d.zfill(2)}"
+    m = re.match(r'(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})', date_str)
+    if m:
+        return f"{m.group(1)}-{m.group(2).zfill(2)}-{m.group(3).zfill(2)}"
+    return None
+
 def extract_via_pdftotext(pdf_path):
     """Gunakan pdftotext (poppler) untuk ekstrak teks dari PDF.
     Gunakan flag -layout agar menyerupai tabel.
