@@ -136,9 +136,34 @@ def extract_via_tesseract(pdf_path):
                 continue
     return full_text
 
+import difflib
+
+def load_template_names():
+    try:
+        # Load from the root TEMPLATE folder relative to this script
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        tpl_path = os.path.join(base_dir, 'TEMPLATE', '2026 LEMBUR HARIAN PT G2B(REKAP MARET).xlsx')
+        
+        import openpyxl
+        wb = openpyxl.load_workbook(tpl_path, data_only=True)
+        ws = wb['MARET'] # Atau bisa looping semua sheet
+        names = set()
+        for r in ws.iter_rows(min_col=4, max_col=4):
+            val = r[0].value
+            if val and isinstance(val, str):
+                v = val.strip().upper()
+                if len(v) > 3 and v not in ('NAMA', 'TOTAL') and not v.startswith('DATA SCANLOG'):
+                    names.add(v)
+        return list(names)
+    except Exception as e:
+        return []
+
 def parse_text(full_text):
     employees = []
     current_emp = None
+    
+    # Ambil langsung nama-nama karyawan dari template Excel!
+    valid_names = load_template_names()
 
     lines = full_text.split('\n')
     
@@ -149,7 +174,6 @@ def parse_text(full_text):
 
         # Format umum dari OCR CamScanner untuk tabel: 
         # [Karakter sampah] [NAMA PEGAWAI] [TANGGAL] [JAM1] [JAM2]
-        # Contoh: "20 INasaR SUPRIANTO | — | __|or-04-2026 Jarang [19:07:10"
         
         # Ekstrak dengan regex memecah bagian line
         # Mencari pola tanggal DD-MM-YYYY dulu
@@ -169,26 +193,27 @@ def parse_text(full_text):
                 continue
                 
             if len(name_clean) >= 3:
+                # === COCOKKAN NAMA DENGAN DATABASE EXCEL (FUZZY MATCHING) ===
+                if valid_names:
+                    matches = difflib.get_close_matches(name_clean, valid_names, n=1, cutoff=0.55)
+                    if matches:
+                        name_clean = matches[0]
+                    else:
+                        # Jika close match gagal, cek substring
+                        for vn in valid_names:
+                            if name_clean in vn or vn in name_clean:
+                                name_clean = vn
+                                break
+
                 # Jika nama cukup valid
-                # Cek apakah ini karyawan baru atau masih yang lama (berdasarkan kemiripan suku kata)
+                # Cek apakah ini karyawan baru atau masih yang lama
                 if current_emp:
-                    c_parts = set(current_emp['nama'].split())
-                    n_parts = set(name_clean.split())
-                    # Jika ada irisan kata yang panjang (minimal 3 huruf) atau panjang total
-                    has_intersection = any(len(word) > 2 for word in c_parts.intersection(n_parts))
-                    
-                    if not has_intersection and len(name_clean) > 4:
-                        # Nama baru
+                    if current_emp['nama'] != name_clean:
+                        # Nama beda, berarti ini orang baru
                         if current_emp['records']:
                             employees.append(current_emp)
-                        elif len(current_emp['nama']) < len(name_clean):
-                            # Jika belum ada record, ini mungkin koreksi nama yang lebih lengkap
-                            c_parts = set() # skip
-                        else:
-                            pass # abaikan dan buat yang baru
-                        
-                        if not c_parts.intersection(n_parts):
-                            current_emp = {'nama': name_clean, 'nip': '', 'records': []}
+                        # Init yang baru
+                        current_emp = {'nama': name_clean, 'nip': '', 'records': []}
                 else:
                     current_emp = {'nama': name_clean, 'nip': '', 'records': []}
                     
