@@ -70,6 +70,56 @@ def normalize_time(time_str):
             pass
     return None
 
+def extract_via_pdftotext(pdf_path):
+    """Gunakan pdftotext (poppler) untuk ekstrak teks dari PDF.
+    Gunakan flag -layout agar menyerupai tabel.
+    """
+    try:
+        result = subprocess.run(
+            ['pdftotext', '-layout', pdf_path, '-'],
+            capture_output=True, text=True, timeout=30
+        )
+        text = result.stdout
+        if text and len(text.strip()) > 50:
+            return text
+    except Exception:
+        pass
+    # Coba tanpa -layout jika gagal
+    try:
+        result = subprocess.run(
+            ['pdftotext', pdf_path, '-'],
+            capture_output=True, text=True, timeout=30
+        )
+        return result.stdout
+    except Exception:
+        pass
+    return ''
+
+def extract_via_tesseract(pdf_path):
+    """Fallback: Gunakan Tesseract OCR."""
+    if not HAS_OCR:
+        return ''
+    try:
+        pages = convert_from_path(pdf_path, dpi=250)
+    except Exception as e:
+        return ''
+
+    full_text = ''
+    for page_img in pages:
+        page_gray = page_img.convert('L')
+        for lang in ['ind+eng', 'eng', 'ind']:
+            try:
+                text = pytesseract.image_to_string(
+                    page_gray,
+                    lang=lang,
+                    config='--psm 6 --oem 3'
+                )
+                full_text += '\n' + text
+                break
+            except Exception:
+                continue
+    return full_text
+
 def parse_text(full_text):
     employees = []
     current_emp = None
