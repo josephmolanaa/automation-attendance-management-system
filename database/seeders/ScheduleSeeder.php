@@ -69,8 +69,17 @@ class ScheduleSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'id'         => 7,
+                'slug'       => 'SHIFT_2_FRIDAY',
+                'day_type'   => 'friday',          // Jumat malam (overnight ke Sabtu)
+                'time_in'    => '19:00:00',
+                'time_out'   => '01:00:00',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
 
-        $this->command->info('✅ Schedules berhasil diisi! (6 Shift)');
+        $this->command->info('✅ Schedules berhasil diisi! (7 Shift)');
     }
 }
