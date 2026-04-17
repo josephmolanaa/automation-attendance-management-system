@@ -29,9 +29,54 @@ except ImportError:
 try:
     from pdf2image import convert_from_path
     import pytesseract
+
+    # Auto-detect Tesseract binary di Windows jika tidak ada di PATH
+    import platform
+    if platform.system() == 'Windows':
+        import shutil
+        if not shutil.which('tesseract'):
+            win_candidates = [
+                r'C:\Program Files\Tesseract-OCR\tesseract.exe',
+                r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe',
+            ]
+            for p in win_candidates:
+                if os.path.exists(p):
+                    pytesseract.pytesseract.tesseract_cmd = p
+                    break
+
+    # Detect available Tesseract languages
+    try:
+        _langs = pytesseract.get_languages(config='')
+        TESSERACT_LANGS = 'ind+eng' if 'ind' in _langs else 'eng'
+    except Exception:
+        TESSERACT_LANGS = 'ind+eng'  # default, Railway pasti punya ind
+
+    # Auto-detect poppler path di Windows
+    POPPLER_PATH = None
+    if platform.system() == 'Windows':
+        import shutil as _sh
+        if not _sh.which('pdftoppm'):
+            winget_poppler = os.path.expanduser(
+                r'~\AppData\Local\Microsoft\WinGet\Packages'
+            )
+            if os.path.exists(winget_poppler):
+                for d in os.listdir(winget_poppler):
+                    if 'poppler' in d.lower():
+                        candidate = os.path.join(winget_poppler, d)
+                        # Cari Library/bin di dalamnya
+                        for root, dirs, files in os.walk(candidate):
+                            if 'pdftoppm.exe' in files:
+                                POPPLER_PATH = root
+                                break
+                        if POPPLER_PATH:
+                            break
+
     HAS_TESSERACT = True
 except ImportError:
     HAS_TESSERACT = False
+    TESSERACT_LANGS = 'ind+eng'
+    POPPLER_PATH = None
+
 
 # Pre-processing module (opsional — akan fallback jika tidak tersedia)
 try:
@@ -308,14 +353,17 @@ def extract_via_tesseract(pdf_path, debug=False):
 
     Peningkatan dibanding versi sebelumnya:
     - DPI 300 (lebih tinggi dari sebelumnya 250)
+    - Auto-detect Tesseract binary dan poppler di Windows
     - Pre-processing gambar (grayscale, deskew, denoise, binarize)
     - PSM 4 (single-column) dan PSM 6 (block) dicoba keduanya, ambil yang lebih panjang
-    - Whitelist karakter untuk konteks absensi
     """
     if not HAS_TESSERACT:
         return ''
     try:
-        pages = convert_from_path(pdf_path, dpi=300)
+        kwargs = {'dpi': 300}
+        if POPPLER_PATH:
+            kwargs['poppler_path'] = POPPLER_PATH
+        pages = convert_from_path(pdf_path, **kwargs)
     except Exception as e:
         if debug:
             print(f"[DEBUG] convert_from_path gagal: {e}", file=sys.stderr)
@@ -323,6 +371,7 @@ def extract_via_tesseract(pdf_path, debug=False):
 
     if debug:
         print(f"[DEBUG] Pre-process backend: {backend_info()}", file=sys.stderr)
+        print(f"[DEBUG] Tesseract langs: {TESSERACT_LANGS}", file=sys.stderr)
         print(f"[DEBUG] Halaman PDF: {len(pages)}", file=sys.stderr)
 
     full_parts = []
@@ -343,7 +392,8 @@ def extract_via_tesseract(pdf_path, debug=False):
             processed = page_img
 
         best_text = ''
-        for lang in ['ind+eng', 'eng']:
+        # Coba dengan bahasa yang tersedia, fallback ke eng
+        for lang in [TESSERACT_LANGS, 'eng']:
             for cfg in tess_configs:
                 try:
                     text = pytesseract.image_to_string(processed, lang=lang, config=cfg)
@@ -352,7 +402,7 @@ def extract_via_tesseract(pdf_path, debug=False):
                 except Exception:
                     continue
             if best_text:
-                break  # Sukses dengan 'ind+eng', skip fallback 'eng'
+                break  # Berhasil, tidak perlu fallback
 
         if debug:
             print(f"[DEBUG] Page {page_num+1}: {len(best_text)} chars extracted", file=sys.stderr)
