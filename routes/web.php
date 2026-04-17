@@ -45,10 +45,11 @@ Route::group(['middleware' => ['auth', 'Role'], 'roles' => ['admin']], function 
 
     // Holiday Overrides
     Route::prefix('holiday-overrides')->group(function () {
-        Route::get('/month',     [App\Http\Controllers\HolidayOverrideController::class, 'getMonthData']);
-        Route::get('/date-info', [App\Http\Controllers\HolidayOverrideController::class, 'getDateInfo']);
-        Route::post('/',         [App\Http\Controllers\HolidayOverrideController::class, 'store']);
-        Route::delete('/',       [App\Http\Controllers\HolidayOverrideController::class, 'destroy']);
+        Route::get('/month',       [App\Http\Controllers\HolidayOverrideController::class, 'getMonthData']);
+        Route::get('/date-info',   [App\Http\Controllers\HolidayOverrideController::class, 'getDateInfo']);
+        Route::get('/clear-cache', [App\Http\Controllers\HolidayOverrideController::class, 'clearCache']);
+        Route::post('/',           [App\Http\Controllers\HolidayOverrideController::class, 'store']);
+        Route::delete('/',         [App\Http\Controllers\HolidayOverrideController::class, 'destroy']);
     });
 
     // Sheet Report (AJAX DataTable + Export)

@@ -72,6 +72,19 @@ class AttendanceController extends Controller
             if ($override && $override->schedule_id) {
                 $matchedSchedule = Schedule::find($override->schedule_id);
             } else {
+                // ── Early morning (00:00-06:59) pada hari kerja biasa ──────────────
+                // Kemungkinan besar ini departure dari SHIFT_2 malam sebelumnya.
+                // SHIFT_1_WEEKDAY mulai jam 08:00 — tidak masuk akal jika scan jam 05:xx.
+                if ($scanHour !== null && $scanHour < 7 && ($isWeekday || $isFriday)) {
+                    $nightSlug = $isFriday ? 'SHIFT_2_FRIDAY' : 'SHIFT_2_WEEKDAY';
+                    $nightSched = $allSchedules->where('slug', $nightSlug)->first();
+                    if ($nightSched) {
+                        $matchedSchedule = $nightSched;
+                    }
+                }
+
+                // ── Deteksi normal berdasarkan jam masuk ──────────────────────────
+                if (!$matchedSchedule) {
                 foreach ($allSchedules as $schedule) {
                     $sDayType = $schedule->day_type ?? 'weekday';
                     $dayMatch = match($sDayType) {
@@ -105,6 +118,7 @@ class AttendanceController extends Controller
                    } else {
                     $matchedSchedule = $allSchedules->where('day_type', $dayType)->first();
                 }
+            }
             }
         }
 

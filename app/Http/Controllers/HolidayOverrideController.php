@@ -46,7 +46,7 @@ class HolidayOverrideController extends Controller
     {
         $request->validate([
             'date'          => 'required|date',
-            'override_type' => 'required|in:weekday,saturday,holiday',
+            'override_type' => 'required|in:weekday,friday,saturday,holiday',
             'schedule_id'   => 'nullable|exists:schedules,id',
             'note'          => 'nullable|string|max:255',
         ]);
@@ -109,6 +109,23 @@ class HolidayOverrideController extends Controller
         return response()->json([
             'holidays'  => $holidays,
             'overrides' => $overrides,
+        ]);
+    }
+
+    /**
+     * Clear cache holiday untuk bulan tertentu.
+     * Berguna ketika API mengembalikan data libur yang salah.
+     */
+    public function clearCache(Request $request)
+    {
+        $year  = (int) ($request->year  ?? now()->year);
+        $month = (int) ($request->month ?? now()->month);
+
+        HolidayService::clearCache($year, $month);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Cache libur {$year}-" . str_pad($month, 2, '0', STR_PAD_LEFT) . " berhasil dihapus. Data akan di-refresh dari API.",
         ]);
     }
 }
