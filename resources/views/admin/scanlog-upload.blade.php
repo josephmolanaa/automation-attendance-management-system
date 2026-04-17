@@ -2,825 +2,698 @@
 
 @section('css')
 <style>
-/* ── Upload Zone ─────────────────────────────────────────── */
-.upload-zone {
-    border: 2.5px dashed #4472C4;
-    border-radius: 16px;
-    background: linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 100%);
-    padding: 60px 30px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
+/* ══ Base ═══════════════════════════════════════════════════════════════ */
+.import-page { max-width: 1100px; margin: 0 auto; }
+
+/* ══ Step Pills ══════════════════════════════════════════════════════════ */
+.step-bar {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 28px;
 }
-.upload-zone:hover, .upload-zone.dragover {
-    border-color: #2856c8;
-    background: linear-gradient(135deg, #e0eaff 0%, #d2e3fc 100%);
-    transform: scale(1.01);
-    box-shadow: 0 8px 30px rgba(68,114,196,0.18);
-}
-.upload-zone .upload-icon {
-    font-size: 64px;
-    color: #4472C4;
-    margin-bottom: 16px;
-    display: block;
-}
-.upload-zone .upload-title {
-    font-size: 20px;
+.step-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-size: 13px;
     font-weight: 700;
-    color: #1a3a7a;
-    margin-bottom: 8px;
+    color: #94a3b8;
+    background: #f1f5f9;
+    border: 2px solid transparent;
+    transition: all 0.3s;
+    flex-shrink: 0;
 }
-.upload-zone .upload-subtitle {
-    font-size: 14px;
-    color: #6b7c9e;
-}
-.upload-zone .file-name-badge {
-    display: inline-block;
-    background: #4472C4;
+.step-pill .step-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #cbd5e1;
     color: #fff;
-    border-radius: 20px;
-    padding: 6px 18px;
-    font-size: 13px;
-    font-weight: 600;
-    margin-top: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800;
+    flex-shrink: 0;
 }
-#pdf_file { display: none; }
+.step-pill.active {
+    background: #eff6ff;
+    border-color: #3b82f6;
+    color: #1e40af;
+}
+.step-pill.active .step-num { background: #3b82f6; }
+.step-pill.done {
+    background: #f0fdf4;
+    border-color: #22c55e;
+    color: #15803d;
+}
+.step-pill.done .step-num { background: #22c55e; }
+.step-connector {
+    flex: 1;
+    height: 2px;
+    background: #e2e8f0;
+    margin: 0 8px;
+    min-width: 20px;
+}
+.step-connector.done { background: #22c55e; }
 
-/* ── Config Bar ─────────────────────────────────────────── */
-.config-bar {
+/* ══ Card ════════════════════════════════════════════════════════════════ */
+.import-card {
     background: #fff;
-    border-radius: 12px;
-    padding: 20px 24px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-    margin-top: 20px;
-}
-
-/* ── Progress ───────────────────────────────────────────── */
-#progressSection { display: none; }
-.progress-lbl {
-    font-size: 13px;
-    font-weight: 600;
-    color: #4472C4;
-    margin-bottom: 6px;
-}
-#progressBar {
-    height: 10px;
-    border-radius: 10px;
-    transition: width 0.4s;
-}
-
-/* ── Preview Table ──────────────────────────────────────── */
-#previewSection { display: none; margin-top: 24px; }
-.preview-card {
-    background: #fff;
-    border-radius: 14px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border-radius: 16px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+    margin-bottom: 20px;
     overflow: hidden;
 }
-.preview-header {
-    background: linear-gradient(135deg, #4472C4, #2856c8);
+.import-card-header {
+    padding: 18px 24px;
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid #f1f5f9;
+}
+.import-card-body { padding: 24px; }
+
+/* ══ Template Download Bar ═══════════════════════════════════════════════ */
+.template-bar {
+    background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+    border: 1.5px dashed #93c5fd;
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+.template-bar .tip { font-size: 13px; color: #1e40af; font-weight: 600; }
+.template-bar .tip small { display: block; font-weight: 400; color: #475569; margin-top: 2px; }
+.btn-template {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    transition: all 0.2s;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+.btn-template:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59,130,246,0.35); color: #fff; text-decoration: none; }
+
+/* ══ Upload Zone ═════════════════════════════════════════════════════════ */
+.upload-zone {
+    border: 2.5px dashed #93c5fd;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #f8faff 0%, #f0f9ff 100%);
+    padding: 48px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+}
+.upload-zone:hover, .upload-zone.dragover {
+    border-color: #3b82f6;
+    background: linear-gradient(135deg, #eff6ff 0%, #e0f2fe 100%);
+    transform: scale(1.01);
+    box-shadow: 0 6px 24px rgba(59,130,246,0.15);
+}
+.upload-zone .upload-icon { font-size: 52px; color: #3b82f6; display: block; margin-bottom: 12px; }
+.upload-zone .upload-title { font-size: 18px; font-weight: 700; color: #1e3a8a; margin-bottom: 6px; }
+.upload-zone .upload-sub   { font-size: 13px; color: #64748b; }
+.file-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #3b82f6; color: #fff;
+    border-radius: 20px; padding: 6px 16px;
+    font-size: 13px; font-weight: 600; margin-top: 14px;
+}
+#csv_file { display: none; }
+
+/* ══ CSV Format Info ═════════════════════════════════════════════════════ */
+.format-info {
+    background: #fefce8;
+    border: 1px solid #fde047;
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-top: 16px;
+    font-size: 12px;
+    color: #713f12;
+}
+.format-info code {
+    background: #fef9c3;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* ══ Progress ════════════════════════════════════════════════════════════ */
+#progressSection { display: none; margin-top: 16px; }
+.progress-lbl { font-size: 13px; font-weight: 600; color: #3b82f6; margin-bottom: 6px; }
+#progressBar { height: 10px; border-radius: 10px; transition: width 0.4s; }
+
+/* ══ Alert ═══════════════════════════════════════════════════════════════ */
+.alrt { display: none; border-radius: 10px; padding: 14px 18px; font-size: 13px; margin-top: 16px; }
+
+/* ══ Preview Table ═══════════════════════════════════════════════════════ */
+#previewSection { display: none; }
+.preview-header-bar {
+    background: linear-gradient(135deg, #1e40af, #1d4ed8);
     color: #fff;
     padding: 16px 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-}
-.preview-header h5 { margin: 0; font-weight: 700; font-size: 16px; }
-.employee-block {
-    border-bottom: 1px solid #e8edf5;
-    padding: 20px 24px;
-}
-.employee-block:last-child { border-bottom: none; }
-.employee-name {
-    font-size: 15px;
-    font-weight: 700;
-    color: #1a3a7a;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
+    flex-wrap: wrap;
     gap: 10px;
 }
-.emp-badge {
-    background: #4472C4;
-    color: #fff;
-    border-radius: 50%;
-    width: 28px; height: 28px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 700;
-    flex-shrink: 0;
-}
-.scan-table { width: 100%; font-size: 13px; border-collapse: collapse; }
-.scan-table th {
-    background: #f0f4ff;
-    color: #4472C4;
-    font-weight: 700;
-    padding: 8px 12px;
-    text-align: center;
-    border-bottom: 2px solid #d0ddf0;
-}
-.scan-table td {
-    padding: 7px 12px;
-    text-align: center;
-    border-bottom: 1px solid #f0f4ff;
-    color: #333;
-}
-.scan-table tr:hover td { background: #f8f9ff; }
-.lembur-normal { background: #e3f2fd; color: #1565c0; border-radius: 8px; padding: 3px 10px; font-weight: 600; }
-.lembur-double { background: #fff3e0; color: #e65100; border-radius: 8px; padding: 3px 10px; font-weight: 600; }
-.lembur-minggu { background: #fce4ec; color: #c62828; border-radius: 8px; padding: 3px 10px; font-weight: 600; }
-.no-scan { color: #bbb; font-style: italic; font-size: 12px; }
-.row-minggu td { background: #fff0f3 !important; color: #c62828 !important; font-weight: 600; }
+.preview-header-bar h5 { margin: 0; font-size: 15px; font-weight: 700; }
+.preview-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
-/* ── Export Button ──────────────────────────────────────── */
-#btnExportExcel {
-    background: linear-gradient(135deg, #217346, #1a5c38);
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    padding: 12px 22px;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.2s;
-    box-shadow: 0 4px 14px rgba(33,115,70,0.3);
-}
-#btnExportExcel:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(33,115,70,0.4); }
-#btnExportExcel:disabled { background: #aaa; transform: none; box-shadow: none; cursor: not-allowed; }
-
-/* ── Import DB Button ────────────────────────────────────── */
-#btnImportDb {
+.btn-import {
     background: linear-gradient(135deg, #7c3aed, #5b21b6);
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    padding: 12px 22px;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.2s;
-    box-shadow: 0 4px 14px rgba(124,58,237,0.35);
+    color: #fff; border: none; border-radius: 8px;
+    padding: 10px 20px; font-size: 13px; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; gap: 7px;
+    transition: all 0.2s; box-shadow: 0 4px 14px rgba(124,58,237,0.3);
 }
-#btnImportDb:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(124,58,237,0.45); }
-#btnImportDb:disabled { background: #aaa; transform: none; box-shadow: none; cursor: not-allowed; }
+.btn-import:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(124,58,237,0.4); }
+.btn-import:disabled { background: #94a3b8; transform: none; box-shadow: none; cursor: not-allowed; }
 
-/* ── DB Status Badge ─────────────────────────────────────── */
-.badge-db-found    { background:#d1fae5; color:#065f46; border-radius:6px; padding:3px 10px; font-size:11px; font-weight:700; }
-.badge-db-notfound { background:#fee2e2; color:#991b1b; border-radius:6px; padding:3px 10px; font-size:11px; font-weight:700; }
-
-/* ── Import Result Panel ─────────────────────────────────── */
-#importResultSection {
-    display: none;
-    margin-top: 20px;
-    border-radius: 14px;
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-}
-.import-result-header {
-    background: linear-gradient(135deg, #7c3aed, #5b21b6);
-    color: #fff;
-    padding: 16px 24px;
-    font-weight: 700;
-    font-size: 15px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-.import-summary-bar {
+.info-strip {
     background: #faf5ff;
-    padding: 16px 24px;
-    display: flex;
-    gap: 24px;
     border-bottom: 1px solid #ede9fe;
+    padding: 10px 24px;
+    font-size: 12px;
+    color: #6d28d9;
+    display: none;
+}
+
+/* ══ Employee Block ══════════════════════════════════════════════════════ */
+.emp-block {
+    border-bottom: 1px solid #f1f5f9;
+    padding: 18px 24px;
+}
+.emp-block:last-child { border-bottom: none; }
+.emp-name-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
     flex-wrap: wrap;
 }
-.import-stat {
-    text-align: center;
-    min-width: 80px;
+.emp-num {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: #3b82f6;
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800;
+    flex-shrink: 0;
 }
-.import-stat .num  { font-size: 26px; font-weight: 800; }
-.import-stat .lbl  { font-size: 11px; color: #6b7280; font-weight: 600; margin-top: 2px; }
-.import-stat.ins   .num { color: #059669; }
-.import-stat.upd   .num { color: #d97706; }
-.import-stat.skp   .num { color: #6b7280; }
-.import-stat.notf  .num { color: #dc2626; }
-.import-detail-row {
-    padding: 10px 24px;
-    border-bottom: 1px solid #f3f4f6;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    font-size: 13px;
-    background: #fff;
-}
-.import-detail-row:last-child { border-bottom: none; }
+.emp-num.notfound { background: #ef4444; }
+.emp-title { font-size: 15px; font-weight: 700; color: #1e3a8a; }
+.badge-found    { background: #dcfce7; color: #166534; border-radius: 6px; padding: 3px 10px; font-size: 11px; font-weight: 700; }
+.badge-notfound { background: #fee2e2; color: #991b1b; border-radius: 6px; padding: 3px 10px; font-size: 11px; font-weight: 700; }
 
-/* ── Alert ──────────────────────────────────────────────── */
-.alert-ocr {
-    border-radius: 10px;
-    padding: 14px 18px;
-    font-size: 14px;
-    margin-top: 16px;
-    display: none;
+.rec-table { width: 100%; font-size: 13px; border-collapse: collapse; margin-top: 4px; }
+.rec-table th {
+    background: #f8fafc;
+    color: #3b82f6;
+    font-weight: 700;
+    padding: 7px 12px;
+    text-align: center;
+    border-bottom: 2px solid #e2e8f0;
 }
+.rec-table td {
+    padding: 6px 12px;
+    text-align: center;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+}
+.rec-table tr:hover td { background: #f8fafc; }
+.rec-table .no-val { color: #cbd5e1; font-style: italic; }
+.day-minggu td { background: #fff1f2 !important; color: #be123c !important; font-weight: 600; }
+
+/* ══ Import Result ═══════════════════════════════════════════════════════ */
+#importResultSection { display: none; }
+.result-header {
+    background: linear-gradient(135deg, #7c3aed, #5b21b6);
+    color: #fff; padding: 16px 24px;
+    font-weight: 700; font-size: 15px;
+    display: flex; align-items: center; gap: 10px;
+}
+.result-stat-bar {
+    background: #faf5ff;
+    padding: 16px 24px;
+    display: flex; gap: 32px; flex-wrap: wrap;
+    border-bottom: 1px solid #ede9fe;
+}
+.r-stat { text-align: center; min-width: 80px; }
+.r-stat .rn { font-size: 28px; font-weight: 800; }
+.r-stat .rl { font-size: 11px; font-weight: 600; color: #7c3aed; margin-top: 2px; letter-spacing: 0.5px; }
+.r-stat.ins .rn { color: #059669; }
+.r-stat.upd .rn { color: #d97706; }
+.r-stat.skp .rn { color: #94a3b8; }
+.r-stat.notf .rn { color: #dc2626; }
+
+.r-row {
+    padding: 11px 24px;
+    border-bottom: 1px solid #f3f4f6;
+    display: flex; align-items: center; gap: 14px;
+    background: #fff; font-size: 13px;
+}
+.r-row:last-child { border-bottom: none; }
 </style>
 @endsection
 
 @section('breadcrumb')
 <div class="col-sm-6">
-    <h4 class="page-title text-left">Upload Scanlog PDF</h4>
+    <h4 class="page-title text-left">Import Data Absensi</h4>
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="javascript:void(0);">Home</a></li>
-        <li class="breadcrumb-item active">Upload Scanlog → Export Lembur Harian</li>
+        <li class="breadcrumb-item active">Import Absensi via CSV</li>
     </ol>
 </div>
 @endsection
 
 @section('content')
-<div class="row">
-    <div class="col-12">
+<div class="import-page">
 
-        {{-- ── STEP 1: Upload ─────────────────────────────────────────── --}}
-        <div class="card" style="border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,0.08);">
-            <div class="card-body" style="padding:28px;">
-                <h5 style="color:#1a3a7a; font-weight:700; margin-bottom:6px;">
-                    <i class="mdi mdi-file-upload-outline mr-2" style="color:#4472C4;"></i>
-                    Upload Kartu Scanlog (PDF CamScanner)
-                </h5>
-                <p style="color:#6b7c9e; font-size:13px; margin-bottom:20px;">
-                    Upload file PDF hasil CamScanner berisi data absensi karyawan. Sistem akan otomatis membaca,
-                    menghitung lembur, dan menghasilkan file Excel format <strong>Lembur Harian</strong>.
-                </p>
+    {{-- ── Step Indicator ─────────────────────────────────────────────── --}}
+    <div class="step-bar">
+        <div class="step-pill active" id="sp1">
+            <div class="step-num">1</div>
+            <span>Upload CSV</span>
+        </div>
+        <div class="step-connector" id="sc1"></div>
+        <div class="step-pill" id="sp2">
+            <div class="step-num">2</div>
+            <span>Review Preview</span>
+        </div>
+        <div class="step-connector" id="sc2"></div>
+        <div class="step-pill" id="sp3">
+            <div class="step-num">3</div>
+            <span>Konfirmasi Import</span>
+        </div>
+    </div>
 
-                {{-- Drag & Drop Zone --}}
-                <div class="upload-zone" id="uploadZone">
-                    <i class="mdi mdi-file-pdf-box upload-icon"></i>
-                    <div class="upload-title">Drag & Drop PDF di sini</div>
-                    <div class="upload-subtitle">atau klik untuk memilih file</div>
-                    <div id="fileNameDisplay"></div>
-                    <input type="file" id="pdf_file" accept=".pdf">
+    {{-- ── STEP 1: Upload ──────────────────────────────────────────────── --}}
+    <div class="import-card" id="stepUploadCard">
+        <div class="import-card-header" style="background:linear-gradient(135deg,#eff6ff,#f0f9ff);">
+            <i class="mdi mdi-file-upload-outline" style="font-size:22px; color:#3b82f6;"></i>
+            <span style="color:#1e3a8a;">Upload File CSV Absensi</span>
+        </div>
+        <div class="import-card-body">
+
+            {{-- Template Download --}}
+            <div class="template-bar">
+                <div class="tip">
+                    <i class="mdi mdi-information-outline mr-1"></i>Butuh template CSV?
+                    <small>Download template, isi data absensi, lalu upload kembali.</small>
                 </div>
+                <a href="{{ route('scanlog.template') }}" class="btn-template" id="btnDownloadTemplate">
+                    <i class="mdi mdi-download"></i>
+                    Download Template CSV
+                </a>
+            </div>
 
-                {{-- Config: Bulan & Tahun --}}
-                <div class="config-bar">
-                    <div class="row align-items-end">
-                        <div class="col-md-3 col-6">
-                            <label style="font-weight:600; font-size:13px; color:#4472C4;">Bulan Laporan</label>
-                            <select id="selectBulan" class="form-control" style="border-radius:8px;">
-                                <option value="1">Januari</option>
-                                <option value="2">Februari</option>
-                                <option value="3">Maret</option>
-                                <option value="4">April</option>
-                                <option value="5">Mei</option>
-                                <option value="6">Juni</option>
-                                <option value="7">Juli</option>
-                                <option value="8">Agustus</option>
-                                <option value="9">September</option>
-                                <option value="10">Oktober</option>
-                                <option value="11">November</option>
-                                <option value="12">Desember</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2 col-6">
-                            <label style="font-weight:600; font-size:13px; color:#4472C4;">Tahun</label>
-                            <select id="selectTahun" class="form-control" style="border-radius:8px;">
-                                @foreach(range(date('Y'), 2024) as $year)
-                                    <option value="{{ $year }}" {{ $year == date('Y') ? 'selected' : '' }}>{{ $year }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-3 col-12 mt-2 mt-md-0">
-                            <button id="btnUpload" class="btn btn-primary btn-block"
-                                style="border-radius:10px; font-weight:700; height:38px; font-size:14px;" disabled>
-                                <i class="mdi mdi-magnify-scan mr-1"></i> Proses OCR
-                            </button>
-                        </div>
-                    </div>
+            {{-- Upload Zone --}}
+            <div class="upload-zone" id="uploadZone">
+                <i class="mdi mdi-file-delimited upload-icon"></i>
+                <div class="upload-title">Drag & Drop file CSV di sini</div>
+                <div class="upload-sub">atau klik untuk memilih file · Format: CSV / TXT, max 5MB</div>
+                <div id="fileNameDisplay"></div>
+                <input type="file" id="csv_file" accept=".csv,.txt">
+            </div>
+
+            {{-- Format Info --}}
+            <div class="format-info mt-3">
+                <strong>📋 Format CSV yang diterima:</strong><br>
+                Kolom (separator <code>;</code> atau <code>,</code>): <code>nama</code> · <code>tanggal</code> · <code>scan_masuk</code> · <code>scan_keluar</code><br>
+                Format tanggal: <code>2026-04-01</code> atau <code>01/04/2026</code> · Format waktu: <code>07:30:00</code> atau <code>07:30</code><br>
+                Kolom <code>scan_keluar</code> boleh kosong jika karyawan belum pulang.
+            </div>
+
+            {{-- Progress --}}
+            <div id="progressSection">
+                <div class="progress-lbl" id="progressLabel">Membaca dan memvalidasi CSV...</div>
+                <div class="progress" style="border-radius:10px; height:10px;">
+                    <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                        role="progressbar" style="width:0%"></div>
                 </div>
+            </div>
 
-                {{-- Progress Bar --}}
-                <div id="progressSection" style="margin-top:18px;">
-                    <div class="progress-lbl" id="progressLabel">Mengkonversi PDF ke gambar...</div>
-                    <div class="progress" style="border-radius:10px; height:10px;">
-                        <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
-                            role="progressbar" style="width:0%"></div>
-                    </div>
-                </div>
+            {{-- Error --}}
+            <div class="alrt alert-danger" id="alertError">
+                <i class="mdi mdi-alert-circle mr-2"></i>
+                <span id="errorMsg"></span>
+            </div>
 
-                {{-- Alert error --}}
-                <div class="alert alert-danger alert-ocr" id="alertError">
-                    <i class="mdi mdi-alert-circle mr-2"></i>
-                    <span id="errorMsg"></span>
-                    <div id="errorDebug" style="display:none; margin-top:10px;">
-                        <small><strong>Detail teknis:</strong></small>
-                        <pre id="errorDebugText" style="font-size:11px; max-height:200px; overflow:auto; background:#fff3f3; padding:8px; border-radius:6px; margin-top:4px;"></pre>
-                    </div>
-                </div>
+            {{-- Submit --}}
+            <div class="mt-3 d-flex align-items-center gap-2" style="gap:12px;">
+                <button id="btnParse" class="btn btn-primary" style="border-radius:9px; font-weight:700; padding:10px 28px;" disabled>
+                    <i class="mdi mdi-table-search mr-1"></i> Baca & Preview CSV
+                </button>
+                <span id="btnParseHint" style="font-size:12px; color:#94a3b8;">Pilih file CSV terlebih dahulu</span>
+            </div>
 
-                {{-- Debug OCR Button --}}
-                <div id="debugSection" style="display:none; margin-top:12px; padding:12px; background:#fffbeb; border-radius:10px; border:1px solid #fde68a;">
-                    <div style="font-size:13px; color:#92400e; margin-bottom:8px; font-weight:600;">
-                        <i class="mdi mdi-bug mr-1"></i> Debug: Lihat teks mentah hasil OCR
-                    </div>
-                    <button id="btnDebugOcr" class="btn btn-warning btn-sm">
-                        <i class="mdi mdi-text-search mr-1"></i> Jalankan Debug OCR
+        </div>
+    </div>
+
+    {{-- ── STEP 2: Preview ─────────────────────────────────────────────── --}}
+    <div id="previewSection">
+        <div class="import-card">
+            <div class="preview-header-bar">
+                <h5><i class="mdi mdi-table-eye mr-2"></i>Preview Data CSV</h5>
+                <div class="preview-actions">
+                    <span id="previewSummary" class="badge badge-light" style="font-size:13px; color:#1e3a8a; padding:6px 14px;"></span>
+                    <button class="btn-import" id="btnImport" disabled>
+                        <i class="mdi mdi-database-import" style="font-size:17px;"></i>
+                        Import ke Database
                     </button>
-                    <pre id="debugOcrResult" style="display:none; font-size:11px; max-height:300px; overflow:auto; background:#fefce8; padding:10px; border-radius:6px; margin-top:10px; white-space:pre-wrap;"></pre>
                 </div>
             </div>
-        </div>
-
-        {{-- ── STEP 2: Preview & Action Buttons ──────────────────────── --}}
-        <div id="previewSection">
-            <div class="preview-card">
-                <div class="preview-header">
-                    <h5><i class="mdi mdi-table-eye mr-2"></i>Preview Hasil OCR</h5>
-                    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-                        <span id="previewSummary" class="badge badge-light" style="font-size:13px; color:#1a3a7a; padding:6px 14px;"></span>
-                        <button id="btnImportDb" disabled>
-                            <i class="mdi mdi-database-import" style="font-size:18px;"></i>
-                            Import ke Database
-                        </button>
-                        <button id="btnExportExcel" disabled>
-                            <i class="mdi mdi-microsoft-excel" style="font-size:18px;"></i>
-                            Download Excel
-                        </button>
-                    </div>
-                </div>
-                {{-- Info bar --}}
-                <div id="previewInfoBar" style="display:none; background:#faf5ff; border-bottom:1px solid #ede9fe; padding:10px 24px; font-size:13px; color:#5b21b6;">
-                    <i class="mdi mdi-information-outline mr-1"></i>
-                    <span id="previewInfoText"></span>
-                </div>
-                <div id="previewBody" style="padding: 0;"></div>
+            <div class="info-strip" id="infoStrip">
+                <i class="mdi mdi-information-outline mr-1"></i>
+                <span id="infoStripText"></span>
             </div>
+            <div id="previewBody"></div>
         </div>
+    </div>
 
-        {{-- ── STEP 3: Import Result Panel ─────────────────────────────── --}}
-        <div id="importResultSection">
-            <div class="import-result-header">
+    {{-- ── STEP 3: Import Result ────────────────────────────────────────── --}}
+    <div id="importResultSection">
+        <div class="import-card">
+            <div class="result-header">
                 <i class="mdi mdi-database-check" style="font-size:22px;"></i>
                 Hasil Import ke Database
             </div>
-            <div class="import-summary-bar">
-                <div class="import-stat ins">
-                    <div class="num" id="impStatInserted">0</div>
-                    <div class="lbl">DITAMBAHKAN</div>
+            <div class="result-stat-bar">
+                <div class="r-stat ins">
+                    <div class="rn" id="rIns">0</div>
+                    <div class="rl">DITAMBAHKAN</div>
                 </div>
-                <div class="import-stat upd">
-                    <div class="num" id="impStatUpdated">0</div>
-                    <div class="lbl">DIPERBARUI</div>
+                <div class="r-stat upd">
+                    <div class="rn" id="rUpd">0</div>
+                    <div class="rl">DIPERBARUI</div>
                 </div>
-                <div class="import-stat skp">
-                    <div class="num" id="impStatSkipped">0</div>
-                    <div class="lbl">DILEWATI</div>
+                <div class="r-stat skp">
+                    <div class="rn" id="rSkp">0</div>
+                    <div class="rl">DILEWATI</div>
                 </div>
-                <div class="import-stat notf">
-                    <div class="num" id="impStatNotFound">0</div>
-                    <div class="lbl">TIDAK DITEMUKAN</div>
+                <div class="r-stat notf">
+                    <div class="rn" id="rNotf">0</div>
+                    <div class="rl">TIDAK DITEMUKAN</div>
                 </div>
             </div>
-            <div id="importResultBody" style="background:#fff;"></div>
+            <div id="resultBody" style="background:#fff;"></div>
+            {{-- Re-import --}}
+            <div style="padding:16px 24px; border-top:1px solid #f1f5f9; background:#f8fafc;">
+                <button id="btnNewImport" class="btn btn-outline-primary btn-sm" style="border-radius:8px; font-weight:700;">
+                    <i class="mdi mdi-upload mr-1"></i> Upload CSV Lain
+                </button>
+            </div>
         </div>
-
     </div>
+
 </div>
 @endsection
 
 @section('script-bottom')
 <script>
-$(function() {
+$(function () {
     var currentEmployees = null;
+    var fileInput  = document.getElementById('csv_file');
+    var uploadZone = document.getElementById('uploadZone');
 
-    // ── Set default bulan = bulan sekarang ───────────────────────────────
-    $('#selectBulan').val(new Date().getMonth() + 1);
+    // ── Step helper ──────────────────────────────────────────────────────
+    function setStep(n) {
+        for (var i = 1; i <= 3; i++) {
+            var pill = document.getElementById('sp' + i);
+            pill.classList.remove('active', 'done');
+            if (i < n)  pill.classList.add('done');
+            if (i === n) pill.classList.add('active');
+        }
+        for (var j = 1; j <= 2; j++) {
+            var conn = document.getElementById('sc' + j);
+            conn.classList.toggle('done', j < n);
+        }
+    }
 
     // ── Drag & Drop ──────────────────────────────────────────────────────
-    var uploadZone = document.getElementById('uploadZone');
-    var fileInput  = document.getElementById('pdf_file');
-
     uploadZone.addEventListener('click', () => fileInput.click());
-
-    uploadZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadZone.classList.add('dragover');
-    });
-    uploadZone.addEventListener('dragleave', () => {
-        uploadZone.classList.remove('dragover');
-    });
+    uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
     uploadZone.addEventListener('drop', (e) => {
         e.preventDefault();
         uploadZone.classList.remove('dragover');
-        var files = e.dataTransfer.files;
-        if (files.length > 0 && files[0].type === 'application/pdf') {
-            fileInput.files = files;
-            handleFileSelected(files[0]);
+        var f = e.dataTransfer.files[0];
+        if (f && (f.name.endsWith('.csv') || f.name.endsWith('.txt'))) {
+            setFile(f);
         } else {
-            showError('Hanya file PDF yang diizinkan.');
+            showError('Hanya file CSV/TXT yang diizinkan.');
         }
     });
-
-    fileInput.addEventListener('change', function() {
-        if (this.files && this.files[0]) {
-            handleFileSelected(this.files[0]);
-        }
+    fileInput.addEventListener('change', function () {
+        if (this.files && this.files[0]) setFile(this.files[0]);
     });
 
-    function handleFileSelected(file) {
+    function setFile(file) {
         var sizeMB = (file.size / 1024 / 1024).toFixed(2);
         $('#fileNameDisplay').html(
-            '<div class="file-name-badge"><i class="mdi mdi-file-pdf-box mr-1"></i>' +
-            file.name + ' (' + sizeMB + ' MB)</div>'
+            '<div class="file-badge"><i class="mdi mdi-file-delimited mr-1"></i>' +
+            escHtml(file.name) + ' (' + sizeMB + ' MB)</div>'
         );
-        $('#btnUpload').prop('disabled', false);
+        $('#btnParse').prop('disabled', false);
+        $('#btnParseHint').text('');
         hideError();
         $('#previewSection').hide();
+        $('#importResultSection').hide();
         currentEmployees = null;
-        $('#btnExportExcel').prop('disabled', true);
+        setStep(1);
     }
 
-    // ── Proses OCR ───────────────────────────────────────────────────────
-    $('#btnUpload').on('click', function() {
-        if (!fileInput.files || !fileInput.files[0]) {
-            showError('Pilih file PDF terlebih dahulu.');
-            return;
-        }
+    // ── Parse CSV ────────────────────────────────────────────────────────
+    $('#btnParse').on('click', function () {
+        if (!fileInput.files || !fileInput.files[0]) { showError('Pilih file CSV terlebih dahulu.'); return; }
 
         hideError();
         $('#previewSection').hide();
-        showProgress('Mengunggah PDF ke server...', 15);
+        $('#importResultSection').hide();
+        showProgress('Membaca dan memproses CSV...', 40);
 
-        var formData = new FormData();
-        formData.append('pdf_file', fileInput.files[0]);
-        formData.append('_token', '{{ csrf_token() }}');
-
-        // Simulasi progress karena OCR butuh waktu
-        var prog = 15;
-        var progMessages = [
-            { pct: 30,  msg: 'Mengkonversi PDF ke gambar (DPI 300)...' },
-            { pct: 55,  msg: 'Menjalankan OCR pada setiap halaman...' },
-            { pct: 75,  msg: 'Mem-parsing nama dan waktu scan...' },
-            { pct: 90,  msg: 'Memvalidasi data hasil scan...' },
-        ];
-        var msgIdx = 0;
-        var progTimer = setInterval(function() {
-            if (prog < 90) {
-                prog += 3;
-                if (msgIdx < progMessages.length && prog >= progMessages[msgIdx].pct) {
-                    showProgress(progMessages[msgIdx].msg, prog);
-                    msgIdx++;
-                } else {
-                    updateProgressBar(prog);
-                }
-            }
-        }, 800);
+        var fd = new FormData();
+        fd.append('csv_file', fileInput.files[0]);
+        fd.append('_token', '{{ csrf_token() }}');
 
         $.ajax({
-            url: '{{ route("scanlog.process") }}',
+            url: '{{ route("scanlog.parse.csv") }}',
             method: 'POST',
-            data: formData,
+            data: fd,
             processData: false,
             contentType: false,
-            timeout: 300000, // 5 menit timeout
-            success: function(response) {
-                clearInterval(progTimer);
-                showProgress('Berhasil membaca data!', 100);
-
-                setTimeout(function() {
-                    $('#progressSection').hide();
-                    if (response.success && response.employees && response.employees.length > 0) {
-                        currentEmployees = response.employees;
-                        renderPreview(response.employees);
-                    } else {
-                        showError('Tidak ada data yang berhasil dibaca. Pastikan PDF berisi teks yang jelas.');
-                    }
-                }, 500);
-            },
-            error: function(xhr) {
-                clearInterval(progTimer);
-                $('#progressSection').hide();
-                var msg = 'Gagal memproses PDF.';
-                var debugInfo = null;
-
-                if (xhr.responseJSON) {
-                    if (xhr.responseJSON.message) msg = xhr.responseJSON.message;
-                    if (xhr.responseJSON.debug)   debugInfo = JSON.stringify(xhr.responseJSON.debug, null, 2);
-                } else if (xhr.status === 0) {
-                    msg = 'Koneksi timeout atau request dibatalkan. Coba lagi.';
-                } else if (xhr.status === 500) {
-                    msg = 'Server error. Cek log Railway.';
-                }
-
-                showError(msg, debugInfo);
-
-                // Tampilkan tombol debug jika ada file
-                if (fileInput.files && fileInput.files[0]) {
-                    $('#debugSection').show();
-       // ── Render Preview ───────────────────────────────────────────────
-    function renderPreview(employees) {
-        var bulan = parseInt($('#selectBulan').val());
-        var tahun = parseInt($('#selectTahun').val());
-        var daysInMonth = new Date(tahun, bulan, 0).getDate();
-        var hariNames   = ['MINGGU','SENIN','SELASA','RABU','KAMIS','JUMAT','SABTU'];
-
-        var bodyHtml     = '';
-        var totalRecords = 0;
-        var foundCount   = 0;
-        var notFoundCount = 0;
-
-        employees.forEach(function(emp, empIdx) {
-            var recordsByDate = {};
-            (emp.records || []).forEach(function(r) {
-                recordsByDate[r.tanggal] = r;
-            });
-            totalRecords += (emp.records || []).length;
-
-            var isFound = emp.found_in_db === true;
-            if (isFound) foundCount++; else notFoundCount++;
-
-            var dbBadge = isFound
-                ? '<span class="badge-db-found"><i class="mdi mdi-check-circle mr-1"></i>Ada di DB: ' + escapeHtml(emp.db_name || emp.nama) + '</span>'
-                : '<span class="badge-db-notfound"><i class="mdi mdi-alert-circle mr-1"></i>Tidak ditemukan di DB</span>';
-
-            bodyHtml += '<div class="employee-block" style="' + (!isFound ? 'background:#fff8f8;' : '') + '">';
-            bodyHtml += '<div class="employee-name">';
-            bodyHtml += '<div class="emp-badge" style="' + (!isFound ? 'background:#dc2626;' : '') + '">' + (empIdx + 1) + '</div>';
-            bodyHtml += '<span>' + escapeHtml(emp.nama) + '</span>';
-            bodyHtml += dbBadge;
-            bodyHtml += '</div>';
-
-            bodyHtml += '<div class="table-responsive">';
-            bodyHtml += '<table class="scan-table">';
-            bodyHtml += '<thead><tr>';
-            bodyHtml += '<th>Hari</th><th>Tanggal</th><th>Scan 1</th><th>Scan 2</th>';
-            bodyHtml += '<th>Normal</th><th>Double</th><th>Minggu</th>';
-            bodyHtml += '</tr></thead><tbody>';
-
-            var totalNormal = 0, totalDouble = 0, totalMinggu = 0;
-
-            for (var d = 1; d <= daysInMonth; d++) {
-                var mm  = String(bulan).padStart(2, '0');
-                var dd  = String(d).padStart(2, '0');
-                var dateStr  = tahun + '-' + mm + '-' + dd;
-                var dateObj  = new Date(dateStr);
-                var dayOfWeek = dateObj.getDay();
-                var hariStr  = hariNames[dayOfWeek];
-                var rec      = recordsByDate[dateStr] || {};
-                var scan1    = rec.scan1 || '';
-                var scan2    = rec.scan2 || '';
-                var isMinggu = dayOfWeek === 0;
-
-                var normal = 0, dbl = 0, minggu = 0;
-                if (scan1 && scan2) {
-                    var ot = calcOvertime(scan1, scan2, dateStr, dayOfWeek);
-                    normal = ot.normal; dbl = ot.double; minggu = ot.minggu;
-                } else if (isMinggu && scan1) {
-                    minggu = 1;
-                }
-                totalNormal += normal; totalDouble += dbl; totalMinggu += minggu;
-
-                if (!scan1 && !scan2) continue;
-
-                var rowClass = isMinggu ? 'row-minggu' : '';
-                bodyHtml += '<tr class="' + rowClass + '">';
-                bodyHtml += '<td>' + hariStr + '</td>';
-                bodyHtml += '<td>' + dd + '/' + mm + '/' + tahun + '</td>';
-                bodyHtml += '<td>' + (scan1 || '<span class="no-scan">—</span>') + '</td>';
-                bodyHtml += '<td>' + (scan2 || '<span class="no-scan">—</span>') + '</td>';
-                bodyHtml += '<td>' + (normal ? '<span class="lembur-normal">' + normal + ' jam</span>' : '—') + '</td>';
-                bodyHtml += '<td>' + (dbl    ? '<span class="lembur-double">' + dbl + ' jam</span>' : '—') + '</td>';
-                bodyHtml += '<td>' + (minggu ? '<span class="lembur-minggu">✓</span>' : '—') + '</td>';
-                bodyHtml += '</tr>';
-            }
-
-            bodyHtml += '<tr style="background:#f0f4ff; font-weight:700;">';
-            bodyHtml += '<td colspan="4" style="text-align:right; color:#1a3a7a; padding-right:16px;">TOTAL</td>';
-            bodyHtml += '<td><span class="lembur-normal">' + totalNormal + '</span></td>';
-            bodyHtml += '<td><span class="lembur-double">' + totalDouble + '</span></td>';
-            bodyHtml += '<td><span class="lembur-minggu">' + totalMinggu + '</span></td>';
-            bodyHtml += '</tr>';
-
-            bodyHtml += '</tbody></table></div>';
-            bodyHtml += '</div>';
-        });
-
-        $('#previewBody').html(bodyHtml);
-        $('#previewSummary').text(employees.length + ' karyawan · ' + totalRecords + ' record scan');
-
-        // Info bar: tampilkan jika ada karyawan tidak ditemukan di DB
-        if (notFoundCount > 0) {
-            $('#previewInfoText').text(
-                foundCount + ' karyawan cocok dengan database, ' +
-                notFoundCount + ' karyawan tidak ditemukan (berlatar merah) — tidak akan diimport ke DB.'
-            );
-            $('#previewInfoBar').show();
-        } else {
-            $('#previewInfoBar').hide();
-        }
-
-        $('#previewSection').fadeIn(400);
-        $('#btnExportExcel').prop('disabled', false);
-        $('#btnImportDb').prop('disabled', false);
-        $('#importResultSection').hide();
-
-        $('html, body').animate({ scrollTop: $('#previewSection').offset().top - 20 }, 600);
-    }
-
-    // ── Hitung Lembur (JS, sama dengan logic PHP) ────────────────────────
-    function calcOvertime(scan1, scan2, dateStr, dayOfWeek) {
-        if (dayOfWeek === 0) return { normal: 0, double: 0, minggu: 1 }; // Minggu
-
-        var shifts = [
-            { day_type: 'weekday',  time_in: '08:00', time_out: '17:00', days: [1,2,3,4,5] },
-            { day_type: 'weekday',  time_in: '19:00', time_out: '03:00', days: [1,2,3,4,5] },
-            { day_type: 'saturday', time_in: '08:00', time_out: '13:00', days: [6] },
-            { day_type: 'saturday', time_in: '13:00', time_out: '17:00', days: [6] },
-            { day_type: 'holiday',  time_in: '08:00', time_out: '17:00', days: [0] },
-        ];
-
-        var is_saturday = dayOfWeek === 6;
-        var day_type = is_saturday ? 'saturday' : 'weekday';
-
-        var scan1h = parseInt(scan1.split(':')[0]);
-        var matched = null;
-        shifts.forEach(function(s) {
-            if (s.day_type !== day_type) return;
-            var sH = parseInt(s.time_in.split(':')[0]);
-            var diff = Math.abs(scan1h - sH);
-            diff = Math.min(diff, 24 - diff);
-            if (diff <= 3 && !matched) matched = s;
-        });
-        if (!matched) return { normal: 0, double: 0, minggu: 0 };
-
-        var base = new Date(dateStr + 'T00:00:00');
-        var outParts = matched.time_out.split(':');
-        var schedOut = new Date(dateStr + 'T' + matched.time_out + ':00');
-        var inParts  = matched.time_in.split(':');
-        var schedIn  = new Date(dateStr + 'T' + matched.time_in + ':00');
-        if (schedOut <= schedIn) schedOut.setDate(schedOut.getDate() + 1);
-
-        var scan2dt = new Date(dateStr + 'T' + scan2);
-        if (scan2dt < schedIn) scan2dt.setDate(scan2dt.getDate() + 1);
-
-        var diffSec = (scan2dt - schedOut) / 1000;
-        var tol = 55 * 60;
-        if (diffSec <= tol) return { normal: 0, double: 0, minggu: 0 };
-
-        var h = Math.floor(diffSec / 3600);
-        if (h <= 3) return { normal: h, double: 0, minggu: 0 };
-        return { normal: 3, double: h - 3, minggu: 0 };
-    }
-
-    // ── Import ke Database ────────────────────────────────────────────────
-    $('#btnImportDb').on('click', function() {
-        if (!currentEmployees) return;
-
-        var foundCount = currentEmployees.filter(function(e) { return e.found_in_db; }).length;
-        if (foundCount === 0) {
-            alert('Tidak ada karyawan yang cocok dengan database.');
-            return;
-        }
-
-        var confirmed = confirm(
-            'Import data absensi ke database?\n\n' +
-            foundCount + ' karyawan akan diimport.\n' +
-            'Record yang sudah ada akan dilewati otomatis.\n\nLanjutkan?'
-        );
-        if (!confirmed) return;
-
-        var $btn = $(this);
-        $btn.prop('disabled', true).html('<i class="mdi mdi-loading mdi-spin mr-1"></i> Mengimport...');
-        $('#importResultSection').hide();
-
-        $.ajax({
-            url: '{{ route("scanlog.import.db") }}',
-            method: 'POST',
-            data: { _token: '{{ csrf_token() }}', data: JSON.stringify(currentEmployees) },
-            success: function(res) {
-                $btn.prop('disabled', false).html('<i class="mdi mdi-database-import"></i> Import ke Database');
-                if (res.success) {
-                    renderImportResult(res);
+            timeout: 30000,
+            success: function (res) {
+                hideProgress();
+                if (res.success && res.employees && res.employees.length > 0) {
+                    currentEmployees = res.employees;
+                    renderPreview(res);
+                    setStep(2);
                 } else {
-                    showError(res.message || 'Import gagal.');
+                    showError(res.message || 'Tidak ada data yang berhasil dibaca.');
                 }
             },
-            error: function(xhr) {
-                $btn.prop('disabled', false).html('<i class="mdi mdi-database-import"></i> Import ke Database');
-                var msg = 'Import gagal.';
+            error: function (xhr) {
+                hideProgress();
+                var msg = 'Gagal memproses CSV.';
                 if (xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
                 showError(msg);
             }
         });
     });
 
-    // ── Render Import Result ──────────────────────────────────────────────
-    function renderImportResult(res) {
-        var s = res.summary || {};
-        $('#impStatInserted').text(s.inserted  || 0);
-        $('#impStatUpdated').text(s.updated   || 0);
-        $('#impStatSkipped').text(s.skipped   || 0);
-        $('#impStatNotFound').text(s.not_found || 0);
+    // ── Render Preview ───────────────────────────────────────────────────
+    function renderPreview(res) {
+        var employees = res.employees;
+        var hariNames = ['MINGGU','SENIN','SELASA','RABU','KAMIS','JUMAT','SABTU'];
 
         var html = '';
-        (res.details || []).forEach(function(d) {
+        employees.forEach(function (emp, i) {
+            var isFound = emp.found_in_db === true;
+            var dbBadge = isFound
+                ? '<span class="badge-found"><i class="mdi mdi-check-circle mr-1"></i>Ada di DB' +
+                  (emp.db_name && emp.db_name !== emp.nama ? ': ' + escHtml(emp.db_name) : '') + '</span>'
+                : '<span class="badge-notfound"><i class="mdi mdi-alert-circle mr-1"></i>Tidak ditemukan di DB</span>';
+
+            html += '<div class="emp-block" style="' + (!isFound ? 'background:#fff8f8;' : '') + '">';
+            html += '<div class="emp-name-row">';
+            html += '<div class="emp-num' + (!isFound ? ' notfound' : '') + '">' + (i + 1) + '</div>';
+            html += '<span class="emp-title">' + escHtml(emp.nama) + '</span>';
+            html += dbBadge;
+            html += '<span style="color:#94a3b8;font-size:12px;margin-left:auto;">' + (emp.records||[]).length + ' record</span>';
+            html += '</div>';
+
+            // Table records
+            html += '<div class="table-responsive">';
+            html += '<table class="rec-table"><thead><tr>';
+            html += '<th>Hari</th><th>Tanggal</th><th>Scan Masuk</th><th>Scan Keluar</th>';
+            html += '</tr></thead><tbody>';
+
+            (emp.records || []).forEach(function (rec) {
+                var d = rec.tanggal ? new Date(rec.tanggal + 'T00:00:00') : null;
+                var hari = d ? hariNames[d.getDay()] : '-';
+                var isMinggu = d && d.getDay() === 0;
+                var tgl = rec.tanggal || '-';
+                // Format tanggal jadi dd/mm/yyyy
+                if (rec.tanggal && rec.tanggal.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                    var p = rec.tanggal.split('-');
+                    tgl = p[2] + '/' + p[1] + '/' + p[0];
+                }
+
+                html += '<tr class="' + (isMinggu ? 'day-minggu' : '') + '">';
+                html += '<td>' + hari + '</td>';
+                html += '<td>' + tgl + '</td>';
+                html += '<td>' + (rec.scan1 || '<span class="no-val">—</span>') + '</td>';
+                html += '<td>' + (rec.scan2 || '<span class="no-val">—</span>') + '</td>';
+                html += '</tr>';
+            });
+
+            html += '</tbody></table></div>';
+            html += '</div>';
+        });
+
+        $('#previewBody').html(html);
+        $('#previewSummary').text(employees.length + ' karyawan · ' + res.total_rows + ' record');
+
+        // Info strip
+        if (res.not_found_count > 0) {
+            $('#infoStripText').text(
+                res.found_count + ' karyawan cocok dengan database. ' +
+                res.not_found_count + ' karyawan tidak ditemukan (berlatar merah) — tidak akan diimport.'
+            );
+            $('#infoStrip').show();
+        } else {
+            $('#infoStrip').hide();
+        }
+
+        $('#btnImport').prop('disabled', res.found_count === 0);
+        $('#previewSection').fadeIn(300);
+        $('html,body').animate({ scrollTop: $('#previewSection').offset().top - 20 }, 500);
+    }
+
+    // ── Import ke Database ───────────────────────────────────────────────
+    $('#btnImport').on('click', function () {
+        if (!currentEmployees) return;
+
+        var foundCount = currentEmployees.filter(function (e) { return e.found_in_db; }).length;
+        if (!confirm(
+            'Import data absensi ke database?\n\n' +
+            foundCount + ' karyawan akan diimport.\n' +
+            'Record yang sudah ada akan dilewati otomatis.\n\nLanjutkan?'
+        )) return;
+
+        var $btn = $(this);
+        $btn.prop('disabled', true).html('<i class="mdi mdi-loading mdi-spin mr-1"></i> Mengimport...');
+        $('#importResultSection').hide();
+        setStep(3);
+
+        $.ajax({
+            url: '{{ route("scanlog.import.db") }}',
+            method: 'POST',
+            data: { _token: '{{ csrf_token() }}', data: JSON.stringify(currentEmployees) },
+            success: function (res) {
+                $btn.prop('disabled', false).html('<i class="mdi mdi-database-import"></i> Import ke Database');
+                if (res.success) {
+                    renderResult(res);
+                } else {
+                    showError(res.message || 'Import gagal.');
+                    setStep(2);
+                }
+            },
+            error: function (xhr) {
+                $btn.prop('disabled', false).html('<i class="mdi mdi-database-import"></i> Import ke Database');
+                var msg = 'Import gagal.';
+                if (xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+                showError(msg);
+                setStep(2);
+            }
+        });
+    });
+
+    // ── Render Result ────────────────────────────────────────────────────
+    function renderResult(res) {
+        var s = res.summary || {};
+        $('#rIns').text(s.inserted  || 0);
+        $('#rUpd').text(s.updated   || 0);
+        $('#rSkp').text(s.skipped   || 0);
+        $('#rNotf').text(s.not_found || 0);
+
+        var html = '';
+        (res.details || []).forEach(function (d) {
             var icon, color, info;
             if (d.status === 'not_found') {
                 icon = 'mdi-account-remove'; color = '#dc2626';
                 info = 'Tidak ditemukan di database';
             } else {
-                icon = 'mdi-account-check'; color = '#059669';
-                info = d.inserted + ' ditambah · ' + d.updated + ' diperbarui · ' + d.skipped + ' dilewati';
+                icon  = 'mdi-account-check'; color = '#059669';
+                info  = '<span style="color:#059669;font-weight:700;">' + (d.inserted||0) + ' ditambah</span> · ';
+                info += '<span style="color:#d97706;font-weight:700;">' + (d.updated||0)  + ' diperbarui</span> · ';
+                info += '<span style="color:#94a3b8;">'                 + (d.skipped||0)  + ' dilewati</span>';
             }
-            html += '<div class="import-detail-row">';
-            html += '<i class="mdi ' + icon + '" style="font-size:18px; color:' + color + ';"></i>';
-            html += '<span style="font-weight:700; min-width:200px;">' + escapeHtml(d.nama) + '</span>';
+            html += '<div class="r-row">';
+            html += '<i class="mdi ' + icon + '" style="font-size:20px; color:' + color + '; flex-shrink:0;"></i>';
+            html += '<span style="font-weight:700; min-width:180px;">' + escHtml(d.nama) + '</span>';
             if (d.db_name && d.db_name !== d.nama) {
-                html += '<span style="color:#6b7280; font-size:12px;">→ ' + escapeHtml(d.db_name) + '</span>';
+                html += '<span style="color:#64748b; font-size:12px;">→ ' + escHtml(d.db_name) + '</span>';
             }
-            html += '<span style="color:' + color + '; margin-left:auto;">' + info + '</span>';
+            html += '<span style="margin-left:auto; font-size:13px;">' + info + '</span>';
             html += '</div>';
         });
-        $('#importResultBody').html(html);
-        $('#importResultSection').fadeIn(400);
-        $('html, body').animate({ scrollTop: $('#importResultSection').offset().top - 20 }, 600);
+
+        $('#resultBody').html(html);
+        $('#importResultSection').fadeIn(300);
+        $('html,body').animate({ scrollTop: $('#importResultSection').offset().top - 20 }, 500);
     }
 
-    // ── Export Excel ─────────────────────────────────────────────────────
-    $('#btnExportExcel').on('click', function() {
-        if (!currentEmployees) return;
-
-        var $btn = $(this);
-        $btn.prop('disabled', true).html('<i class="mdi mdi-loading mdi-spin mr-2"></i>Membuat Excel...');
-
-        var formData = new FormData();
-        formData.append('_token', '{{ csrf_token() }}');
-        formData.append('bulan', $('#selectBulan').val());
-        formData.append('tahun', $('#selectTahun').val());
-        formData.append('data', JSON.stringify(currentEmployees));
-
-        fetch('{{ route("scanlog.export") }}', {
-            method: 'POST',
-            body: formData,
-        })
-        .then(function(response) {
-            if (!response.ok) throw new Error('Gagal mengunduh Excel.');
-            return response.blob();
-        })
-        .then(function(blob) {
-            var bulan = String($('#selectBulan').val()).padStart(2, '0');
-            var tahun = $('#selectTahun').val();
-            var url  = URL.createObjectURL(blob);
-            var a    = document.createElement('a');
-            a.href   = url;
-            a.download = 'Lembur_Harian_' + tahun + '_' + bulan + '.xlsx';
-            a.click();
-            URL.revokeObjectURL(url);
-            $btn.prop('disabled', false).html('<i class="mdi mdi-microsoft-excel" style="font-size:18px;"></i> Download Excel');
-        })
-        .catch(function(err) {
-            showError('Gagal membuat file Excel: ' + err.message);
-            $btn.prop('disabled', false).html('<i class="mdi mdi-microsoft-excel" style="font-size:18px;"></i> Download Excel');
-        });
+    // ── Reset untuk upload baru ──────────────────────────────────────────
+    $('#btnNewImport').on('click', function () {
+        currentEmployees = null;
+        $('#csv_file').val('');
+        $('#fileNameDisplay').html('');
+        $('#btnParse').prop('disabled', true);
+        $('#btnParseHint').text('Pilih file CSV terlebih dahulu');
+        $('#previewSection').hide();
+        $('#importResultSection').hide();
+        hideError();
+        setStep(1);
+        $('html,body').animate({ scrollTop: 0 }, 400);
     });
 
-    // ── Helper functions ─────────────────────────────────────────────────
+    // ── Helpers ──────────────────────────────────────────────────────────
     function showProgress(msg, pct) {
         $('#progressSection').show();
         $('#progressLabel').text(msg);
-        $('#progressBar').css('width', pct + '%').attr('aria-valuenow', pct);
+        $('#progressBar').css('width', pct + '%');
     }
+    function hideProgress() { $('#progressSection').hide(); }
 
-    function updateProgressBar(pct) {
-        $('#progressBar').css('width', pct + '%').attr('aria-valuenow', pct);
-    }
-
-    function showError(msg, debugInfo) {
+    function showError(msg) {
         $('#errorMsg').text(msg);
-        if (debugInfo) {
-            $('#errorDebugText').text(debugInfo);
-            $('#errorDebug').show();
-        } else {
-            $('#errorDebug').hide();
-        }
         $('#alertError').fadeIn(200);
     }
+    function hideError() { $('#alertError').hide(); }
 
-    function hideError() {
-        $('#alertError').hide();
-        $('#debugSection').hide();
-        $('#debugOcrResult').hide().text('');
-    }
-
-    function escapeHtml(str) {
+    function escHtml(str) {
         return String(str)
-            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 });
 </script>
