@@ -26,7 +26,6 @@ Route::group(['middleware' => ['auth', 'Role'], 'roles' => ['admin']], function 
     Route::get('/admin', '\App\Http\Controllers\AdminController@index')->name('admin');
     Route::resource('/schedule', '\App\Http\Controllers\ScheduleController');
     Route::get('/check', '\App\Http\Controllers\CheckController@index')->name('check');
-    Route::get('/sheet-report', '\App\Http\Controllers\CheckController@sheetReport')->name('sheet-report');
     Route::post('check-store', '\App\Http\Controllers\CheckController@CheckStore')->name('check_store');
 
     // Fingerprint Devices
@@ -52,11 +51,10 @@ Route::group(['middleware' => ['auth', 'Role'], 'roles' => ['admin']], function 
         Route::delete('/',       [App\Http\Controllers\HolidayOverrideController::class, 'destroy']);
     });
 
-    Route::get('/sheet-report', [SheetReportController::class, 'index']);
-    Route::get('/sheet-report/data', [SheetReportController::class, 'ajaxData']);
-
-    // Export Sheet Report
-    Route::get('/sheet-report/export', [SheetReportController::class, 'export']);
+    // Sheet Report (AJAX DataTable + Export)
+    Route::get('/sheet-report',        [SheetReportController::class, 'index'])->name('sheet-report');
+    Route::get('/sheet-report/data',   [SheetReportController::class, 'ajaxData'])->name('sheet-report.data');
+    Route::get('/sheet-report/export', [SheetReportController::class, 'export'])->name('sheet-report.export');
 
     // Import Absensi via CSV
     Route::get('/scanlog-upload',           [\App\Http\Controllers\ScanlogUploadController::class, 'index'])->name('scanlog.upload');
