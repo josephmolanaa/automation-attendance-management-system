@@ -39,11 +39,15 @@ class ScanlogUploadController extends Controller
 
             // Contoh data
             $examples = [
+                // Shift pagi normal
                 ['AGUS SETIAWAN',  'Operator',    '2026-04-01', '07:30:00', '17:05:00'],
                 ['AGUS SETIAWAN',  '',            '2026-04-02', '07:28:00', '17:10:00'],
-                ['AGUS SETIAWAN',  '',            '2026-04-03', '07:35:00', ''],
-                ['NASAR SUPRIANTO','Supervisor',  '2026-04-01', '08:00:00', '17:30:00'],
-                ['NASAR SUPRIANTO','',            '2026-04-02', '07:55:00', '18:00:00'],
+                // Shift malam (scan_keluar dikosongkan, akan di-merge otomatis dengan baris berikutnya)
+                ['RUDI CNC',       'Operator',    '2026-04-13', '18:37:00', ''],
+                // Baris ini = departure shift malam (scan1 < 07:00) -> otomatis jadi scan_keluar tgl 13
+                ['RUDI CNC',       '',            '2026-04-14', '05:02:00', ''],
+                // Scan masuk normal Sabtu
+                ['NASAR SUPRIANTO','Supervisor',  '2026-04-05', '08:00:00', '13:00:00'],
             ];
 
             foreach ($examples as $row) {
@@ -152,6 +156,74 @@ class ScanlogUploadController extends Controller
             ];
         }
 
+        // ── Overnight detection ────────────────────────────────────────────────
+        // Untuk setiap karyawan, cek pola:
+        //   Hari D : scan1 >= 17:00, scan2 kosong  (mulai shift malam)
+        //   Hari D+1: scan1 < 07:00               (departure malam sebelumnya)
+        // → Gabungkan: scan1 D+1 jadi scan2/leave_time hari D (overnight)
+        // → Hapus record D+1 yang sudah dipakai sebagai departure
+        foreach ($grouped as $namaUpper => &$empData) {
+            $recs = $empData['records'];
+
+            // Sort by tanggal ascending
+            usort($recs, fn($a, $b) => strcmp($a['tanggal'], $b['tanggal']));
+
+            $merged   = [];
+            $skipNext = false;
+
+            for ($i = 0, $n = count($recs); $i < $n; $i++) {
+                if ($skipNext) { $skipNext = false; continue; }
+
+                $curr = $recs[$i];
+                $next = $recs[$i + 1] ?? null;
+
+                if ($next) {
+                    $currH = $curr['scan1'] ? (int) substr($curr['scan1'], 0, 2) : -1;
+                    $nextH = $next['scan1'] ? (int) substr($next['scan1'], 0, 2) : -1;
+
+                    try {
+                        $dayDiff = (int) (new \DateTime($curr['tanggal']))
+                            ->diff(new \DateTime($next['tanggal']))->days;
+                    } catch (\Exception $e) {
+                        $dayDiff = 99;
+                    }
+
+                    $isOvernight = (
+                        $dayDiff === 1             // hari berturut-turut
+                        && $currH >= 17            // mulai shift malam (≥ 17:00)
+                        && empty($curr['scan2'])   // belum ada departure
+                        && $nextH >= 0             // ada scan di hari berikutnya
+                        && $nextH < 7              // scan berikutnya pagi buta (departure)
+                    );
+
+                    if ($isOvernight) {
+                        // Merge: departure D+1 jadi leave_time hari D
+                        $curr['scan2']      = $next['scan1'];
+                        $curr['is_overnight'] = true;
+
+                        if (!empty($next['scan2'])) {
+                            // D+1 masih punya scan_out → simpan sebagai record terpisah D+1
+                            // (scan1 null karena sudah dipakai sebagai departure D)
+                            $next['scan1'] = null;
+                            $merged[] = $curr;
+                            $merged[] = $next;
+                        } else {
+                            // D+1 hanya punya departure → hapus, sudah dimerge ke D
+                            $merged[] = $curr;
+                        }
+                        $skipNext = true;
+                        continue;
+                    }
+                }
+
+                $merged[] = $curr;
+            }
+
+            $empData['records'] = $merged;
+        }
+        unset($empData); // clear reference
+        // ─────────────────────────────────────────────────────────────────────
+
         if (empty($grouped)) {
             return response()->json([
                 'success' => false,
@@ -254,8 +326,18 @@ class ScanlogUploadController extends Controller
 
                 if (!$tanggal) { $empSkipped++; $totalSkipped++; continue; }
 
-                $attTime   = $scan1 ? ($tanggal . ' ' . $scan1) : ($tanggal . ' 00:00:00');
-                $leaveTime = $scan2 ? ($tanggal . ' ' . $scan2) : null;
+                $attTime = $scan1 ? ($tanggal . ' ' . $scan1) : ($tanggal . ' 00:00:00');
+
+                // Hitung leave_time — deteksi overnight: jika scan2 < scan1 (jam), +1 hari
+                $leaveTime = null;
+                if ($scan2) {
+                    $leaveDate = $tanggal;
+                    if ($scan1 && $scan2 < $scan1) {
+                        // Overnight: pulang hari berikutnya
+                        $leaveDate = date('Y-m-d', strtotime($tanggal . ' +1 day'));
+                    }
+                    $leaveTime = $leaveDate . ' ' . $scan2;
+                }
 
                 $existing = Check::where('emp_id', $dbEmpId)
                     ->whereDate('attendance_time', $tanggal)
