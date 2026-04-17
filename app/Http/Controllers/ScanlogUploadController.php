@@ -34,16 +34,16 @@ class ScanlogUploadController extends Controller
             // BOM untuk Excel agar bisa baca UTF-8
             fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
-            // Header
-            fputcsv($handle, ['nama', 'tanggal', 'scan_masuk', 'scan_keluar'], ';');
+            // Header — posisi opsional, boleh dikosongkan
+            fputcsv($handle, ['nama', 'posisi', 'tanggal', 'scan_masuk', 'scan_keluar'], ';');
 
             // Contoh data
             $examples = [
-                ['AGUS SETIAWAN',  '2026-04-01', '07:30:00', '17:05:00'],
-                ['AGUS SETIAWAN',  '2026-04-02', '07:28:00', '17:10:00'],
-                ['AGUS SETIAWAN',  '2026-04-03', '07:35:00', ''],
-                ['NASAR SUPRIANTO','2026-04-01', '08:00:00', '17:30:00'],
-                ['NASAR SUPRIANTO','2026-04-02', '07:55:00', '18:00:00'],
+                ['AGUS SETIAWAN',  'Operator',    '2026-04-01', '07:30:00', '17:05:00'],
+                ['AGUS SETIAWAN',  '',            '2026-04-02', '07:28:00', '17:10:00'],
+                ['AGUS SETIAWAN',  '',            '2026-04-03', '07:35:00', ''],
+                ['NASAR SUPRIANTO','Supervisor',  '2026-04-01', '08:00:00', '17:30:00'],
+                ['NASAR SUPRIANTO','',            '2026-04-02', '07:55:00', '18:00:00'],
             ];
 
             foreach ($examples as $row) {
@@ -106,6 +106,7 @@ class ScanlogUploadController extends Controller
             foreach ($header as $i => $col) {
                 $row[$col] = $cols[$i] ?? '';
             }
+            // Juga simpan baris asli untuk kolom yang mungkin tidak ada di header
             $rawRows[] = $row;
         }
 
@@ -117,13 +118,14 @@ class ScanlogUploadController extends Controller
         }
 
         // Group rows by nama
-        $grouped = [];
+        $grouped  = []; // [namaUpper => ['posisi'=>..., 'records'=>[...]]]
         foreach ($rawRows as $row) {
             // Support variasi nama kolom
-            $nama     = trim($row['nama']       ?? $row['name']       ?? '');
-            $tanggal  = trim($row['tanggal']    ?? $row['date']       ?? $row['tgl'] ?? '');
-            $scan1    = trim($row['scan_masuk'] ?? $row['scan1']      ?? $row['masuk'] ?? $row['time_in'] ?? '');
-            $scan2    = trim($row['scan_keluar']?? $row['scan2']      ?? $row['keluar'] ?? $row['time_out'] ?? '');
+            $nama    = trim($row['nama']       ?? $row['name']    ?? '');
+            $posisi  = trim($row['posisi']     ?? $row['jabatan'] ?? $row['position'] ?? '');
+            $tanggal = trim($row['tanggal']    ?? $row['date']    ?? $row['tgl'] ?? '');
+            $scan1   = trim($row['scan_masuk'] ?? $row['scan1']   ?? $row['masuk']  ?? $row['time_in']  ?? '');
+            $scan2   = trim($row['scan_keluar']?? $row['scan2']   ?? $row['keluar'] ?? $row['time_out'] ?? '');
 
             if (empty($nama) || empty($tanggal)) continue;
 
@@ -137,9 +139,13 @@ class ScanlogUploadController extends Controller
 
             $namaUpper = strtoupper($nama);
             if (!isset($grouped[$namaUpper])) {
-                $grouped[$namaUpper] = [];
+                $grouped[$namaUpper] = ['posisi' => '', 'records' => []];
             }
-            $grouped[$namaUpper][] = [
+            // Simpan posisi pertama yang tidak kosong
+            if ($posisi && !$grouped[$namaUpper]['posisi']) {
+                $grouped[$namaUpper]['posisi'] = $posisi;
+            }
+            $grouped[$namaUpper]['records'][] = [
                 'tanggal' => $tanggal,
                 'scan1'   => $scan1,
                 'scan2'   => $scan2,
@@ -157,31 +163,33 @@ class ScanlogUploadController extends Controller
         $allEmployees = Employee::all();
         $employees    = [];
 
-        foreach ($grouped as $namaUpper => $records) {
+        foreach ($grouped as $namaUpper => $data) {
             $matched = $this->matchEmployeeByName($namaUpper, $allEmployees);
 
             $employees[] = [
-                'nama'       => $namaUpper,
-                'records'    => $records,
-                'found_in_db'=> $matched !== null,
-                'db_emp_id'  => $matched?->id,
-                'db_name'    => $matched?->name,
+                'nama'        => $namaUpper,
+                'posisi'      => $data['posisi'],
+                'records'     => $data['records'],
+                'found_in_db' => $matched !== null,
+                'db_emp_id'   => $matched?->id,
+                'db_name'     => $matched?->name,
             ];
         }
 
         // Urutkan: yang found_in_db dulu
         usort($employees, fn($a, $b) => ($b['found_in_db'] ? 1 : 0) - ($a['found_in_db'] ? 1 : 0));
 
-        $totalRows = array_sum(array_map(fn($e) => count($e['records']), $employees));
-        $foundCount = count(array_filter($employees, fn($e) => $e['found_in_db']));
+        $totalRows     = array_sum(array_map(fn($e) => count($e['records']), $employees));
+        $foundCount    = count(array_filter($employees, fn($e) => $e['found_in_db']));
+        $notFoundCount = count($employees) - $foundCount;
 
         return response()->json([
-            'success'      => true,
-            'employees'    => $employees,
-            'total_rows'   => $totalRows,
-            'found_count'  => $foundCount,
-            'not_found_count' => count($employees) - $foundCount,
-            'message'      => count($employees) . ' karyawan, ' . $totalRows . ' record berhasil dibaca dari CSV.',
+            'success'         => true,
+            'employees'       => $employees,
+            'total_rows'      => $totalRows,
+            'found_count'     => $foundCount,
+            'not_found_count' => $notFoundCount,
+            'message'         => count($employees) . ' karyawan, ' . $totalRows . ' record berhasil dibaca dari CSV.',
         ]);
     }
 
@@ -193,21 +201,37 @@ class ScanlogUploadController extends Controller
     {
         $request->validate(['data' => 'required|string']);
 
-        $employees = json_decode($request->input('data'), true);
+        $employees      = json_decode($request->input('data'), true);
+        $createNew      = (bool) $request->input('create_employees', false);
+
         if (json_last_error() !== JSON_ERROR_NONE || empty($employees)) {
             return response()->json(['success' => false, 'message' => 'Data JSON tidak valid.'], 422);
         }
 
-        $totalInserted = 0;
-        $totalUpdated  = 0;
-        $totalSkipped  = 0;
-        $totalNotFound = 0;
-        $details       = [];
+        $totalInserted    = 0;
+        $totalUpdated     = 0;
+        $totalSkipped     = 0;
+        $totalNotFound    = 0;
+        $totalEmpCreated  = 0;
+        $details          = [];
 
         foreach ($employees as $emp) {
-            $empName = $emp['nama']      ?? '-';
-            $dbEmpId = $emp['db_emp_id'] ?? null;
-            $records = $emp['records']   ?? [];
+            $empName  = $emp['nama']      ?? '-';
+            $empPosisi= $emp['posisi']    ?? '';
+            $dbEmpId  = $emp['db_emp_id'] ?? null;
+            $records  = $emp['records']   ?? [];
+
+            // Jika karyawan tidak ada di DB tapi create_employees aktif → buat dulu
+            if (!$dbEmpId && $createNew) {
+                $newEmp           = new \App\Models\Employee();
+                $newEmp->name     = ucwords(strtolower($empName));
+                $newEmp->position = $empPosisi ?: 'Karyawan';
+                $newEmp->save();
+                $dbEmpId = $newEmp->id;
+                $totalEmpCreated++;
+                $emp['db_emp_id'] = $dbEmpId;
+                $emp['db_name']   = $newEmp->name;
+            }
 
             if (!$dbEmpId) {
                 $totalNotFound++;
@@ -255,29 +279,34 @@ class ScanlogUploadController extends Controller
             }
 
             $details[] = [
-                'nama'     => $empName,
-                'db_name'  => $emp['db_name'] ?? $empName,
-                'status'   => 'found',
-                'inserted' => $empInserted,
-                'updated'  => $empUpdated,
-                'skipped'  => $empSkipped,
+                'nama'          => $empName,
+                'db_name'       => $emp['db_name'] ?? $empName,
+                'status'        => 'found',
+                'newly_created' => ($totalEmpCreated > 0 && isset($newEmp) && $newEmp->id == $dbEmpId),
+                'inserted'      => $empInserted,
+                'updated'       => $empUpdated,
+                'skipped'       => $empSkipped,
             ];
         }
 
-        Log::info('[CSV Import] inserted=' . $totalInserted . ' updated=' . $totalUpdated
-            . ' skipped=' . $totalSkipped . ' not_found=' . $totalNotFound);
+        Log::info('[CSV Import] emp_created=' . $totalEmpCreated . ' inserted=' . $totalInserted
+            . ' updated=' . $totalUpdated . ' skipped=' . $totalSkipped . ' not_found=' . $totalNotFound);
+
+        $msg = "Import selesai: {$totalInserted} ditambahkan, {$totalUpdated} diperbarui, {$totalSkipped} dilewati";
+        if ($totalEmpCreated > 0) $msg .= ", {$totalEmpCreated} karyawan baru dibuat";
+        if ($totalNotFound    > 0) $msg .= ", {$totalNotFound} tidak ditemukan di database";
 
         return response()->json([
             'success' => true,
             'summary' => [
-                'inserted'  => $totalInserted,
-                'updated'   => $totalUpdated,
-                'skipped'   => $totalSkipped,
-                'not_found' => $totalNotFound,
+                'emp_created' => $totalEmpCreated,
+                'inserted'    => $totalInserted,
+                'updated'     => $totalUpdated,
+                'skipped'     => $totalSkipped,
+                'not_found'   => $totalNotFound,
             ],
             'details' => $details,
-            'message' => "Import selesai: {$totalInserted} ditambahkan, {$totalUpdated} diperbarui, "
-                       . "{$totalSkipped} dilewati, {$totalNotFound} tidak ditemukan di database.",
+            'message' => $msg,
         ]);
     }
 
