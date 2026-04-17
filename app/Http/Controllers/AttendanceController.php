@@ -72,19 +72,8 @@ class AttendanceController extends Controller
             if ($override && $override->schedule_id) {
                 $matchedSchedule = Schedule::find($override->schedule_id);
             } else {
-                // ── Early morning (00:00-06:59) pada hari kerja biasa ──────────────
-                // Kemungkinan besar ini departure dari SHIFT_2 malam sebelumnya.
-                // SHIFT_1_WEEKDAY mulai jam 08:00 — tidak masuk akal jika scan jam 05:xx.
-                if ($scanHour !== null && $scanHour < 7 && ($isWeekday || $isFriday)) {
-                    $nightSlug = $isFriday ? 'SHIFT_2_FRIDAY' : 'SHIFT_2_WEEKDAY';
-                    $nightSched = $allSchedules->where('slug', $nightSlug)->first();
-                    if ($nightSched) {
-                        $matchedSchedule = $nightSched;
-                    }
-                }
+                $bestDiff = PHP_INT_MAX;
 
-                // ── Deteksi normal berdasarkan jam masuk ──────────────────────────
-                if (!$matchedSchedule) {
                 foreach ($allSchedules as $schedule) {
                     $sDayType = $schedule->day_type ?? 'weekday';
                     $dayMatch = match($sDayType) {
@@ -98,29 +87,31 @@ class AttendanceController extends Controller
 
                     if ($scanHour !== null) {
                         $schedHour = (int) Carbon::parse($schedule->time_in)->format('H');
-                        $diff = abs($scanHour - $schedHour);
-                        $diff = min($diff, 24 - $diff);
-                        if ($diff <= 3) {
+                        $diff = min(abs($scanHour - $schedHour), 24 - abs($scanHour - $schedHour));
+                        // Pilih schedule dengan diff TERKECIL (best-match)
+                        if ($diff < $bestDiff) {
+                            $bestDiff        = $diff;
                             $matchedSchedule = $schedule;
-                            break;
                         }
                     } else {
+                        // Tidak ada scan_in — pakai schedule pertama yang cocok
                         $matchedSchedule = $schedule;
                         break;
                     }
                 }
+
+                // Fallback jika tidak ada yang cocok (misalnya hari baru di DB belum ada)
                 if (!$matchedSchedule) {
-                   if ($isFriday){
-                    $isNight = $scanHour !== null && $scanHour >= 16;
-                    $matchedSchedule = $isNight
-                        ? $allSchedules->where('slug', 'SHIFT_2_FRIDAY')->first()
-                        : $allSchedules->where('slug', 'SHIFT_1_WEEKDAY')->first();
-                   } else {
-                    $matchedSchedule = $allSchedules->where('day_type', $dayType)->first();
+                    if ($isFriday) {
+                        $isNight = $scanHour !== null && $scanHour >= 16;
+                        $matchedSchedule = $isNight
+                            ? $allSchedules->where('slug', 'SHIFT_2_FRIDAY')->first()
+                            : $allSchedules->where('slug', 'SHIFT_1_WEEKDAY')->first();
+                    } else {
+                        $matchedSchedule = $allSchedules->where('day_type', $dayType)->first();
+                    }
                 }
             }
-            }
-        }
 
             $shiftSlug = optional($matchedSchedule)->slug ?? '-';
 
