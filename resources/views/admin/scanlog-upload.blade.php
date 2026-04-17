@@ -138,26 +138,88 @@
     color: #fff;
     border: none;
     border-radius: 10px;
-    padding: 12px 28px;
-    font-size: 15px;
+    padding: 12px 22px;
+    font-size: 14px;
     font-weight: 700;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     transition: all 0.2s;
     box-shadow: 0 4px 14px rgba(33,115,70,0.3);
 }
-#btnExportExcel:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(33,115,70,0.4);
+#btnExportExcel:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(33,115,70,0.4); }
+#btnExportExcel:disabled { background: #aaa; transform: none; box-shadow: none; cursor: not-allowed; }
+
+/* ── Import DB Button ────────────────────────────────────── */
+#btnImportDb {
+    background: linear-gradient(135deg, #7c3aed, #5b21b6);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 22px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 14px rgba(124,58,237,0.35);
 }
-#btnExportExcel:disabled {
-    background: #aaa;
-    transform: none;
-    box-shadow: none;
-    cursor: not-allowed;
+#btnImportDb:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(124,58,237,0.45); }
+#btnImportDb:disabled { background: #aaa; transform: none; box-shadow: none; cursor: not-allowed; }
+
+/* ── DB Status Badge ─────────────────────────────────────── */
+.badge-db-found    { background:#d1fae5; color:#065f46; border-radius:6px; padding:3px 10px; font-size:11px; font-weight:700; }
+.badge-db-notfound { background:#fee2e2; color:#991b1b; border-radius:6px; padding:3px 10px; font-size:11px; font-weight:700; }
+
+/* ── Import Result Panel ─────────────────────────────────── */
+#importResultSection {
+    display: none;
+    margin-top: 20px;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
 }
+.import-result-header {
+    background: linear-gradient(135deg, #7c3aed, #5b21b6);
+    color: #fff;
+    padding: 16px 24px;
+    font-weight: 700;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.import-summary-bar {
+    background: #faf5ff;
+    padding: 16px 24px;
+    display: flex;
+    gap: 24px;
+    border-bottom: 1px solid #ede9fe;
+    flex-wrap: wrap;
+}
+.import-stat {
+    text-align: center;
+    min-width: 80px;
+}
+.import-stat .num  { font-size: 26px; font-weight: 800; }
+.import-stat .lbl  { font-size: 11px; color: #6b7280; font-weight: 600; margin-top: 2px; }
+.import-stat.ins   .num { color: #059669; }
+.import-stat.upd   .num { color: #d97706; }
+.import-stat.skp   .num { color: #6b7280; }
+.import-stat.notf  .num { color: #dc2626; }
+.import-detail-row {
+    padding: 10px 24px;
+    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 13px;
+    background: #fff;
+}
+.import-detail-row:last-child { border-bottom: none; }
 
 /* ── Alert ──────────────────────────────────────────────── */
 .alert-ocr {
@@ -274,21 +336,57 @@
             </div>
         </div>
 
-        {{-- ── STEP 2: Preview & Export ───────────────────────────────── --}}
+        {{-- ── STEP 2: Preview & Action Buttons ──────────────────────── --}}
         <div id="previewSection">
             <div class="preview-card">
                 <div class="preview-header">
                     <h5><i class="mdi mdi-table-eye mr-2"></i>Preview Hasil OCR</h5>
-                    <div style="display:flex; align-items:center; gap:12px;">
+                    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                         <span id="previewSummary" class="badge badge-light" style="font-size:13px; color:#1a3a7a; padding:6px 14px;"></span>
+                        <button id="btnImportDb" disabled>
+                            <i class="mdi mdi-database-import" style="font-size:18px;"></i>
+                            Import ke Database
+                        </button>
                         <button id="btnExportExcel" disabled>
-                            <i class="mdi mdi-microsoft-excel" style="font-size:20px;"></i>
-                            Download Excel Lembur Harian
+                            <i class="mdi mdi-microsoft-excel" style="font-size:18px;"></i>
+                            Download Excel
                         </button>
                     </div>
                 </div>
+                {{-- Info bar --}}
+                <div id="previewInfoBar" style="display:none; background:#faf5ff; border-bottom:1px solid #ede9fe; padding:10px 24px; font-size:13px; color:#5b21b6;">
+                    <i class="mdi mdi-information-outline mr-1"></i>
+                    <span id="previewInfoText"></span>
+                </div>
                 <div id="previewBody" style="padding: 0;"></div>
             </div>
+        </div>
+
+        {{-- ── STEP 3: Import Result Panel ─────────────────────────────── --}}
+        <div id="importResultSection">
+            <div class="import-result-header">
+                <i class="mdi mdi-database-check" style="font-size:22px;"></i>
+                Hasil Import ke Database
+            </div>
+            <div class="import-summary-bar">
+                <div class="import-stat ins">
+                    <div class="num" id="impStatInserted">0</div>
+                    <div class="lbl">DITAMBAHKAN</div>
+                </div>
+                <div class="import-stat upd">
+                    <div class="num" id="impStatUpdated">0</div>
+                    <div class="lbl">DIPERBARUI</div>
+                </div>
+                <div class="import-stat skp">
+                    <div class="num" id="impStatSkipped">0</div>
+                    <div class="lbl">DILEWATI</div>
+                </div>
+                <div class="import-stat notf">
+                    <div class="num" id="impStatNotFound">0</div>
+                    <div class="lbl">TIDAK DITEMUKAN</div>
+                </div>
+            </div>
+            <div id="importResultBody" style="background:#fff;"></div>
         </div>
 
     </div>
@@ -424,64 +522,37 @@ $(function() {
                 // Tampilkan tombol debug jika ada file
                 if (fileInput.files && fileInput.files[0]) {
                     $('#debugSection').show();
-                }
-            }
-        });
-    });
-
-    // ── Debug OCR ────────────────────────────────────────────────────────
-    $('#btnDebugOcr').on('click', function() {
-        var $btn = $(this);
-        $btn.prop('disabled', true).text('Memproses...');
-        
-        var formData = new FormData();
-        formData.append('pdf_file', fileInput.files[0]);
-        formData.append('_token', '{{ csrf_token() }}');
-
-        $.ajax({
-            url: '{{ route("scanlog.debug.ocr") }}',
-            method: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(res) {
-                $('#debugOcrResult').text(res.raw_text).show();
-                $btn.prop('disabled', false).text('Jalankan Debug OCR');
-            },
-            error: function() {
-                alert('Gagal mengambil data debug.');
-                $btn.prop('disabled', false).text('Jalankan Debug OCR');
-            }
-        });
-    });
-
-    // ── Render Preview ───────────────────────────────────────────────────
+       // ── Render Preview ───────────────────────────────────────────────
     function renderPreview(employees) {
         var bulan = parseInt($('#selectBulan').val());
         var tahun = parseInt($('#selectTahun').val());
-
-        // Hitung total hari dalam bulan
         var daysInMonth = new Date(tahun, bulan, 0).getDate();
+        var hariNames   = ['MINGGU','SENIN','SELASA','RABU','KAMIS','JUMAT','SABTU'];
 
-        var bulanNames = ['','Januari','Februari','Maret','April','Mei','Juni',
-                          'Juli','Agustus','September','Oktober','November','Desember'];
-        var hariNames  = ['MINGGU','SENIN','SELASA','RABU','KAMIS','JUMAT','SABTU'];
-
-        var bodyHtml = '';
+        var bodyHtml     = '';
         var totalRecords = 0;
+        var foundCount   = 0;
+        var notFoundCount = 0;
 
         employees.forEach(function(emp, empIdx) {
             var recordsByDate = {};
             (emp.records || []).forEach(function(r) {
                 recordsByDate[r.tanggal] = r;
             });
-
             totalRecords += (emp.records || []).length;
 
-            bodyHtml += '<div class="employee-block">';
+            var isFound = emp.found_in_db === true;
+            if (isFound) foundCount++; else notFoundCount++;
+
+            var dbBadge = isFound
+                ? '<span class="badge-db-found"><i class="mdi mdi-check-circle mr-1"></i>Ada di DB: ' + escapeHtml(emp.db_name || emp.nama) + '</span>'
+                : '<span class="badge-db-notfound"><i class="mdi mdi-alert-circle mr-1"></i>Tidak ditemukan di DB</span>';
+
+            bodyHtml += '<div class="employee-block" style="' + (!isFound ? 'background:#fff8f8;' : '') + '">';
             bodyHtml += '<div class="employee-name">';
-            bodyHtml += '<div class="emp-badge">' + (empIdx + 1) + '</div>';
+            bodyHtml += '<div class="emp-badge" style="' + (!isFound ? 'background:#dc2626;' : '') + '">' + (empIdx + 1) + '</div>';
             bodyHtml += '<span>' + escapeHtml(emp.nama) + '</span>';
+            bodyHtml += dbBadge;
             bodyHtml += '</div>';
 
             bodyHtml += '<div class="table-responsive">';
@@ -494,11 +565,11 @@ $(function() {
             var totalNormal = 0, totalDouble = 0, totalMinggu = 0;
 
             for (var d = 1; d <= daysInMonth; d++) {
-                var mm   = String(bulan).padStart(2, '0');
-                var dd   = String(d).padStart(2, '0');
-                var dateStr = tahun + '-' + mm + '-' + dd;
-                var dateObj = new Date(dateStr);
-                var dayOfWeek = dateObj.getDay(); // 0=Minggu
+                var mm  = String(bulan).padStart(2, '0');
+                var dd  = String(d).padStart(2, '0');
+                var dateStr  = tahun + '-' + mm + '-' + dd;
+                var dateObj  = new Date(dateStr);
+                var dayOfWeek = dateObj.getDay();
                 var hariStr  = hariNames[dayOfWeek];
                 var rec      = recordsByDate[dateStr] || {};
                 var scan1    = rec.scan1 || '';
@@ -514,7 +585,6 @@ $(function() {
                 }
                 totalNormal += normal; totalDouble += dbl; totalMinggu += minggu;
 
-                // Hanya tampilkan baris yang ada data
                 if (!scan1 && !scan2) continue;
 
                 var rowClass = isMinggu ? 'row-minggu' : '';
@@ -529,7 +599,6 @@ $(function() {
                 bodyHtml += '</tr>';
             }
 
-            // Total row
             bodyHtml += '<tr style="background:#f0f4ff; font-weight:700;">';
             bodyHtml += '<td colspan="4" style="text-align:right; color:#1a3a7a; padding-right:16px;">TOTAL</td>';
             bodyHtml += '<td><span class="lembur-normal">' + totalNormal + '</span></td>';
@@ -538,15 +607,28 @@ $(function() {
             bodyHtml += '</tr>';
 
             bodyHtml += '</tbody></table></div>';
-            bodyHtml += '</div>'; // employee-block
+            bodyHtml += '</div>';
         });
 
         $('#previewBody').html(bodyHtml);
         $('#previewSummary').text(employees.length + ' karyawan · ' + totalRecords + ' record scan');
+
+        // Info bar: tampilkan jika ada karyawan tidak ditemukan di DB
+        if (notFoundCount > 0) {
+            $('#previewInfoText').text(
+                foundCount + ' karyawan cocok dengan database, ' +
+                notFoundCount + ' karyawan tidak ditemukan (berlatar merah) — tidak akan diimport ke DB.'
+            );
+            $('#previewInfoBar').show();
+        } else {
+            $('#previewInfoBar').hide();
+        }
+
         $('#previewSection').fadeIn(400);
         $('#btnExportExcel').prop('disabled', false);
+        $('#btnImportDb').prop('disabled', false);
+        $('#importResultSection').hide();
 
-        // Scroll ke preview
         $('html, body').animate({ scrollTop: $('#previewSection').offset().top - 20 }, 600);
     }
 
@@ -595,6 +677,80 @@ $(function() {
         return { normal: 3, double: h - 3, minggu: 0 };
     }
 
+    // ── Import ke Database ────────────────────────────────────────────────
+    $('#btnImportDb').on('click', function() {
+        if (!currentEmployees) return;
+
+        var foundCount = currentEmployees.filter(function(e) { return e.found_in_db; }).length;
+        if (foundCount === 0) {
+            alert('Tidak ada karyawan yang cocok dengan database.');
+            return;
+        }
+
+        var confirmed = confirm(
+            'Import data absensi ke database?\n\n' +
+            foundCount + ' karyawan akan diimport.\n' +
+            'Record yang sudah ada akan dilewati otomatis.\n\nLanjutkan?'
+        );
+        if (!confirmed) return;
+
+        var $btn = $(this);
+        $btn.prop('disabled', true).html('<i class="mdi mdi-loading mdi-spin mr-1"></i> Mengimport...');
+        $('#importResultSection').hide();
+
+        $.ajax({
+            url: '{{ route("scanlog.import.db") }}',
+            method: 'POST',
+            data: { _token: '{{ csrf_token() }}', data: JSON.stringify(currentEmployees) },
+            success: function(res) {
+                $btn.prop('disabled', false).html('<i class="mdi mdi-database-import"></i> Import ke Database');
+                if (res.success) {
+                    renderImportResult(res);
+                } else {
+                    showError(res.message || 'Import gagal.');
+                }
+            },
+            error: function(xhr) {
+                $btn.prop('disabled', false).html('<i class="mdi mdi-database-import"></i> Import ke Database');
+                var msg = 'Import gagal.';
+                if (xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+                showError(msg);
+            }
+        });
+    });
+
+    // ── Render Import Result ──────────────────────────────────────────────
+    function renderImportResult(res) {
+        var s = res.summary || {};
+        $('#impStatInserted').text(s.inserted  || 0);
+        $('#impStatUpdated').text(s.updated   || 0);
+        $('#impStatSkipped').text(s.skipped   || 0);
+        $('#impStatNotFound').text(s.not_found || 0);
+
+        var html = '';
+        (res.details || []).forEach(function(d) {
+            var icon, color, info;
+            if (d.status === 'not_found') {
+                icon = 'mdi-account-remove'; color = '#dc2626';
+                info = 'Tidak ditemukan di database';
+            } else {
+                icon = 'mdi-account-check'; color = '#059669';
+                info = d.inserted + ' ditambah · ' + d.updated + ' diperbarui · ' + d.skipped + ' dilewati';
+            }
+            html += '<div class="import-detail-row">';
+            html += '<i class="mdi ' + icon + '" style="font-size:18px; color:' + color + ';"></i>';
+            html += '<span style="font-weight:700; min-width:200px;">' + escapeHtml(d.nama) + '</span>';
+            if (d.db_name && d.db_name !== d.nama) {
+                html += '<span style="color:#6b7280; font-size:12px;">→ ' + escapeHtml(d.db_name) + '</span>';
+            }
+            html += '<span style="color:' + color + '; margin-left:auto;">' + info + '</span>';
+            html += '</div>';
+        });
+        $('#importResultBody').html(html);
+        $('#importResultSection').fadeIn(400);
+        $('html, body').animate({ scrollTop: $('#importResultSection').offset().top - 20 }, 600);
+    }
+
     // ── Export Excel ─────────────────────────────────────────────────────
     $('#btnExportExcel').on('click', function() {
         if (!currentEmployees) return;
@@ -617,7 +773,7 @@ $(function() {
             return response.blob();
         })
         .then(function(blob) {
-            var bulan = $('#selectBulan').val().padStart(2, '0');
+            var bulan = String($('#selectBulan').val()).padStart(2, '0');
             var tahun = $('#selectTahun').val();
             var url  = URL.createObjectURL(blob);
             var a    = document.createElement('a');
@@ -625,12 +781,11 @@ $(function() {
             a.download = 'Lembur_Harian_' + tahun + '_' + bulan + '.xlsx';
             a.click();
             URL.revokeObjectURL(url);
-
-            $btn.prop('disabled', false).html('<i class="mdi mdi-microsoft-excel" style="font-size:20px;"></i> Download Excel Lembur Harian');
+            $btn.prop('disabled', false).html('<i class="mdi mdi-microsoft-excel" style="font-size:18px;"></i> Download Excel');
         })
         .catch(function(err) {
             showError('Gagal membuat file Excel: ' + err.message);
-            $btn.prop('disabled', false).html('<i class="mdi mdi-microsoft-excel" style="font-size:20px;"></i> Download Excel Lembur Harian');
+            $btn.prop('disabled', false).html('<i class="mdi mdi-microsoft-excel" style="font-size:18px;"></i> Download Excel');
         });
     });
 

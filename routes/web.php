@@ -58,12 +58,13 @@ Route::group(['middleware' => ['auth', 'Role'], 'roles' => ['admin']], function 
     // Export Sheet Report
     Route::get('/sheet-report/export', [SheetReportController::class, 'export']);
 
-    // Scanlog Upload (OCR PDF → Excel Lembur Harian)
+    // Scanlog Upload (OCR PDF → Preview → Import DB / Export Excel)
     Route::get('/scanlog-upload', [\App\Http\Controllers\ScanlogUploadController::class, 'index'])->name('scanlog.upload');
     Route::get('/scanlog-debug', [\App\Http\Controllers\ScanlogUploadController::class, 'debugInfo'])->name('scanlog.debug');
     Route::post('/scanlog-debug-ocr', [\App\Http\Controllers\ScanlogUploadController::class, 'debugOcr'])->name('scanlog.debug.ocr');
     Route::post('/scanlog-upload', [\App\Http\Controllers\ScanlogUploadController::class, 'upload'])->name('scanlog.process');
     Route::post('/scanlog-export-excel', [\App\Http\Controllers\ScanlogUploadController::class, 'exportExcel'])->name('scanlog.export');
+    Route::post('/scanlog-import-db', [\App\Http\Controllers\ScanlogUploadController::class, 'importToDb'])->name('scanlog.import.db');
 });
 
 Route::group(['middleware' => ['auth']], function () {

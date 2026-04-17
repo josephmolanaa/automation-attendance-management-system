@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use App\Models\Employee;
+use App\Models\Check;
 
 class ScanlogUploadController extends Controller
 {
@@ -130,10 +133,215 @@ class ScanlogUploadController extends Controller
             ], 422);
         }
 
+        // Enrichment: tandai setiap karyawan apakah ada di database
+        $employees = $this->enrichWithDbStatus($employees);
+
         return response()->json([
             'success'   => true,
             'employees' => $employees,
             'message'   => count($employees) . ' karyawan berhasil dibaca dari PDF.',
+        ]);
+    }
+
+    /**
+     * Enrichment: untuk setiap employee dari OCR, tandai status di DB.
+     * - found_in_db: true/false
+     * - db_emp_id: id di tabel employees (jika ditemukan)
+     * - db_name: nama resmi di DB
+     */
+    private function enrichWithDbStatus(array $employees): array
+    {
+        $allEmployees = Employee::all();
+
+        foreach ($employees as &$emp) {
+            $matched = $this->matchEmployeeByName($emp['nama'], $allEmployees);
+            if ($matched) {
+                $emp['found_in_db'] = true;
+                $emp['db_emp_id']   = $matched->id;
+                $emp['db_name']     = $matched->name;
+            } else {
+                $emp['found_in_db'] = false;
+                $emp['db_emp_id']   = null;
+                $emp['db_name']     = null;
+            }
+        }
+        unset($emp);
+
+        return $employees;
+    }
+
+    /**
+     * Cocokkan nama OCR ke Employee di database.
+     * Strategi: exact → contains → word overlap → similar_text
+     */
+    private function matchEmployeeByName(string $ocrName, $allEmployees): ?Employee
+    {
+        $ocrUpper = strtoupper(trim($ocrName));
+
+        // 1. Exact match
+        foreach ($allEmployees as $emp) {
+            if (strtoupper(trim($emp->name)) === $ocrUpper) {
+                return $emp;
+            }
+        }
+
+        // 2. OCR name contains DB name, or vice versa
+        foreach ($allEmployees as $emp) {
+            $dbUpper = strtoupper(trim($emp->name));
+            if (strlen($ocrUpper) >= 4 && str_contains($dbUpper, $ocrUpper)) return $emp;
+            if (strlen($dbUpper) >= 4 && str_contains($ocrUpper, $dbUpper)) return $emp;
+        }
+
+        // 3. Word overlap: cek berapa kata yang sama (minimal 1 kata >= 4 huruf)
+        $ocrWords = array_filter(explode(' ', $ocrUpper), fn($w) => strlen($w) > 3);
+        $bestOverlap = 0;
+        $bestMatch   = null;
+        foreach ($allEmployees as $emp) {
+            $dbWords = array_filter(explode(' ', strtoupper($emp->name)), fn($w) => strlen($w) > 3);
+            $overlap  = count(array_intersect($ocrWords, $dbWords));
+            if ($overlap > $bestOverlap) {
+                $bestOverlap = $overlap;
+                $bestMatch   = $emp;
+            }
+        }
+        if ($bestOverlap >= 1) return $bestMatch;
+
+        // 4. PHP similar_text (fuzzy — threshold 70%)
+        $bestScore = 0;
+        $bestFuzzy = null;
+        foreach ($allEmployees as $emp) {
+            similar_text($ocrUpper, strtoupper($emp->name), $pct);
+            if ($pct > $bestScore) {
+                $bestScore = $pct;
+                $bestFuzzy = $emp;
+            }
+        }
+        if ($bestScore >= 70) return $bestFuzzy;
+
+        return null;
+    }
+
+    /**
+     * Import data OCR ke database (tabel checks).
+     *
+     * Request body:
+     *   data  — JSON string dari employees OCR (sudah enriched dengan db_emp_id)
+     *
+     * Logic per record:
+     *   - Jika db_emp_id ada → cek apakah check sudah ada untuk (emp_id + tanggal)
+     *     - Belum ada → INSERT
+     *     - Ada + leave_time null + ada scan2 → UPDATE leave_time
+     *     - Ada + sudah lengkap → SKIP
+     *   - Jika db_emp_id null → SKIP (catat sebagai not_found)
+     *
+     * Return: ringkasan per karyawan + total inserted/updated/skipped
+     */
+    public function importToDb(Request $request)
+    {
+        $request->validate(['data' => 'required|string']);
+
+        $employees = json_decode($request->input('data'), true);
+        if (json_last_error() !== JSON_ERROR_NONE || empty($employees)) {
+            return response()->json(['success' => false, 'message' => 'Data JSON tidak valid.'], 422);
+        }
+
+        $totalInserted = 0;
+        $totalUpdated  = 0;
+        $totalSkipped  = 0;
+        $totalNotFound = 0;
+        $details       = [];
+
+        foreach ($employees as $emp) {
+            $empName  = $emp['nama'] ?? '-';
+            $dbEmpId  = $emp['db_emp_id'] ?? null;
+            $records  = $emp['records']   ?? [];
+
+            if (!$dbEmpId) {
+                $totalNotFound++;
+                $details[] = [
+                    'nama'    => $empName,
+                    'status'  => 'not_found',
+                    'message' => 'Karyawan tidak ditemukan di database.',
+                    'records' => [],
+                ];
+                continue;
+            }
+
+            $empDetails   = [];
+            $empInserted  = 0;
+            $empUpdated   = 0;
+            $empSkipped   = 0;
+
+            foreach ($records as $rec) {
+                $tanggal = $rec['tanggal'] ?? null; // format YYYY-MM-DD
+                $scan1   = $rec['scan1']   ?? null; // HH:MM:SS
+                $scan2   = $rec['scan2']   ?? null;
+
+                if (!$tanggal) {
+                    $empSkipped++;
+                    continue;
+                }
+
+                // Buat datetime string
+                $attTime  = $scan1 ? ($tanggal . ' ' . $scan1) : null;
+                $leaveTime = $scan2 ? ($tanggal . ' ' . $scan2) : null;
+
+                // Cek existing check untuk emp_id + tanggal ini
+                $existing = Check::where('emp_id', $dbEmpId)
+                    ->whereDate('attendance_time', $tanggal)
+                    ->first();
+
+                if (!$existing) {
+                    // INSERT baru
+                    Check::create([
+                        'emp_id'          => $dbEmpId,
+                        'attendance_time' => $attTime  ?? ($tanggal . ' 00:00:00'),
+                        'leave_time'      => $leaveTime,
+                    ]);
+                    $empInserted++;
+                    $totalInserted++;
+                    $empDetails[] = ['tanggal' => $tanggal, 'action' => 'inserted'];
+
+                } elseif (!$existing->leave_time && $leaveTime) {
+                    // UPDATE: isi leave_time yang masih null
+                    $existing->update(['leave_time' => $leaveTime]);
+                    $empUpdated++;
+                    $totalUpdated++;
+                    $empDetails[] = ['tanggal' => $tanggal, 'action' => 'updated_leave'];
+
+                } else {
+                    // SKIP: sudah ada dan lengkap
+                    $empSkipped++;
+                    $totalSkipped++;
+                    $empDetails[] = ['tanggal' => $tanggal, 'action' => 'skipped'];
+                }
+            }
+
+            $details[] = [
+                'nama'     => $empName,
+                'db_name'  => $emp['db_name'] ?? $empName,
+                'status'   => 'found',
+                'inserted' => $empInserted,
+                'updated'  => $empUpdated,
+                'skipped'  => $empSkipped,
+                'records'  => $empDetails,
+            ];
+        }
+
+        Log::info('[Scanlog Import] inserted=' . $totalInserted . ' updated=' . $totalUpdated
+            . ' skipped=' . $totalSkipped . ' not_found=' . $totalNotFound);
+
+        return response()->json([
+            'success'    => true,
+            'summary' => [
+                'inserted'  => $totalInserted,
+                'updated'   => $totalUpdated,
+                'skipped'   => $totalSkipped,
+                'not_found' => $totalNotFound,
+            ],
+            'details'    => $details,
+            'message'    => "Import selesai: {$totalInserted} ditambahkan, {$totalUpdated} diperbarui, "
+                          . "{$totalSkipped} dilewati, {$totalNotFound} tidak ditemukan di database.",
         ]);
     }
 
