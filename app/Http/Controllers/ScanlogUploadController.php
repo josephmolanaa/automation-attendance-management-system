@@ -157,69 +157,14 @@ class ScanlogUploadController extends Controller
         }
 
         // ── Overnight detection ────────────────────────────────────────────────
-        // Untuk setiap karyawan, cek pola:
-        //   Hari D : scan1 >= 17:00, scan2 kosong  (mulai shift malam)
-        //   Hari D+1: scan1 < 07:00               (departure malam sebelumnya)
-        // → Gabungkan: scan1 D+1 jadi scan2/leave_time hari D (overnight)
-        // → Hapus record D+1 yang sudah dipakai sebagai departure
+        // Gunakan AttendanceImportService baru untuk memproses preview data
+        $importService = app(\App\Services\AttendanceImportService::class);
+
         foreach ($grouped as $namaUpper => &$empData) {
             $recs = $empData['records'];
-
-            // Sort by tanggal ascending
             usort($recs, fn($a, $b) => strcmp($a['tanggal'], $b['tanggal']));
 
-            $merged   = [];
-            $skipNext = false;
-
-            for ($i = 0, $n = count($recs); $i < $n; $i++) {
-                if ($skipNext) { $skipNext = false; continue; }
-
-                $curr = $recs[$i];
-                $next = $recs[$i + 1] ?? null;
-
-                if ($next) {
-                    $currH = $curr['scan1'] ? (int) substr($curr['scan1'], 0, 2) : -1;
-                    $nextH = $next['scan1'] ? (int) substr($next['scan1'], 0, 2) : -1;
-
-                    try {
-                        $dayDiff = (int) (new \DateTime($curr['tanggal']))
-                            ->diff(new \DateTime($next['tanggal']))->days;
-                    } catch (\Exception $e) {
-                        $dayDiff = 99;
-                    }
-
-                    $isOvernight = (
-                        $dayDiff === 1             // hari berturut-turut
-                        && $currH >= 17            // mulai shift malam (≥ 17:00)
-                        && empty($curr['scan2'])   // belum ada departure
-                        && $nextH >= 0             // ada scan di hari berikutnya
-                        && $nextH < 7              // scan berikutnya pagi buta (departure)
-                    );
-
-                    if ($isOvernight) {
-                        // Merge: departure D+1 jadi leave_time hari D
-                        $curr['scan2']      = $next['scan1'];
-                        $curr['is_overnight'] = true;
-
-                        if (!empty($next['scan2'])) {
-                            // D+1 masih punya scan_out → simpan sebagai record terpisah D+1
-                            // (scan1 null karena sudah dipakai sebagai departure D)
-                            $next['scan1'] = null;
-                            $merged[] = $curr;
-                            $merged[] = $next;
-                        } else {
-                            // D+1 hanya punya departure → hapus, sudah dimerge ke D
-                            $merged[] = $curr;
-                        }
-                        $skipNext = true;
-                        continue;
-                    }
-                }
-
-                $merged[] = $curr;
-            }
-
-            $empData['records'] = $merged;
+            $empData['records'] = $importService->parsePreviewMode(collect($recs));
         }
         unset($empData); // clear reference
         // ─────────────────────────────────────────────────────────────────────

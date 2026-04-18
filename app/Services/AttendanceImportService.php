@@ -8,14 +8,54 @@ use Carbon\Carbon;
 
 class AttendanceImportService
 {
+    private array $previewBuffer = [];
+
+    /**
+     * Memproses baris CSV menjadi array preview tanpa menyimpannya ke database.
+     * 
+     * @param Collection $rows
+     * @return array
+     */
+    public function parsePreviewMode(Collection $rows): array
+    {
+        // Ganti properti date/tanggal agar konsisten buat logic
+        $mappedRows = $rows->map(function ($r) {
+            $r['date'] = $r['tanggal'] ?? $r['date'];
+            return $r;
+        });
+
+        $this->previewBuffer = [];
+        $this->processEmployeeRows(0, $mappedRows, true); // use flag parameter
+
+        // Convert the preview buffer format back to frontend expected keys
+        $frontendFormat = [];
+        foreach ($this->previewBuffer as $rec) {
+            $dateOnly = Carbon::parse($rec['date'])->format('Y-m-d');
+            $scan1Time = $rec['check_in'] ? Carbon::parse($rec['check_in'])->format('H:i:s') : '';
+            $scan2Time = $rec['check_out'] ? Carbon::parse($rec['check_out'])->format('H:i:s') : '';
+
+            $frontendFormat[] = [
+                'tanggal' => $dateOnly,
+                'scan1'   => $scan1Time,
+                'scan2'   => $scan2Time,
+                'is_overnight' => $rec['is_overnight'],
+                'needs_review' => $rec['needs_review'],
+                'shift_hint' => $rec['shift_hint']
+            ];
+        }
+
+        return $frontendFormat;
+    }
+
     /**
      * Memproses semua baris attendance dari CSV untuk satu employee.
      *
      * @param int $employeeId
      * @param Collection $rows
+     * @param bool $isPreviewMode
      * @return void
      */
-    public function processEmployeeRows(int $employeeId, Collection $rows): void
+    public function processEmployeeRows(int $employeeId, Collection $rows, bool $isPreviewMode = false): void
     {
         // 3. Deteksi pola shift
         $streakHint = $this->detectShiftStreak($rows);
@@ -44,7 +84,7 @@ class AttendanceImportService
                     'is_overnight' => true,
                     'needs_review' => $needsReview,
                     'shift_hint' => $streakHint
-                ]);
+                ], $isPreviewMode);
 
                 if (!empty($currentRow['scan2'])) {
                     $this->createAttendanceRecord($employeeId, [
@@ -56,7 +96,7 @@ class AttendanceImportService
                         'is_overnight' => false,
                         'needs_review' => false,
                         'shift_hint' => $streakHint
-                    ]);
+                    ], $isPreviewMode);
                     $processedRows[$i]['scan2_consumed'] = true;
                 }
             } else {
@@ -87,7 +127,7 @@ class AttendanceImportService
                     'is_overnight' => false,
                     'needs_review' => $finalReview,
                     'shift_hint' => $streakHint
-                ]);
+                ], $isPreviewMode);
             }
         }
     }
@@ -186,8 +226,13 @@ class AttendanceImportService
     /**
      * Helper: Buat atau update Attendance record.
      */
-    private function createAttendanceRecord(int $employeeId, array $data): void
+    private function createAttendanceRecord(int $employeeId, array $data, bool $isPreviewMode = false): void
     {
+        if ($isPreviewMode) {
+            $this->previewBuffer[] = $data;
+            return;
+        }
+
         Attendance::updateOrCreate(
             [
                 'employee_id' => $employeeId,
