@@ -376,11 +376,16 @@ class ScanlogUploadController extends Controller
 
         // H:i:s atau H:i
         if (preg_match('/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/', $raw, $m)) {
-            return sprintf('%02d:%02d:%02d', $m[1], $m[2], $m[3] ?? '00');
+            $h = max(0, min(23, (int)$m[1]));
+            $i = max(0, min(59, (int)$m[2]));
+            $s = max(0, min(59, (int)($m[3] ?? '00')));
+            return sprintf('%02d:%02d:%02d', $h, $i, $s);
         }
         // Titik: 7.30
         if (preg_match('/^(\d{1,2})\.(\d{2})$/', $raw, $m)) {
-            return sprintf('%02d:%02d:00', $m[1], $m[2]);
+            $h = max(0, min(23, (int)$m[1]));
+            $i = max(0, min(59, (int)$m[2]));
+            return sprintf('%02d:%02d:00', $h, $i);
         }
         return null;
     }
