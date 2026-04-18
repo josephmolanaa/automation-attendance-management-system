@@ -229,7 +229,16 @@ class AttendanceImportService
     private function createAttendanceRecord(int $employeeId, array $data, bool $isPreviewMode = false): void
     {
         if ($isPreviewMode) {
-            $this->previewBuffer[] = $data;
+            $d = $data['date']->format('Y-m-d');
+            if (isset($this->previewBuffer[$d])) {
+                // Jangan timpa check_in jika null, mensimulasikan DB::raw('check_in')
+                if (empty($data['check_in']) && !empty($this->previewBuffer[$d]['check_in'])) {
+                    $data['check_in'] = $this->previewBuffer[$d]['check_in'];
+                }
+                $this->previewBuffer[$d] = array_merge($this->previewBuffer[$d], $data);
+            } else {
+                $this->previewBuffer[$d] = $data;
+            }
             return;
         }
 
