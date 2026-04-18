@@ -110,9 +110,24 @@ class AttendanceImportService
                 
                 $baseReview = empty($currentRow['scan1']) && !empty($currentRow['scan2']);
                 
-                // Tambahan: cek scan masuk yang sangat pagi tapi gagal overnight (karena bukan baris lanjutan)
+                // Cek scan masuk tunggal yang anomali
                 $ciTime = !empty($currentRow['scan1']) ? Carbon::parse($currentRow['scan1'])->format('H:i') : null;
-                if ($ciTime && $ciTime >= '00:30' && $ciTime <= '06:30') {
+                
+                if (!empty($ci) && empty($co)) {
+                    if ($streakHint === 'shift_1' && $ciTime >= '11:00') {
+                        // Karyawan Shift 1 hanya tap 1x di siang/sore/malam -> Asumsi lupa tap masuk
+                        $co = $ci;
+                        $ci = null;
+                        $baseReview = true;
+                    } elseif ($streakHint === 'shift_2' && $ciTime <= '12:00') {
+                        // Karyawan Shift 2 hanya tap 1x di pagi hari (tidak nyangkut overnight karena semalam bolong) 
+                        $co = $ci;
+                        $ci = null;
+                        $baseReview = true;
+                    }
+                }
+
+                if ($ciTime && $ciTime >= '00:30' && $ciTime <= '06:30' && $ci !== null) {
                     $baseReview = true;
                 }
                 
