@@ -10,147 +10,195 @@ class AttendanceImportService
 {
     /**
      * Memproses semua baris attendance dari CSV untuk satu employee.
-     * Menggunakan pendekatan Collections untuk memproses semalam (overnight return).
      *
      * @param int $employeeId
      * @param Collection $rows
      * @return void
      */
-    private function processEmployeeRows(int $employeeId, Collection $rows): void
+    public function processEmployeeRows(int $employeeId, Collection $rows): void
     {
+        // 3. Deteksi pola shift
+        $streakHint = $this->detectShiftStreak($rows);
         $processedRows = $rows->toArray();
-        $recordsToCreate = []; // Optional tracking in memory if needed
 
         for ($i = 0; $i < count($processedRows); $i++) {
             $currentRow = $processedRows[$i];
             $prevRow = $i > 0 ? $processedRows[$i - 1] : null;
 
-            $isOvernight = $this->isOvernightReturn($currentRow, $prevRow);
+            $needsReview = false;
+            $isOvernight = $this->isOvernightReturn($currentRow, $prevRow, $streakHint, $needsReview);
 
             if ($isOvernight) {
-                // Determine check_in time for the night shift:
-                // Jika scan2 baris sebelumnya sudah dikonsumsi sebagai check-in, gunakan scan2, 
-                // jika belum (hanya scan1), gunakan scan1.
+                // CASE A
                 $prevCheckInTime = ($prevRow['scan2_consumed'] ?? false) ? $prevRow['scan2'] : $prevRow['scan1'];
 
-                // B.1 Buat / Update satu Attendance record untuk tanggal baris ke-(i-1)
                 $checkOutDatetime = Carbon::parse($currentRow['date'] . ' ' . $currentRow['scan1'])->format('Y-m-d H:i:s');
                 $checkInDatetime = !empty($prevCheckInTime) ? Carbon::parse($prevRow['date'] . ' ' . $prevCheckInTime)->format('Y-m-d H:i:s') : null;
 
                 $this->createAttendanceRecord($employeeId, [
                     'date' => Carbon::parse($prevRow['date']),
                     'check_in' => $checkInDatetime,
+                    'check_in_date' => Carbon::parse($prevRow['date']),
                     'check_out' => $checkOutDatetime,
+                    'check_out_date' => Carbon::parse($currentRow['date']),
                     'is_overnight' => true,
-                    'needs_review' => false,
+                    'needs_review' => $needsReview,
+                    'shift_hint' => $streakHint
                 ]);
 
-                // B.2 Jika SCAN2 baris ke-i tidak kosong:
                 if (!empty($currentRow['scan2'])) {
                     $this->createAttendanceRecord($employeeId, [
                         'date' => Carbon::parse($currentRow['date']),
                         'check_in' => Carbon::parse($currentRow['date'] . ' ' . $currentRow['scan2'])->format('Y-m-d H:i:s'),
+                        'check_in_date' => Carbon::parse($currentRow['date']),
                         'check_out' => null,
+                        'check_out_date' => null,
                         'is_overnight' => false,
                         'needs_review' => false,
+                        'shift_hint' => $streakHint
                     ]);
-
-                    // Tandai baris ke-i dengan flag
                     $processedRows[$i]['scan2_consumed'] = true;
                 }
-                // B.3 Jika SCAN2 baris ke-i kosong: tidak perlu buat record tambahan.
-
             } else {
-                // C. Jika overnight TIDAK terdeteksi (proses normal)
-
-                // Cek apakah baris ke-i ini ADALAH baris yang datanya sudah 
-                // diproses (terkonsumsi) oleh step B.2 saat iterasi sebelumnya.
-                // Logika Collections manual: if row is consumed, skip.
+                // CASE B
                 if ($currentRow['scan2_consumed'] ?? false) {
                     continue; 
                 }
 
                 $ci = !empty($currentRow['scan1']) ? Carbon::parse($currentRow['date'] . ' ' . $currentRow['scan1'])->format('Y-m-d H:i:s') : null;
                 $co = !empty($currentRow['scan2']) ? Carbon::parse($currentRow['date'] . ' ' . $currentRow['scan2'])->format('Y-m-d H:i:s') : null;
+                
+                $baseReview = empty($currentRow['scan1']) && !empty($currentRow['scan2']);
+                
+                // Tambahan: cek scan masuk yang sangat pagi tapi gagal overnight (karena bukan baris lanjutan)
+                $ciTime = !empty($currentRow['scan1']) ? Carbon::parse($currentRow['scan1'])->format('H:i') : null;
+                if ($ciTime && $ciTime >= '00:30' && $ciTime <= '06:30') {
+                    $baseReview = true;
+                }
+                
+                $finalReview = $baseReview || $needsReview;
 
                 $this->createAttendanceRecord($employeeId, [
                     'date' => Carbon::parse($currentRow['date']),
                     'check_in' => $ci,
+                    'check_in_date' => $ci ? Carbon::parse($currentRow['date']) : null,
                     'check_out' => $co,
+                    'check_out_date' => $co ? Carbon::parse($currentRow['date']) : null,
                     'is_overnight' => false,
-                    'needs_review' => empty($currentRow['scan1']) && !empty($currentRow['scan2']),
+                    'needs_review' => $finalReview,
+                    'shift_hint' => $streakHint
                 ]);
             }
         }
     }
 
     /**
+     * Deteksi pola shift
+     *
+     * @param Collection $rows
+     * @return string
+     */
+    private function detectShiftStreak(Collection $rows): string
+    {
+        $total = $rows->count();
+        if ($total < 3) {
+            return 'insufficient_data';
+        }
+
+        $day = 0;
+        $night = 0;
+        $over = 0;
+
+        foreach ($rows as $row) {
+            if (empty($row['scan1'])) continue;
+            
+            $t = Carbon::parse($row['scan1'])->format('H:i:s');
+            if ($t >= '06:31:00' && $t <= '16:59:59') {
+                $day++;
+            } elseif ($t >= '17:00:00' && $t <= '23:59:59') {
+                $night++;
+            } elseif ($t >= '00:30:00' && $t <= '06:30:00') {
+                $over++;
+            }
+        }
+
+        $shift2Count = $night + $over;
+        if ($shift2Count / $total >= 0.60) {
+            return 'shift_2';
+        }
+        if ($day / $total >= 0.60) {
+            return 'shift_1';
+        }
+        return 'mixed';
+    }
+
+    /**
      * Cek apakah baris ke-i adalah overnight return dari baris prev.
      * Kondisi A (1-4).
      */
-    private function isOvernightReturn(array $currentRow, ?array $prevRow): bool
+    private function isOvernightReturn(array $currentRow, ?array $prevRow, string $streakHint, bool &$needsReview = false): bool
     {
-        if (!$prevRow) {
-            return false;
-        }
-
+        $needsReview = false;
+        
         $cScan1 = $currentRow['scan1'] ?? '';
-        if (empty($cScan1)) {
-            return false;
-        }
+        if (empty($cScan1)) return false;
 
-        // 1. SCAN1 baris ke-i masuk window jam 00:30–06:30
         $t1 = Carbon::parse($cScan1)->format('H:i:s');
-        if ($t1 < '00:30:00' || $t1 > '06:30:00') {
+        $cond1 = ($t1 >= '00:30:00' && $t1 <= '06:30:00');
+
+        if (!$prevRow) {
+            if ($streakHint === 'shift_1' && $cond1) {
+                $needsReview = true;
+            }
             return false;
         }
 
-        // 2. SCAN2 baris ke-(i-1) kosong/null ATAU baris ke-(i-1) sudah ditandai scan2_consumed = true
         $pScan2 = $prevRow['scan2'] ?? '';
         $pConsumed = $prevRow['scan2_consumed'] ?? false;
-        if (!empty($pScan2) && !$pConsumed) {
-            return false;
-        }
+        $cond2 = empty($pScan2) || $pConsumed;
 
-        // 3. Waktu masuk shift malam baris ke-(i-1) masuk window jam 17:00–23:59
-        // Logika disesuaikan: Check-in malam bisa dari scan1 (normal) atau scan2 (continuous overnight check-in)
         $pCheckIn = $pConsumed ? $pScan2 : ($prevRow['scan1'] ?? '');
-        if (empty($pCheckIn)) {
-            return false;
-        }
-        $t2 = Carbon::parse($pCheckIn)->format('H:i:s');
-        if ($t2 < '17:00:00' || $t2 > '23:59:59') {
-            return false;
-        }
+        $t2 = !empty($pCheckIn) ? Carbon::parse($pCheckIn)->format('H:i:s') : null;
+        $threshold = ($streakHint === 'shift_2') ? '16:30:00' : '17:00:00';
+        $cond3 = $t2 && ($t2 >= $threshold && $t2 <= '23:59:59');
 
-        // 4. Selisih tanggal tepat 1 hari
         $diff = Carbon::parse($currentRow['date'])->diffInDays(Carbon::parse($prevRow['date']));
-        if ($diff !== 1) {
+        $cond4 = ($diff === 1);
+
+        if ($streakHint === 'shift_1' && $cond1) {
+            $needsReview = true;
             return false;
         }
 
-        return true;
+        if ($cond1 && $cond2 && $cond4) {
+            if ($cond3) {
+                return true;
+            } else if ($streakHint === 'shift_2') {
+                // Terdapat toleransi untuk kasus di luar threshold tapi tetap return true
+                $needsReview = true;
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
      * Helper: Buat atau update Attendance record.
-     * Mencegah N+1 dengan menggunakan updateOrCreate bawaan Eloquent atau upsert (jika didukung).
      */
     private function createAttendanceRecord(int $employeeId, array $data): void
     {
-        // Menyimpan status semalam dan needs review, update check_out dll
         Attendance::updateOrCreate(
             [
                 'employee_id' => $employeeId,
                 'date' => $data['date']->format('Y-m-d')
             ],
             [
-                // Cek agar check_in sebelumnya tak tertimpa jika null.
-                // Jika ingin upsert secara rigid, pastikan check_in hanya ditimpa jika array menyediakannya
                 'check_in' => $data['check_in'] ?? \DB::raw('check_in'),
                 'check_out' => $data['check_out'],
                 'is_overnight' => $data['is_overnight'] ?? false,
                 'needs_review' => $data['needs_review'] ?? false,
+                'shift_hint' => $data['shift_hint'] ?? null,
             ]
         );
     }
