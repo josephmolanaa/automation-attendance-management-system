@@ -113,30 +113,44 @@ class AttendanceImportService
                 
                 $baseReview = empty($currentRow['scan1']) && !empty($currentRow['scan2']);
                 
-                // Jika tidak overnight, tapi ada scan3, gunakan scan3 sebagai co
-                if (!empty($currentRow['scan3']) && !empty($currentRow['scan2'])) {
-                    $co = Carbon::parse($currentRow['date'] . ' ' . $currentRow['scan3'])->format('Y-m-d H:i:s');
-                }
+                // Cek scan masuk tunggal yang anomali (orphaned checkout)
+                $ciTime = !empty($currentRow['scan1']) ? Carbon::parse($currentRow['scan1'])->format('H:i:s') : null;
+                $isOrphanedCheckout = $ciTime && $ciTime >= '00:30:00' && $ciTime <= '06:30:00';
 
-                // Cek scan masuk tunggal yang anomali
-                $ciTime = !empty($currentRow['scan1']) ? Carbon::parse($currentRow['scan1'])->format('H:i') : null;
-                
-                if (!empty($ci) && empty($co)) {
-                    if ($streakHint === 'shift_1' && $ciTime >= '11:00') {
-                        // Karyawan Shift 1 hanya tap 1x di siang/sore/malam -> Asumsi lupa tap masuk
-                        $co = $ci;
-                        $ci = null;
-                        $baseReview = true;
-                    } elseif ($streakHint === 'shift_2' && $ciTime <= '12:00') {
-                        // Karyawan Shift 2 hanya tap 1x di pagi hari (tidak nyangkut overnight karena semalam bolong) 
-                        $co = $ci;
-                        $ci = null;
+                if ($isOrphanedCheckout) {
+                    // Ini adalah orphaned checkout (sisa shift malam sebelumnya yang baris pertamanya terpotong)
+                    $yesterday = Carbon::parse($currentRow['date'])->subDay();
+                    $this->createAttendanceRecord($employeeId, [
+                        'date' => $yesterday,
+                        'check_in' => null, 
+                        'check_in_date' => null,
+                        'check_out' => Carbon::parse($currentRow['date'] . ' ' . $currentRow['scan1'])->format('Y-m-d H:i:s'),
+                        'check_out_date' => Carbon::parse($currentRow['date']),
+                        'is_overnight' => true,
+                        'needs_review' => true,
+                        'shift_hint' => $streakHint
+                    ], $isPreviewMode);
+
+                    // Shift untuk hari Sabtu (hari ini) bergeser ke scan2 dan scan3
+                    $ci = !empty($currentRow['scan2']) ? Carbon::parse($currentRow['date'] . ' ' . $currentRow['scan2'])->format('Y-m-d H:i:s') : null;
+                    $co = !empty($currentRow['scan3']) ? Carbon::parse($currentRow['date'] . ' ' . $currentRow['scan3'])->format('Y-m-d H:i:s') : null;
+                    
+                    if ($ci && !$co) {
                         $baseReview = true;
                     }
-                }
-
-                if ($ciTime && $ciTime >= '00:30' && $ciTime <= '06:30' && $ci !== null) {
-                    $baseReview = true;
+                } else {
+                    // Jika tidak overnight, tapi ada scan3, gunakan scan3 sebagai co
+                    if (!empty($currentRow['scan3']) && !empty($currentRow['scan2'])) {
+                        $co = Carbon::parse($currentRow['date'] . ' ' . $currentRow['scan3'])->format('Y-m-d H:i:s');
+                    }
+                    
+                    if (!empty($ci) && empty($co)) {
+                        if ($streakHint === 'shift_1' && $ciTime >= '11:00:00') {
+                            $co = $ci; $ci = null; $baseReview = true;
+                        } elseif ($streakHint === 'shift_2' && $ciTime <= '12:00:00') {
+                            $co = $ci; $ci = null; $baseReview = true;
+                        }
+                    }
                 }
                 
                 $finalReview = $baseReview || $needsReview;
