@@ -36,8 +36,15 @@ class HolidayService
             ]);
             if ($response->successful()) {
                 return collect($response->json())
-                    ->where('is_national_holiday', true)
-                    ->pluck('holiday_date')->filter()->values()->toArray();
+                    ->filter(function($item) {
+                        return !isset($item['is_national_holiday']) || $item['is_national_holiday'] === true;
+                    })
+                    ->map(function($item) {
+                        return $item['holiday_date'] ?? $item['date'] ?? null;
+                    })
+                    ->filter()
+                    ->values()
+                    ->toArray();
             }
         } catch (\Exception $e) {
             Log::warning('[HolidayService] Primary API gagal: ' . $e->getMessage());
