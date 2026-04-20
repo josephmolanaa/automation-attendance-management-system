@@ -33,7 +33,7 @@ class SheetReportExport implements FromArray, WithEvents
         $bulan = $this->bulan;
         $tahun = $this->tahun;
 
-        $employees    = Employee::orderBy('name')->get();
+        $employees    = Employee::orderBy('id')->get();
         $allSchedules = Schedule::all();
         $daysInMonth  = Carbon::createFromDate($tahun, $bulan, 1)->daysInMonth;
 
@@ -46,10 +46,10 @@ class SheetReportExport implements FromArray, WithEvents
             ->get()->groupBy('emp_id');
 
         $rows = [];
-        $rows[] = array_fill(0, 11, null); // Row 1
+        $rows[] = [' ', '', '', '', '', '', '', '', '', '', '']; // Row 1
         $this->rowMeta[] = ['type' => 'empty'];
         
-        $rows[] = array_fill(0, 11, null); // Row 2
+        $rows[] = [' ', '', '', '', '', '', '', '', '', '', '']; // Row 2
         $this->rowMeta[] = ['type' => 'empty'];
         
         $rows[] = ['', '', 'DATA SCANLOG']; // Row 3
@@ -69,9 +69,9 @@ class SheetReportExport implements FromArray, WithEvents
             });
 
             if ($index > 0) {
-                $rows[] = array_fill(0, 11, null);
+                $rows[] = [' ', '', '', '', '', '', '', '', '', '', ''];
                 $this->rowMeta[] = ['type' => 'empty'];
-                $rows[] = array_fill(0, 11, null);
+                $rows[] = [' ', '', '', '', '', '', '', '', '', '', ''];
                 $this->rowMeta[] = ['type' => 'empty'];
             }
 
@@ -165,7 +165,7 @@ class SheetReportExport implements FromArray, WithEvents
             }
 
             // NIP before TOTAL
-            $rows[] = ['', '', $employee->emp_id ?? $employee->id, '', '', '', '', '', '', '', ''];
+            $rows[] = [' ', '', $employee->emp_id ?? $employee->id, '', '', '', '', '', '', '', ''];
             $this->rowMeta[] = ['type' => 'empty_before_total'];
 
             // Baris TOTAL
