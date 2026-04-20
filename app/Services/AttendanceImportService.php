@@ -87,12 +87,15 @@ class AttendanceImportService
                 ], $isPreviewMode);
 
                 if (!empty($currentRow['scan2'])) {
+                    $cScan3 = $currentRow['scan3'] ?? null;
+                    $newCheckOut = !empty($cScan3) ? Carbon::parse($currentRow['date'] . ' ' . $cScan3)->format('Y-m-d H:i:s') : null;
+
                     $this->createAttendanceRecord($employeeId, [
                         'date' => Carbon::parse($currentRow['date']),
                         'check_in' => Carbon::parse($currentRow['date'] . ' ' . $currentRow['scan2'])->format('Y-m-d H:i:s'),
                         'check_in_date' => Carbon::parse($currentRow['date']),
-                        'check_out' => null,
-                        'check_out_date' => null,
+                        'check_out' => $newCheckOut,
+                        'check_out_date' => $newCheckOut ? Carbon::parse($currentRow['date']) : null,
                         'is_overnight' => false,
                         'needs_review' => false,
                         'shift_hint' => $streakHint
@@ -110,6 +113,11 @@ class AttendanceImportService
                 
                 $baseReview = empty($currentRow['scan1']) && !empty($currentRow['scan2']);
                 
+                // Jika tidak overnight, tapi ada scan3, gunakan scan3 sebagai co
+                if (!empty($currentRow['scan3']) && !empty($currentRow['scan2'])) {
+                    $co = Carbon::parse($currentRow['date'] . ' ' . $currentRow['scan3'])->format('Y-m-d H:i:s');
+                }
+
                 // Cek scan masuk tunggal yang anomali
                 $ciTime = !empty($currentRow['scan1']) ? Carbon::parse($currentRow['scan1'])->format('H:i') : null;
                 

@@ -130,6 +130,7 @@ class ScanlogUploadController extends Controller
             $tanggal = trim($row['tanggal']    ?? $row['date']    ?? $row['tgl'] ?? '');
             $scan1   = trim($row['scan_masuk'] ?? $row['scan1']   ?? $row['masuk']  ?? $row['time_in']  ?? '');
             $scan2   = trim($row['scan_keluar']?? $row['scan2']   ?? $row['keluar'] ?? $row['time_out'] ?? '');
+            $scan3   = trim($row['scan_3'] ?? $row['scan3'] ?? $row['scan_masuk_2'] ?? '');
 
             if (empty($nama) || empty($tanggal)) continue;
 
@@ -140,6 +141,7 @@ class ScanlogUploadController extends Controller
             // Normalisasi waktu ke HH:MM:SS
             $scan1 = $scan1 ? $this->normalizeTime($scan1) : null;
             $scan2 = $scan2 ? $this->normalizeTime($scan2) : null;
+            $scan3 = $scan3 ? $this->normalizeTime($scan3) : null;
 
             $namaUpper = strtoupper($nama);
             if (!isset($grouped[$namaUpper])) {
@@ -153,6 +155,7 @@ class ScanlogUploadController extends Controller
                 'tanggal' => $tanggal,
                 'scan1'   => $scan1,
                 'scan2'   => $scan2,
+                'scan3'   => $scan3,
             ];
         }
 
