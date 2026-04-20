@@ -46,9 +46,18 @@ class SheetReportExport implements FromArray, WithEvents
             ->get()->groupBy('emp_id');
 
         $rows = [];
-        $headerRow = ['NIP', 'NAMA', 'JABATAN/PARTIM', 'HARI', 'TANGGAL', 'SCAN 1', 'SCAN 2', 'SCAN 3', 'NORMAL', 'DOUBLE', 'MINGGU', 'IZIN / CUTI'];
+        $rows[] = array_fill(0, 11, null); // Row 1
+        $this->rowMeta[] = ['type' => 'empty'];
+        
+        $rows[] = array_fill(0, 11, null); // Row 2
+        $this->rowMeta[] = ['type' => 'empty'];
+        
+        $rows[] = ['', '', 'DATA SCANLOG']; // Row 3
+        $this->rowMeta[] = ['type' => 'title'];
 
-        foreach ($employees as $employee) {
+        $headerRow = ['', '', 'NIP', 'NAMA', 'HARI', 'TANGGAL', 'SCAN 1', 'SCAN 2', 'NORMAL ', 'DOUBLE ', 'MINGGU '];
+
+        foreach ($employees as $index => $employee) {
             $empChecks = $checks->get($employee->id, collect());
             $empLeaves = $leaves->get($employee->id, collect());
 
@@ -58,6 +67,13 @@ class SheetReportExport implements FromArray, WithEvents
             $leavesByDate = $empLeaves->keyBy(function($l) {
                 return Carbon::parse($l->leave_date)->format('Y-m-d');
             });
+
+            if ($index > 0) {
+                $rows[] = array_fill(0, 11, null);
+                $this->rowMeta[] = ['type' => 'empty'];
+                $rows[] = array_fill(0, 11, null);
+                $this->rowMeta[] = ['type' => 'empty'];
+            }
 
             // Header per karyawan
             $rows[] = $headerRow;
@@ -79,8 +95,6 @@ class SheetReportExport implements FromArray, WithEvents
                     ? Carbon::parse($scan1->attendance_time)->format('H:i:s') : null;
                 $scan2Time = $scan1 && $scan1->leave_time
                     ? Carbon::parse($scan1->leave_time)->format('H:i:s') : null;
-                $scan3Time = $scan1 && $scan1->second_leave_time
-                    ? Carbon::parse($scan1->second_leave_time)->format('H:i:s') : null;
 
                 $normal = null; $double = null; $minggu = null; $izinCuti = null;
                 $isSunday = $dayOfWeek === 0;
@@ -136,29 +150,34 @@ class SheetReportExport implements FromArray, WithEvents
                 }
 
                 $rows[] = [
-                    $employee->emp_id ?? $employee->id,
-                    $employee->name,
-                    $employee->position ?? '',
-                    $dayName,
-                    Carbon::parse($dateStr)->format('d/m/Y'),
-                    $scan1Time,
-                    $scan2Time,
-                    $scan3Time,
-                    $normal,
-                    $double,
-                    $minggu,
-                    $izinCuti,
+                    '', '', // A, B
+                    $employee->emp_id ?? $employee->id, // C
+                    $employee->name, // D
+                    $dayName, // E
+                    Carbon::parse($dateStr)->format('d/m/Y'), // F
+                    $scan1Time, // G
+                    $scan2Time, // H
+                    $normal, // I
+                    $double, // J
+                    $minggu // K
                 ];
                 $this->rowMeta[] = ['type' => 'data', 'is_sunday' => $isSunday];
             }
 
-            // Baris TOTAL
-            $rows[] = ['', '', '', '', '', $employee->name, 'TOTAL', '', $totalNormal ?: null, $totalDouble ?: null, $totalMinggu ?: null, $totalIzin ?: null];
-            $this->rowMeta[] = ['type' => 'total'];
+            // NIP before TOTAL
+            $rows[] = ['', '', $employee->emp_id ?? $employee->id, '', '', '', '', '', '', '', ''];
+            $this->rowMeta[] = ['type' => 'empty_before_total'];
 
-            // Baris kosong
-            $rows[] = array_fill(0, 12, null);
-            $this->rowMeta[] = ['type' => 'empty'];
+            // Baris TOTAL
+            $rows[] = [
+                '', '', '', '', '', '', 
+                $employee->name, // G
+                'TOTAL', // H
+                $totalNormal ?: 0, // I
+                $totalDouble ?: 0, // J
+                $totalMinggu ?: 0 // K
+            ];
+            $this->rowMeta[] = ['type' => 'total'];
         }
 
         return $rows;
@@ -171,15 +190,18 @@ class SheetReportExport implements FromArray, WithEvents
                 $sheet = $event->sheet->getDelegate();
                 $sheet->getParent()->getActiveSheet()->setTitle('Sheet Report');
 
-                foreach (range('A', 'L') as $col) {
+                foreach (range('C', 'K') as $col) {
                     $sheet->getColumnDimension($col)->setAutoSize(true);
                 }
 
                 foreach ($this->rowMeta as $i => $meta) {
                     $excelRow = $i + 1;
-                    $range = "A{$excelRow}:L{$excelRow}";
+                    $range = "C{$excelRow}:K{$excelRow}";
 
-                    if ($meta['type'] === 'header') {
+                    if ($meta['type'] === 'title') {
+                        $sheet->getStyle("C{$excelRow}")->getFont()->setBold(true)->setSize(11);
+
+                    } elseif ($meta['type'] === 'header') {
                         $sheet->getStyle($range)->applyFromArray([
                             'font' => ['bold' => true, 'size' => 9],
                             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '92D050']],
@@ -190,7 +212,7 @@ class SheetReportExport implements FromArray, WithEvents
 
                     } elseif ($meta['type'] === 'data') {
                         $sheet->getStyle($range)->applyFromArray([
-                            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'D0D0D0']]],
+                            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '000000']]],
                             'font' => ['size' => 9],
                             'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
                         ]);
@@ -200,19 +222,20 @@ class SheetReportExport implements FromArray, WithEvents
                             $sheet->getStyle($range)->getFill()
                                 ->setFillType(Fill::FILL_SOLID)
                                 ->getStartColor()->setRGB('FFE4E1');
-                            // Font merah di kolom D (Hari) dan E (Tanggal)
-                            $sheet->getStyle("D{$excelRow}")->getFont()->getColor()->setRGB('FF0000');
-                            $sheet->getStyle("D{$excelRow}")->getFont()->setBold(true);
+                            // Font merah di kolom E (Hari) dan F (Tanggal)
                             $sheet->getStyle("E{$excelRow}")->getFont()->getColor()->setRGB('FF0000');
+                            $sheet->getStyle("E{$excelRow}")->getFont()->setBold(true);
+                            $sheet->getStyle("F{$excelRow}")->getFont()->getColor()->setRGB('FF0000');
                         }
                         $sheet->getRowDimension($excelRow)->setRowHeight(14);
 
                     } elseif ($meta['type'] === 'total') {
-                        $sheet->getStyle($range)->applyFromArray([
+                        $totalRange = "G{$excelRow}:K{$excelRow}";
+                        $sheet->getStyle($totalRange)->applyFromArray([
                             'font' => ['bold' => true, 'size' => 10],
                             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '00B0F0']],
                             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
-                            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '0090C0']]],
+                            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '000000']]],
                         ]);
                         $sheet->getRowDimension($excelRow)->setRowHeight(16);
                     }
