@@ -15,6 +15,9 @@ RUN apt-get update && apt-get install -y \
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 RUN docker-php-ext-install pdo pdo_mysql mbstring gd zip xml bcmath opcache intl exif pcntl
 
+# Nonaktifkan MPM event & worker saat BUILD agar tidak bentrok saat runtime
+RUN a2dismod mpm_event mpm_worker 2>/dev/null || true
+RUN a2enmod mpm_prefork
 RUN a2enmod rewrite
 
 COPY . .
@@ -45,4 +48,4 @@ RUN chmod -R 755 /app/public
 RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
 
 EXPOSE 80
-CMD bash -c "a2dismod mpm_event mpm_worker 2>/dev/null; a2enmod mpm_prefork && sed -i \"s/80/${PORT:-80}/g\" /etc/apache2/ports.conf && sed -i \"s/:80>/:${PORT:-80}>/g\" /etc/apache2/sites-available/000-default.conf && php artisan migrate --force && php artisan db:seed --force && apache2-foreground"
+CMD bash -c "sed -i \"s/80/${PORT:-80}/g\" /etc/apache2/ports.conf && sed -i \"s/:80>/:${PORT:-80}>/g\" /etc/apache2/sites-available/000-default.conf && php artisan migrate --force --no-interaction && apache2-foreground"
