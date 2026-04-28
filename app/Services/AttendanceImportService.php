@@ -266,6 +266,11 @@ class AttendanceImportService
     private function createAttendanceRecord(int $employeeId, array $data, bool $isPreviewMode = false): void
     {
         if ($isPreviewMode) {
+            // Skip hari kosong (tidak ada scan sama sekali)
+            if (empty($data['check_in']) && empty($data['check_out'])) {
+                return;
+            }
+
             $d = $data['date']->format('Y-m-d');
             if (isset($this->previewBuffer[$d])) {
                 // Jangan timpa check_in jika null, mensimulasikan DB::raw('check_in')

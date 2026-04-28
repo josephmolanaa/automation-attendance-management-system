@@ -274,7 +274,10 @@ class ScanlogUploadController extends Controller
 
                 if (!$tanggal) { $empSkipped++; $totalSkipped++; continue; }
 
-                $attTime = $scan1 ? ($tanggal . ' ' . $scan1) : ($tanggal . ' 00:00:00');
+                // Skip baris yang tidak ada scan sama sekali (hari kosong / tidak masuk)
+                if (empty($scan1) && empty($scan2)) { $empSkipped++; $totalSkipped++; continue; }
+
+                $attTime = $scan1 ? ($tanggal . ' ' . $scan1) : null;
 
                 // Hitung leave_time — deteksi overnight: jika scan2 < scan1 (jam), +1 hari
                 $leaveTime = null;
