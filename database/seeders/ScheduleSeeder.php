@@ -10,8 +10,11 @@ class ScheduleSeeder extends Seeder
     public function run()
     {
 
-        DB::table('schedule_employees')->delete();
-        DB::table('schedules')->delete();
+        // Hanya insert jika schedules masih kosong (idempotent)
+        if (DB::table('schedules')->count() > 0) {
+            $this->command->info('⏭️  Schedules sudah ada, skip seeding.');
+            return;
+        }
 
         DB::table('schedules')->insert([
             [

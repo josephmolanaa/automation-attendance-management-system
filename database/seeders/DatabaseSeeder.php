@@ -31,5 +31,7 @@ class DatabaseSeeder extends Seeder
         );
 
         $user->roles()->sync($role->id);
+
+        $this->call(ScheduleSeeder::class);
     }
 }
