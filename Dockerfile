@@ -48,4 +48,4 @@ RUN chmod -R 755 /app/public
 RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
 
 EXPOSE 80
-CMD bash -c "sed -i \"s/80/${PORT:-80}/g\" /etc/apache2/ports.conf && sed -i \"s/:80>/:${PORT:-80}>/g\" /etc/apache2/sites-available/000-default.conf && php artisan migrate --force --no-interaction && apache2-foreground"
+CMD bash -c "a2dismod mpm_event mpm_worker 2>/dev/null || true && a2enmod mpm_prefork && sed -i \"s/80/${PORT:-80}/g\" /etc/apache2/ports.conf && sed -i \"s/:80>/:${PORT:-80}>/g\" /etc/apache2/sites-available/000-default.conf && php artisan migrate --force --no-interaction && apache2-foreground"
