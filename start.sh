@@ -16,5 +16,8 @@ sed -i "s/:80>/:${PORT:-80}>/g" /etc/apache2/sites-available/000-default.conf
 echo "==> Running database migrations..."
 php artisan migrate --force --no-interaction
 
+echo "==> Running database seeders..."
+php artisan db:seed --force --no-interaction
+
 echo "==> Starting Apache..."
 exec apache2-foreground
