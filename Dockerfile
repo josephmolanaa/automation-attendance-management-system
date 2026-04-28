@@ -48,6 +48,7 @@ RUN echo '<Directory /app/public>\n\
 
 RUN chmod -R 755 /app/public
 RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
+RUN chmod +x /app/start.sh
 
 EXPOSE 80
-CMD bash -c "sed -i \"s/80/${PORT:-80}/g\" /etc/apache2/ports.conf && sed -i \"s/:80>/:${PORT:-80}>/g\" /etc/apache2/sites-available/000-default.conf && php artisan migrate --force --no-interaction && apache2-foreground"
+CMD ["/app/start.sh"]
