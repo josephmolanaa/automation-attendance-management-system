@@ -48,13 +48,15 @@ class ShiftDetectionService
         $isFriday = $dayOfWeek === Carbon::FRIDAY && $dayType === 'weekday';
 
         // 3. Filter schedules yang day_type-nya cocok
+        // Pada hari Jumat, KEDUA schedule weekday (SHIFT_1) dan friday (SHIFT_2) harus jadi kandidat,
+        // agar best-match berdasarkan jam scan bisa menentukan yang benar.
         $candidates = $allSchedules->filter(function ($schedule) use ($dayType, $isFriday) {
             $sDayType = $schedule->day_type ?? 'weekday';
             return match ($sDayType) {
                 'friday'   => $isFriday,
                 'saturday' => $dayType === 'saturday',
                 'holiday'  => $dayType === 'holiday',
-                'weekday'  => $dayType === 'weekday' && !$isFriday,
+                'weekday'  => $dayType === 'weekday', // Jumat tetap include weekday schedules
                 default    => false,
             };
         });
