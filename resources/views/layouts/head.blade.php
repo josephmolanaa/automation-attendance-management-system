@@ -1,13 +1,21 @@
 <!-- App favicon -->
 <link rel="shortcut icon" href="{{ URL::asset('assets/images/') }}">
-<meta name="viewport" content="width=device-width, initial-scale=1">      
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1E1B4B">
 @yield('css')
+
+ <!-- Google Fonts: Fira Sans + Fira Code -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
  <!-- App css -->
 <link href="{{ URL::asset('assets/css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" />
 <link href="{{ URL::asset('assets/css/metismenu.min.css') }}" rel="stylesheet" type="text/css">
 <link href="{{ URL::asset('assets/css/icons.css') }}" rel="stylesheet" type="text/css" />
 <link href="{{ URL::asset('assets/css/style.css') }}" rel="stylesheet" type="text/css" />
+<!-- AMS Theme Override -->
+<link href="{{ URL::asset('assets/css/ams-theme.css') }}" rel="stylesheet" type="text/css" />
 
 {{-- <link href="{{ URL::asset('plugins/sweet-alert2/sweetalert2.min.css') }}" rel="stylesheet" type="text/css"> --}}
 
