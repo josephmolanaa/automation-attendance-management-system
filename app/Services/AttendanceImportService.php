@@ -124,12 +124,53 @@ class AttendanceImportService
                 $ciTime = !empty($currentRow['scan1']) ? Carbon::parse($currentRow['scan1'])->format('H:i:s') : null;
                 $isOrphanedCheckout = $ciTime && $ciTime >= '00:30:00' && $ciTime <= '06:30:00';
 
-                // Cek apakah kemarin sudah punya check_out — jika sudah, ini bukan orphaned checkout
-                // melainkan hanya early check-in hari ini (misal datang pagi-pagi di Sabtu)
-                if ($isOrphanedCheckout && $isPreviewMode) {
+                // Orphaned checkout hanya valid jika ADA konteks shift malam:
+                // 1. Minggu ini memang shift_2 (streakHint)
+                // 2. DAN ada bukti shift malam kemarin (check_in malam di buffer ATAU prevRow punya scan malam)
+                if ($isOrphanedCheckout) {
                     $yesterdayStr = Carbon::parse($currentRow['date'])->subDay()->format('Y-m-d');
-                    if (isset($this->previewBuffer[$yesterdayStr]) && !empty($this->previewBuffer[$yesterdayStr]['check_out'])) {
-                        $isOrphanedCheckout = false; // kemarin sudah ada check_out, treat as normal early check-in
+                    
+                    // Cek 1: kalau bukan minggu shift malam, ini bukan orphaned checkout
+                    if ($streakHint !== 'shift_2') {
+                        $isOrphanedCheckout = false;
+                    }
+                    
+                    // Cek 2: kalau kemarin sudah punya check_out, ini bukan orphaned checkout
+                    if ($isOrphanedCheckout && $isPreviewMode) {
+                        if (isset($this->previewBuffer[$yesterdayStr]) && !empty($this->previewBuffer[$yesterdayStr]['check_out'])) {
+                            $isOrphanedCheckout = false;
+                        }
+                    }
+                    
+                    // Cek 3: cek apakah ada bukti night shift di row sebelumnya
+                    // Kalau prevRow kosong atau prevRow pagi (bukan malam), ini bukan orphaned
+                    if ($isOrphanedCheckout && $prevRow) {
+                        $prevScan1 = $prevRow['scan1'] ?? '';
+                        $prevIsNight = false;
+                        if (!empty($prevScan1)) {
+                            $prevTime = Carbon::parse($prevScan1)->format('H:i:s');
+                            $prevIsNight = ($prevTime >= '17:00:00' && $prevTime <= '23:59:59');
+                        }
+                        $prevWasOvernight = $prevRow['is_overnight_consumed'] ?? false;
+                        
+                        // Hanya terima orphaned jika prevRow punya scan malam ATAU prevRow adalah overnight return
+                        if (!$prevIsNight && !$prevWasOvernight && empty($prevRow['scan2_consumed'])) {
+                            // prevRow tidak ada indikasi shift malam
+                            // Cek buffer: apakah kemarin ada check_in malam?
+                            if ($isPreviewMode && isset($this->previewBuffer[$yesterdayStr])) {
+                                $bufCheckIn = $this->previewBuffer[$yesterdayStr]['check_in'] ?? null;
+                                if ($bufCheckIn) {
+                                    $bufTime = Carbon::parse($bufCheckIn)->format('H:i:s');
+                                    if ($bufTime < '17:00:00') {
+                                        $isOrphanedCheckout = false; // kemarin check-in siang, bukan shift malam
+                                    }
+                                }
+                            } elseif (!$isPreviewMode) {
+                                $isOrphanedCheckout = false; // tanpa preview buffer, skip
+                            }
+                        }
+                    } elseif ($isOrphanedCheckout && !$prevRow) {
+                        // Tidak ada row sebelumnya sama sekali — bisa jadi orphaned, keep as is
                     }
                 }
 
