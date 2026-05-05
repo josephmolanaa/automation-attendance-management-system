@@ -89,6 +89,10 @@ class AttendanceImportService
                     'shift_hint' => $streakHint
                 ], $isPreviewMode);
 
+                // Tandai baris ini: scan1 sudah dipakai sebagai checkout,
+                // jangan biarkan baris berikutnya pakai scan1 ini lagi
+                $processedRows[$i]['is_overnight_consumed'] = true;
+
                 if (!empty($currentRow['scan2'])) {
                     $cScan3 = $currentRow['scan3'] ?? null;
                     $newCheckOut = !empty($cScan3) ? Carbon::parse($currentRow['date'] . ' ' . $cScan3)->format('Y-m-d H:i:s') : null;
@@ -270,6 +274,12 @@ class AttendanceImportService
             if ($streakHint === 'shift_1' && $cond1) {
                 $needsReview = true;
             }
+            return false;
+        }
+
+        // Jika prevRow sudah diproses sebagai overnight return (scan1-nya sudah dipakai
+        // sebagai checkout), jangan buat pasangan overnight lagi dari prevRow
+        if ($prevRow['is_overnight_consumed'] ?? false) {
             return false;
         }
 
