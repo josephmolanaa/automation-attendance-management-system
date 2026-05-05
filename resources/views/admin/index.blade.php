@@ -2,10 +2,6 @@
 
 @section('css')
 <link rel="stylesheet" href="{{ URL::asset('plugins/chartist/css/chartist.min.css') }}">
-<style>
-    .mini-stat-icon { font-size: 36px; opacity: 0.6; }
-    .stat-value { font-size: 28px; font-weight: 600; }
-</style>
 @endsection
 
 @section('breadcrumb')
@@ -19,68 +15,61 @@
 
 @section('content')
 
-{{-- 4 Stat Cards --}}
+{{-- 4 Stat Cards - Dark Native --}}
 <div class="row">
-    {{-- Total Employees --}}
     <div class="col-xl-3 col-md-6">
-        <div class="card mini-stat bg-primary text-white">
+        <div class="card ams-stat-card" style="border-left: 3px solid #3B82F6;">
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <p class="text-white-50 mb-1 text-uppercase font-13">Total Employees</p>
-                        <h3 class="stat-value mb-0">{{ $data[0] }}</h3>
+                        <div class="ams-stat-label">Total Employees</div>
+                        <div class="ams-stat-value">{{ $data[0] }}</div>
                     </div>
-                    <span class="ti-id-badge mini-stat-icon"></span>
+                    <div class="ams-stat-icon" style="color: #3B82F6;"><i class="ti-id-badge"></i></div>
                 </div>
-                <p class="text-white-50 mb-0"><a href="/employees" class="text-white-50">Lihat semua karyawan <i class="mdi mdi-arrow-right"></i></a></p>
+                <a href="/employees" class="ams-stat-link">Lihat semua →</a>
             </div>
         </div>
     </div>
-
-    {{-- On Time % --}}
     <div class="col-xl-3 col-md-6">
-        <div class="card mini-stat bg-success text-white">
+        <div class="card ams-stat-card" style="border-left: 3px solid #22C55E;">
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <p class="text-white-50 mb-1 text-uppercase font-13">On Time %</p>
-                        <h3 class="stat-value mb-0">{{ $data[3] }}%</h3>
+                        <div class="ams-stat-label">On Time %</div>
+                        <div class="ams-stat-value">{{ $data[3] }}%</div>
                     </div>
-                    <span class="ti-alarm-clock mini-stat-icon"></span>
+                    <div class="ams-stat-icon" style="color: #22C55E;"><i class="ti-alarm-clock"></i></div>
                 </div>
-                <p class="text-white-50 mb-0">Persentase tepat waktu hari ini</p>
+                <div class="ams-stat-link" style="opacity:0.5;">Hari ini</div>
             </div>
         </div>
     </div>
-
-    {{-- On Time Today --}}
     <div class="col-xl-3 col-md-6">
-        <div class="card mini-stat bg-info text-white">
+        <div class="card ams-stat-card" style="border-left: 3px solid #06B6D4;">
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <p class="text-white-50 mb-1 text-uppercase font-13">On Time Today</p>
-                        <h3 class="stat-value mb-0">{{ $data[1] }}</h3>
+                        <div class="ams-stat-label">On Time Today</div>
+                        <div class="ams-stat-value">{{ $data[1] }}</div>
                     </div>
-                    <span class="ti-check-box mini-stat-icon"></span>
+                    <div class="ams-stat-icon" style="color: #06B6D4;"><i class="ti-check-box"></i></div>
                 </div>
-                <p class="text-white-50 mb-0"><a href="/attendance" class="text-white-50">Lihat attendance <i class="mdi mdi-arrow-right"></i></a></p>
+                <a href="/attendance" class="ams-stat-link">Lihat attendance →</a>
             </div>
         </div>
     </div>
-
-    {{-- Late Today --}}
     <div class="col-xl-3 col-md-6">
-        <div class="card mini-stat bg-danger text-white">
+        <div class="card ams-stat-card" style="border-left: 3px solid #EF4444;">
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <p class="text-white-50 mb-1 text-uppercase font-13">Late Today</p>
-                        <h3 class="stat-value mb-0">{{ $data[2] }}</h3>
+                        <div class="ams-stat-label">Late Today</div>
+                        <div class="ams-stat-value">{{ $data[2] }}</div>
                     </div>
-                    <span class="ti-alert mini-stat-icon"></span>
+                    <div class="ams-stat-icon" style="color: #EF4444;"><i class="ti-alert"></i></div>
                 </div>
-                <p class="text-white-50 mb-0"><a href="/latetime" class="text-white-50">Lihat late time <i class="mdi mdi-arrow-right"></i></a></p>
+                <a href="/latetime" class="ams-stat-link">Lihat late time →</a>
             </div>
         </div>
     </div>
