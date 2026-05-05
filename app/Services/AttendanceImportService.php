@@ -57,19 +57,22 @@ class AttendanceImportService
      */
     public function processEmployeeRows(int $employeeId, Collection $rows, bool $isPreviewMode = false): void
     {
-        // 3. Deteksi pola shift
-        $streakHint = $this->detectShiftStreak($rows);
+        // Deteksi pola shift PER MINGGU (bukan per bulan)
+        $weeklyShifts = $this->detectWeeklyShifts($rows);
         $processedRows = $rows->toArray();
 
         for ($i = 0; $i < count($processedRows); $i++) {
             $currentRow = $processedRows[$i];
             $prevRow = $i > 0 ? $processedRows[$i - 1] : null;
 
+            // Ambil shift hint untuk tanggal ini dari weekly map
+            $streakHint = $weeklyShifts[$currentRow['date']] ?? 'mixed';
+
             $needsReview = false;
             $isOvernight = $this->isOvernightReturn($currentRow, $prevRow, $streakHint, $needsReview);
 
             if ($isOvernight) {
-                // CASE A
+                // CASE A: Baris ini adalah overnight return dari shift malam kemarin
                 $prevCheckInTime = ($prevRow['scan2_consumed'] ?? false) ? $prevRow['scan2'] : $prevRow['scan1'];
 
                 $checkOutDatetime = Carbon::parse($currentRow['date'] . ' ' . $currentRow['scan1'])->format('Y-m-d H:i:s');
@@ -103,7 +106,7 @@ class AttendanceImportService
                     $processedRows[$i]['scan2_consumed'] = true;
                 }
             } else {
-                // CASE B
+                // CASE B: Baris normal (bukan overnight return)
                 if ($currentRow['scan2_consumed'] ?? false) {
                     continue; 
                 }
@@ -131,7 +134,7 @@ class AttendanceImportService
                         'shift_hint' => $streakHint
                     ], $isPreviewMode);
 
-                    // Shift untuk hari Sabtu (hari ini) bergeser ke scan2 dan scan3
+                    // Shift untuk hari ini bergeser ke scan2 dan scan3
                     $ci = !empty($currentRow['scan2']) ? Carbon::parse($currentRow['date'] . ' ' . $currentRow['scan2'])->format('Y-m-d H:i:s') : null;
                     $co = !empty($currentRow['scan3']) ? Carbon::parse($currentRow['date'] . ' ' . $currentRow['scan3'])->format('Y-m-d H:i:s') : null;
                     
@@ -170,43 +173,74 @@ class AttendanceImportService
     }
 
     /**
-     * Deteksi pola shift
+     * Deteksi pola shift PER MINGGU (ISO week).
+     * 
+     * Return: array map [tanggal => shift_hint]
+     * Contoh: ['2026-04-01' => 'shift_1', '2026-04-07' => 'shift_2', ...]
      *
      * @param Collection $rows
-     * @return string
+     * @return array
      */
-    private function detectShiftStreak(Collection $rows): string
+    private function detectWeeklyShifts(Collection $rows): array
     {
-        $total = $rows->count();
-        if ($total < 3) {
-            return 'insufficient_data';
+        $totalRows = $rows->count();
+        if ($totalRows < 3) {
+            // Insufficient data — beri semua tanggal hint 'insufficient_data'
+            $map = [];
+            foreach ($rows as $row) {
+                $map[$row['date']] = 'insufficient_data';
+            }
+            return $map;
         }
 
-        $day = 0;
-        $night = 0;
-        $over = 0;
-
+        // 1. Group by ISO week
+        $weekGroups = [];
         foreach ($rows as $row) {
+            $date = Carbon::parse($row['date']);
+            $weekKey = $date->isoWeekYear . '-W' . str_pad($date->isoWeek, 2, '0', STR_PAD_LEFT);
+            
+            if (!isset($weekGroups[$weekKey])) {
+                $weekGroups[$weekKey] = ['dates' => [], 'day' => 0, 'night' => 0, 'over' => 0, 'total' => 0];
+            }
+            $weekGroups[$weekKey]['dates'][] = $row['date'];
+            
             if (empty($row['scan1'])) continue;
             
             $t = Carbon::parse($row['scan1'])->format('H:i:s');
+            $weekGroups[$weekKey]['total']++;
+            
             if ($t >= '06:31:00' && $t <= '16:59:59') {
-                $day++;
+                $weekGroups[$weekKey]['day']++;
             } elseif ($t >= '17:00:00' && $t <= '23:59:59') {
-                $night++;
+                $weekGroups[$weekKey]['night']++;
             } elseif ($t >= '00:30:00' && $t <= '06:30:00') {
-                $over++;
+                $weekGroups[$weekKey]['over']++;
             }
         }
 
-        $shift2Count = $night + $over;
-        if ($shift2Count / $total >= 0.60) {
-            return 'shift_2';
+        // 2. Per minggu, tentukan shift dominan
+        $map = [];
+        foreach ($weekGroups as $weekKey => $group) {
+            $total = $group['total'];
+            $shift = 'mixed';
+            
+            if ($total > 0) {
+                $shift2Count = $group['night'] + $group['over'];
+                
+                if ($shift2Count / $total >= 0.60) {
+                    $shift = 'shift_2';
+                } elseif ($group['day'] / $total >= 0.60) {
+                    $shift = 'shift_1';
+                }
+            }
+            
+            // Assign shift hint ke semua tanggal di minggu ini
+            foreach ($group['dates'] as $date) {
+                $map[$date] = $shift;
+            }
         }
-        if ($day / $total >= 0.60) {
-            return 'shift_1';
-        }
-        return 'mixed';
+
+        return $map;
     }
 
     /**

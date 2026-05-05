@@ -10,6 +10,7 @@ use App\Models\Check;
 use App\Models\Schedule;
 use App\Models\HolidayOverride;
 use App\Services\HolidayService;
+use App\Services\ShiftDetectionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\AttendanceEmp;
@@ -49,7 +50,6 @@ class AttendanceController extends Controller
         }
 
         $checks = $query->get();
-
         $allSchedules = Schedule::all();
 
         $data = $checks->map(function ($check) use ($allSchedules) {
@@ -58,59 +58,14 @@ class AttendanceController extends Controller
             $refTime = $scanIn ?? $scanOut ?? now();
             $dateStr = $refTime->format('Y-m-d');
 
-            $dayType    = HolidayService::getDayType($dateStr);
-            $isFriday   = Carbon::parse($dateStr)->dayOfWeek === Carbon::FRIDAY && $dayType === 'weekday';
-            $isSaturday = $dayType === 'saturday';
-            $isHoliday  = $dayType === 'holiday';
-            $isWeekday  = $dayType === 'weekday';
-
+            // ── Shift detection: baca dari DB, fallback ke service ──
             $matchedSchedule = null;
-            $scanHour = $scanIn ? (int) $scanIn->format('H') : null;
-
-            $override = HolidayOverride::where('date', $dateStr)->first();
-
-            if ($override && $override->schedule_id) {
-                $matchedSchedule = Schedule::find($override->schedule_id);
-            } else {
-                $bestDiff = PHP_INT_MAX;
-
-                foreach ($allSchedules as $schedule) {
-                    $sDayType = $schedule->day_type ?? 'weekday';
-                    $dayMatch = match($sDayType) {
-                        'friday'   => $isFriday,
-                        'saturday' => $isSaturday,
-                        'holiday'  => $isHoliday,
-                        'weekday'  => $isWeekday && !$isFriday,
-                        default    => false,
-                    };
-                    if (!$dayMatch) continue;
-
-                    if ($scanHour !== null) {
-                        $schedHour = (int) Carbon::parse($schedule->time_in)->format('H');
-                        $diff = min(abs($scanHour - $schedHour), 24 - abs($scanHour - $schedHour));
-                        // Pilih schedule dengan diff TERKECIL (best-match)
-                        if ($diff < $bestDiff) {
-                            $bestDiff        = $diff;
-                            $matchedSchedule = $schedule;
-                        }
-                    } else {
-                        // Tidak ada scan_in — pakai schedule pertama yang cocok
-                        $matchedSchedule = $schedule;
-                        break;
-                    }
-                }
-
-                // Fallback jika tidak ada yang cocok (misalnya hari baru di DB belum ada)
-                if (!$matchedSchedule) {
-                    if ($isFriday) {
-                        $isNight = $scanHour !== null && $scanHour >= 16;
-                        $matchedSchedule = $isNight
-                            ? $allSchedules->where('slug', 'SHIFT_2_FRIDAY')->first()
-                            : $allSchedules->where('slug', 'SHIFT_1_WEEKDAY')->first();
-                    } else {
-                        $matchedSchedule = $allSchedules->where('day_type', $dayType)->first();
-                    }
-                }
+            if ($check->schedule_id) {
+                $matchedSchedule = $allSchedules->firstWhere('id', $check->schedule_id);
+            }
+            if (!$matchedSchedule) {
+                $scanTime = $scanIn ? $scanIn->format('H:i:s') : null;
+                $matchedSchedule = ShiftDetectionService::detectAsSchedule($dateStr, $scanTime);
             }
 
             $shiftSlug = optional($matchedSchedule)->slug ?? '-';
@@ -189,38 +144,13 @@ class AttendanceController extends Controller
             $scanIn  = Carbon::parse($check->attendance_time);
             $dateStr = $scanIn->format('Y-m-d');
 
-            $dayType    = HolidayService::getDayType($dateStr);
-            $isFriday   = Carbon::parse($dateStr)->dayOfWeek === Carbon::FRIDAY && $dayType === 'weekday';
-            $isSaturday = $dayType === 'saturday';
-            $isHoliday  = $dayType === 'holiday';
-            $isWeekday  = $dayType === 'weekday';
-
-            $scanHour = (int) $scanIn->format('H');
-
+            // ── Shift detection: baca dari DB, fallback ke service ──
             $matchedSchedule = null;
-            $override = HolidayOverride::where('date', $dateStr)->first();
-
-            if ($override && $override->schedule_id) {
-                $matchedSchedule = Schedule::find($override->schedule_id);
-            } else {
-                foreach ($allSchedules as $schedule) {
-                    $sDayType = $schedule->day_type ?? 'weekday';
-                    $dayMatch = match($sDayType) {
-                        'friday'   => $isFriday,
-                        'saturday' => $isSaturday,
-                        'holiday'  => $isHoliday,
-                        'weekday'  => $isWeekday && !$isFriday,
-                        default    => false,
-                    };
-                    if (!$dayMatch) continue;
-                    $schedHour = (int) Carbon::parse($schedule->time_in)->format('H');
-                    $diff = abs($scanHour - $schedHour);
-                    $diff = min($diff, 24 - $diff);
-                    if ($diff <= 3) {
-                        $matchedSchedule = $schedule;
-                        break;
-                    }
-                }
+            if ($check->schedule_id) {
+                $matchedSchedule = $allSchedules->firstWhere('id', $check->schedule_id);
+            }
+            if (!$matchedSchedule) {
+                $matchedSchedule = ShiftDetectionService::detectAsSchedule($dateStr, $scanIn->format('H:i:s'));
             }
 
             if (!$matchedSchedule) continue;
@@ -287,43 +217,16 @@ class AttendanceController extends Controller
         foreach ($checks as $check) {
             $scanIn  = $check->attendance_time ? Carbon::parse($check->attendance_time) : null;
             $scanOut = Carbon::parse($check->leave_time);
-            $dateStr = $scanOut->format('Y-m-d');
+            $dateStr = $scanIn ? $scanIn->format('Y-m-d') : $scanOut->format('Y-m-d');
 
-            $dayType    = HolidayService::getDayType($dateStr);
-            $isFriday   = Carbon::parse($dateStr)->dayOfWeek === Carbon::FRIDAY && $dayType === 'weekday';
-            $isSaturday = $dayType === 'saturday';
-            $isHoliday  = $dayType === 'holiday';
-            $isWeekday  = $dayType === 'weekday';
-
-            $scanHour        = $scanIn ? (int) $scanIn->format('H') : null;
+            // ── Shift detection: baca dari DB, fallback ke service ──
             $matchedSchedule = null;
-            $override        = HolidayOverride::where('date', $dateStr)->first();
-
-            if ($override && $override->schedule_id) {
-                $matchedSchedule = Schedule::find($override->schedule_id);
-            } else {
-                foreach ($allSchedules as $schedule) {
-                    $sDayType = $schedule->day_type ?? 'weekday';
-                    $dayMatch = match($sDayType) {
-                        'friday'   => $isFriday,
-                        'saturday' => $isSaturday,
-                        'holiday'  => $isHoliday,
-                        'weekday'  => $isWeekday && !$isFriday,
-                        default    => false,
-                    };
-                    if (!$dayMatch) continue;
-
-                    if ($scanHour !== null) {
-                        $schedHour = (int) Carbon::parse($schedule->time_in)->format('H');
-                        $diff = min(abs($scanHour - $schedHour), 24 - abs($scanHour - $schedHour));
-                        if ($diff <= 3) { $matchedSchedule = $schedule; break; }
-                    } else {
-                        $matchedSchedule = $schedule; break;
-                    }
-                }
-                if (!$matchedSchedule) {
-                    $matchedSchedule = $allSchedules->where('day_type', $isFriday ? 'friday' : $dayType)->first();
-                }
+            if ($check->schedule_id) {
+                $matchedSchedule = $allSchedules->firstWhere('id', $check->schedule_id);
+            }
+            if (!$matchedSchedule) {
+                $scanTime = $scanIn ? $scanIn->format('H:i:s') : null;
+                $matchedSchedule = ShiftDetectionService::detectAsSchedule($dateStr, $scanTime);
             }
 
             if (!$matchedSchedule) continue;

@@ -8,6 +8,7 @@ use App\Models\Schedule;
 use App\Models\HolidayOverride;
 use App\Models\IzinDanCuti;
 use App\Services\HolidayService;
+use App\Services\ShiftDetectionService;
 use Illuminate\Http\Request;
 use App\Exports\SheetReportExport;
 use Maatwebsite\Excel\Facades\Excel;
@@ -104,11 +105,6 @@ class SheetReportController extends Controller
                 $dayOfWeek = $dateObj->dayOfWeek; // 0=Minggu, 6=Sabtu
 
                 // ── Kumpulkan sesi yang relevan untuk tanggal ini ──
-                //
-                // Sesi "milik" tanggal ini = checks dimana:
-                //   A. attendance_time di tanggal ini (sesi normal / shift malam mulai hari ini)
-                //   B. leave_time di tanggal ini tapi attendance_time di hari sebelumnya (overnight)
-
                 $sessionsThisDay = collect();
 
                 foreach ($empChecks as $check) {
@@ -120,7 +116,6 @@ class SheetReportController extends Controller
                         : null;
 
                     if ($attDate === $dateStr) {
-                        // Sesi yang mulai hari ini
                         $sessionsThisDay->push([
                             'type'       => 'normal',
                             'check'      => $check,
@@ -128,11 +123,10 @@ class SheetReportController extends Controller
                             'leave_time' => $check->leave_time,
                         ]);
                     } elseif ($leaveDate === $dateStr && $attDate !== $dateStr) {
-                        // Overnight: sesi mulai kemarin, berakhir hari ini
                         $sessionsThisDay->push([
                             'type'       => 'overnight_end',
                             'check'      => $check,
-                            'att_time'   => null, // mulai kemarin, tidak ditampilkan di baris ini
+                            'att_time'   => null,
                             'leave_time' => $check->leave_time,
                         ]);
                     }
@@ -150,12 +144,6 @@ class SheetReportController extends Controller
                 }
 
                 // ── Susun scan_1, scan_2, scan_3 ──
-                //
-                // Urutan prioritas tampilan:
-                //   1. Kalau ada overnight_end → scan_1 = leave_time overnight
-                //   2. Sesi normal pertama → scan_1 (atau scan_2 jika overnight sudah pakai scan_1)
-                //   3. Sesi normal kedua → scan berikutnya
-
                 $scan1 = '-';
                 $scan2 = '-';
                 $scan3 = '-';
@@ -164,10 +152,7 @@ class SheetReportController extends Controller
                 $normalSessions = $sessionsThisDay->where('type', 'normal')->values();
 
                 if ($overnightEnd) {
-                    // scan_1 = time_out dari shift semalam
                     $scan1 = Carbon::parse($overnightEnd['leave_time'])->format('H:i:s');
-
-                    // Sesi normal hari ini (shift sabtu / shift pagi)
                     $sesi1 = $normalSessions->get(0);
                     if ($sesi1) {
                         $scan2 = $sesi1['att_time']
@@ -178,7 +163,6 @@ class SheetReportController extends Controller
                             : '-';
                     }
                 } else {
-                    // Tidak ada overnight — sesi normal biasa
                     $sesi1 = $normalSessions->get(0);
                     $sesi2 = $normalSessions->get(1);
 
@@ -195,7 +179,6 @@ class SheetReportController extends Controller
                         $scan3 = $sesi2['att_time']
                             ? Carbon::parse($sesi2['att_time'])->format('H:i:s')
                             : '-';
-                        // leave_time sesi2 tidak ada kolom, tapi bisa ditambah nanti
                     }
                 }
 
@@ -205,7 +188,6 @@ class SheetReportController extends Controller
                 $minggu = 0;
 
                 $dayType = HolidayService::getDayType($dateStr);
-                $isFriday = $dayOfWeek === Carbon::FRIDAY && $dayType === 'weekday';
 
                 if ($dayOfWeek === 0 || $dayType === 'holiday') {
                     // Hari Minggu / tanggal merah → hitung sebagai minggu
@@ -219,15 +201,20 @@ class SheetReportController extends Controller
                         $scanIn  = Carbon::parse($sesi1['att_time']);
                         $scanOut = Carbon::parse($sesi1['leave_time']);
 
-                        // Deteksi schedule
-                        $matchedSchedule = $this->detectSchedule(
-                            $allSchedules, $dateStr, $dayType, $isFriday, $dayOfWeek,
-                            (int) $scanIn->format('H')
-                        );
+                        // ── Shift detection: baca dari DB, fallback ke service ──
+                        $checkObj = $sesi1['check'];
+                        $matchedSchedule = null;
+                        if ($checkObj->schedule_id) {
+                            $matchedSchedule = $allSchedules->firstWhere('id', $checkObj->schedule_id);
+                        }
+                        if (!$matchedSchedule) {
+                            $matchedSchedule = ShiftDetectionService::detectAsSchedule(
+                                $dateStr, $scanIn->format('H:i:s')
+                            );
+                        }
 
                         if ($matchedSchedule) {
                             $schedOut = Carbon::parse($dateStr . ' ' . $matchedSchedule->time_out);
-                            // Handle overnight schedule
                             if ($schedOut->lt(Carbon::parse($dateStr . ' ' . $matchedSchedule->time_in))) {
                                 $schedOut->addDay();
                             }
@@ -270,56 +257,6 @@ class SheetReportController extends Controller
         });
 
         return response()->json(['data' => $data]);
-    }
-
-    /**
-     * Detect schedule yang cocok untuk tanggal & jam scan tertentu
-     */
-    private function detectSchedule($allSchedules, $dateStr, $dayType, $isFriday, $dayOfWeek, $scanHour)
-    {
-        $override = HolidayOverride::where('date', $dateStr)->first();
-        if ($override && $override->schedule_id) {
-            return Schedule::find($override->schedule_id);
-        }
-
-        $isSaturday = $dayOfWeek === 6;
-        $isHoliday  = $dayType === 'holiday';
-        $isWeekday  = $dayType === 'weekday';
-
-        $matched = null;
-
-        foreach ($allSchedules as $schedule) {
-            $sDayType = $schedule->day_type ?? 'weekday';
-            $dayMatch = match ($sDayType) {
-                'friday'   => $isFriday,
-                'saturday' => $isSaturday,
-                'holiday'  => $isHoliday,
-                'weekday'  => $isWeekday && !$isFriday,
-                default    => false,
-            };
-            if (!$dayMatch) continue;
-
-            $schedHour = (int) Carbon::parse($schedule->time_in)->format('H');
-            $diff      = min(abs($scanHour - $schedHour), 24 - abs($scanHour - $schedHour));
-            if ($diff <= 3) {
-                $matched = $schedule;
-                break;
-            }
-        }
-
-        if (!$matched) {
-            // Fallback
-            if ($isFriday) {
-                $isNight = $scanHour >= 16;
-                $matched = $isNight
-                    ? $allSchedules->where('slug', 'SHIFT_2_FRIDAY')->first()
-                    : $allSchedules->where('slug', 'SHIFT_1_WEEKDAY')->first();
-            } else {
-                $matched = $allSchedules->where('day_type', $dayType)->first();
-            }
-        }
-
-        return $matched;
     }
 
     public function export(Request $request)

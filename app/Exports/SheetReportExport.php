@@ -8,6 +8,7 @@ use App\Models\Schedule;
 use App\Models\HolidayOverride;
 use App\Models\IzinDanCuti;
 use App\Services\HolidayService;
+use App\Services\ShiftDetectionService;
 use Carbon\Carbon;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
@@ -105,27 +106,16 @@ class SheetReportExport implements FromArray, WithEvents
                 } elseif ($scan1 && $scan1->leave_time) {
                     $scanIn  = Carbon::parse($scan1->attendance_time);
                     $scanOut = Carbon::parse($scan1->leave_time);
-                    $dayType = HolidayService::getDayType($dateStr);
 
+                    // ── Shift detection: baca dari DB, fallback ke service ──
                     $matchedSchedule = null;
-                    $override = HolidayOverride::where('date', $dateStr)->first();
-                    if ($override && $override->schedule_id) {
-                        $matchedSchedule = Schedule::find($override->schedule_id);
-                    } else {
-                        $scanHour = (int) $scanIn->format('H');
-                        foreach ($allSchedules as $schedule) {
-                            $sDayType = $schedule->day_type ?? 'weekday';
-                            $dayMatch = match($sDayType) {
-                                'saturday' => $dayType === 'saturday',
-                                'holiday'  => $dayType === 'holiday',
-                                'weekday'  => $dayType === 'weekday',
-                                default    => false,
-                            };
-                            if (!$dayMatch) continue;
-                            $schedHour = (int) Carbon::parse($schedule->time_in)->format('H');
-                            $diff = min(abs($scanHour - $schedHour), 24 - abs($scanHour - $schedHour));
-                            if ($diff <= 3) { $matchedSchedule = $schedule; break; }
-                        }
+                    if ($scan1->schedule_id) {
+                        $matchedSchedule = $allSchedules->firstWhere('id', $scan1->schedule_id);
+                    }
+                    if (!$matchedSchedule) {
+                        $matchedSchedule = ShiftDetectionService::detectAsSchedule(
+                            $dateStr, $scanIn->format('H:i:s')
+                        );
                     }
 
                     if ($matchedSchedule) {

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 use App\Models\Employee;
 use App\Models\Check;
+use App\Services\ShiftDetectionService;
 
 class ScanlogUploadController extends Controller
 {
@@ -279,6 +280,9 @@ class ScanlogUploadController extends Controller
 
                 $attTime = $scan1 ? ($tanggal . ' ' . $scan1) : null;
 
+                // Tentukan schedule_id berdasarkan tanggal + jam scan
+                $scheduleId = ShiftDetectionService::detect($tanggal, $scan1);
+
                 // Hitung leave_time — deteksi overnight: jika scan2 < scan1 (jam), +1 hari
                 $leaveTime = null;
                 if ($scan2) {
@@ -299,6 +303,7 @@ class ScanlogUploadController extends Controller
                         'emp_id'          => $dbEmpId,
                         'attendance_time' => $attTime,
                         'leave_time'      => $leaveTime,
+                        'schedule_id'     => $scheduleId,
                     ]);
                     $empInserted++; $totalInserted++;
 
