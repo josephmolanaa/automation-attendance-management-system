@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Log;
 
 class ShiftDetectionService
 {
-    private static ?array $schedulesCache = null;
+    private static $schedulesCache = null;
 
     /**
      * Detect schedule_id berdasarkan tanggal + jam scan masuk.
