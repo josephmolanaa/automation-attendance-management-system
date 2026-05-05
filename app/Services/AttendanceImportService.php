@@ -120,6 +120,15 @@ class AttendanceImportService
                 $ciTime = !empty($currentRow['scan1']) ? Carbon::parse($currentRow['scan1'])->format('H:i:s') : null;
                 $isOrphanedCheckout = $ciTime && $ciTime >= '00:30:00' && $ciTime <= '06:30:00';
 
+                // Cek apakah kemarin sudah punya check_out — jika sudah, ini bukan orphaned checkout
+                // melainkan hanya early check-in hari ini (misal datang pagi-pagi di Sabtu)
+                if ($isOrphanedCheckout && $isPreviewMode) {
+                    $yesterdayStr = Carbon::parse($currentRow['date'])->subDay()->format('Y-m-d');
+                    if (isset($this->previewBuffer[$yesterdayStr]) && !empty($this->previewBuffer[$yesterdayStr]['check_out'])) {
+                        $isOrphanedCheckout = false; // kemarin sudah ada check_out, treat as normal early check-in
+                    }
+                }
+
                 if ($isOrphanedCheckout) {
                     // Ini adalah orphaned checkout (sisa shift malam sebelumnya yang baris pertamanya terpotong)
                     $yesterday = Carbon::parse($currentRow['date'])->subDay();
@@ -310,6 +319,11 @@ class AttendanceImportService
                 // Jangan timpa check_in jika null, mensimulasikan DB::raw('check_in')
                 if (empty($data['check_in']) && !empty($this->previewBuffer[$d]['check_in'])) {
                     $data['check_in'] = $this->previewBuffer[$d]['check_in'];
+                }
+                // Jangan timpa check_out yang sudah ada dengan value baru
+                // Ini mencegah orphaned checkout menimpa check_out yang valid
+                if (!empty($this->previewBuffer[$d]['check_out']) && !empty($data['check_out'])) {
+                    unset($data['check_out']);
                 }
                 $this->previewBuffer[$d] = array_merge($this->previewBuffer[$d], $data);
             } else {
