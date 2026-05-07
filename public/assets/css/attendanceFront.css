@@ -46,7 +46,7 @@
             font-size: 120px;
             margin: 0 150px;
             padding: 10px;
-            color: #ffffff;
+            color: var(--blue);
             width: 900px;
             text-align: center;
         }
