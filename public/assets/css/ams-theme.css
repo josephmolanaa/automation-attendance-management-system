@@ -483,3 +483,47 @@ label { color: var(--text-secondary) !important; font-size: 13px !important; fon
   .content-page { margin-left: 0 !important; }
   .page-title { font-size: 24px !important; }
 }
+
+/* ═══════ LAYOUT FIXES (SIDEBAR COLLAPSE) ═══════ */
+.enlarged .left.side-menu { width: 70px !important; }
+.enlarged .topbar-left { width: 70px !important; }
+.enlarged .content-page { margin-left: 70px !important; }
+.enlarged .logo span h1 { display: none !important; }
+.enlarged .logo i h1 { display: block !important; }
+.enlarged #sidebar-menu ul li a span { display: none !important; }
+.enlarged #sidebar-menu .menu-title { display: none !important; }
+.enlarged #sidebar-menu ul li a i { font-size: 22px !important; margin-left: -8px !important;}
+.enlarged .footer { left: 70px !important; }
+
+/* ═══════ DATATABLES FIXES ═══════ */
+.dt-buttons .btn { margin-right: 8px !important; margin-bottom: 16px !important; }
+
+/* DataTables Bootstrap Pagination Fix */
+.dataTables_wrapper .pagination .page-item .page-link {
+    margin: 0 4px !important;
+    border-radius: 8px !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text-secondary) !important;
+    background: var(--bg-card) !important;
+}
+.dataTables_wrapper .pagination .page-item.active .page-link {
+    background: var(--blue) !important;
+    border-color: var(--blue) !important;
+    color: #fff !important;
+}
+.dataTables_wrapper .pagination .page-item.disabled .page-link {
+    background: transparent !important;
+    opacity: 0.5 !important;
+}
+
+/* ═══════ ATTENDANCE SHEET GRID (check-table) ═══════ */
+.check-table td, .check-table th {
+    border-left: 1px solid var(--border) !important;
+    border-right: 1px solid var(--border) !important;
+    background-color: var(--bg-card); /* Remove transparency issues */
+}
+.check-table th {
+    background-color: var(--bg-input) !important;
+}
+/* Ensure the filter form on check page has gap */
+.filter-row .form-group { margin-bottom: 16px; margin-right: 8px; }

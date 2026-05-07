@@ -166,9 +166,9 @@
     <div class="col-12">
 
         {{-- Filter Bar --}}
-        <div class="filter-bar d-flex flex-wrap align-items-end" style="gap:12px;">
+        <div class="filter-bar d-flex flex-wrap align-items-end">
             {{-- Bulan --}}
-            <div>
+            <div class="mr-3 mb-2">
                 <label>Bulan</label>
                 <select id="filterMonth" class="form-control">
                     @foreach($months as $m => $mName)
@@ -177,7 +177,7 @@
                 </select>
             </div>
             {{-- Tahun --}}
-            <div>
+            <div class="mr-3 mb-2">
                 <label>Tahun</label>
                 <select id="filterYear" class="form-control">
                     @for($y = 2024; $y <= 2027; $y++)
@@ -186,7 +186,7 @@
                 </select>
             </div>
             {{-- Karyawan --}}
-            <div>
+            <div class="mr-3 mb-2">
                 <label>Karyawan</label>
                 <select id="filterEmp" class="form-control" style="min-width:160px;">
                     <option value="all" {{ $selEmp === 'all' ? 'selected' : '' }}>Semua Karyawan</option>
@@ -198,8 +198,8 @@
                 </select>
             </div>
             {{-- Tombol --}}
-            <div>
-                <button type="button" id="btnFilter" class="btn btn-primary btn-sm" style="height:30px;">
+            <div class="mb-2">
+                <button type="button" id="btnFilter" class="btn btn-primary btn-sm" style="height:36px; padding: 0 16px;">
                     <i class="mdi mdi-filter mr-1"></i> Tampilkan
                 </button>
             </div>
