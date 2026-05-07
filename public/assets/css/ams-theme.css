@@ -466,7 +466,12 @@ label { color: var(--text-secondary) !important; font-size: 13px !important; fon
 .text-primary { color: var(--blue) !important; }
 .text-success { color: var(--green) !important; }
 .text-danger { color: var(--red) !important; }
-.text-warning { color: var(--amber) !important; }
+/* ═══════ CHARTIST OVERRIDES ═══════ */
+.ct-chart .ct-grid { stroke: var(--border) !important; stroke-dasharray: 0 !important; }
+.ct-chart .ct-line { stroke: var(--blue) !important; stroke-width: 3px !important; }
+.ct-chart .ct-point { stroke: var(--blue) !important; stroke-width: 6px !important; }
+.ct-chart .ct-area { fill: var(--blue) !important; fill-opacity: 0.1 !important; }
+.ct-chart .ct-label { color: var(--text-muted) !important; font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 11px !important; font-weight: 600 !important; }
 
 /* ═══════ SCROLLBAR ═══════ */
 /* Firefox */
