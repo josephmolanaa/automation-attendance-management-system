@@ -12,17 +12,17 @@ Fitur utama termasuk:
 Sistem ini cocok untuk perusahaan, kantor, atau sekolah yang menggunakan perangkat **Fingerspot** (seperti seri Revo, Compact, atau model cloud-enabled).
 
 ## Teknologi Utama
-- **Backend**: PHP, Laravel (versi terbaru yang kompatibel)
+- **Backend**: PHP, Laravel
 - **Frontend**: HTML5, CSS, JavaScript, Bootstrap
-- **Database**: MySQL / MariaDB
+- **Database**: MySQL
 - **Integrasi Device**: Fingerspot API / SDK (developer.fingerspot.io) untuk pull attlog realtime via webhook atau polling
 
 ## Demo
-<a href="http://your-demo-link.com">Lihat Demo</a> (ganti dengan link demo kamu jika ada)
+<a href="https://web-production-44dd7.up.railway.app/">Lihat Demo</a>
 
 ### Kredensial Admin (default, segera ganti setelah install)
-- Username: admin@perusahaan.com
-- Password: password123 (atau sesuai yang kamu set di seeder)
+- Username: admin@ams.com
+- Password: admin@ams.com (atau sesuai yang anda set di seeder)
 
 ## Cara Install & Setup
 Ikuti langkah-langkah berikut untuk menjalankan proyek di lokal atau server:
@@ -84,8 +84,6 @@ npm run dev atau npm run build untuk production
 ![Absensi]
 ![Laporan]
 ![Manajemen Karyawan]
-
-*(Update screenshot ini dengan tampilan terbaru setelah kamu integrasikan Fingerspot)*
 
 ## Persyaratan Sistem
 - PHP ≥ 8.1
