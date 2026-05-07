@@ -30,7 +30,7 @@ Ikuti langkah-langkah berikut untuk menjalankan proyek di lokal atau server:
 1. Clone repository ini:
 
 ```
-git clone https://github.com/username-anda/nama-repo-anda.git
+git clone https://github.com/josephmolanaa/automation-attendance-management-system.git
 
 ```
 2. Masuk Ke Folder Proyek:
@@ -109,6 +109,6 @@ Silakan buka [issues](../../issues/) atau pull request.
 Beri ⭐ jika proyek ini membantu kamu!
 
 ## Lisensi
-[MIT License](LICENSE) — bebas digunakan, dimodifikasi, dan didistribusikan (tetap cantumkan kredit asli jika memungkinkan).
+[MIT License](LICENSE) — bebas digunakan, dimodifikasi, dan didistribusikan.
 
 Terima kasih telah menggunakan sistem ini!
