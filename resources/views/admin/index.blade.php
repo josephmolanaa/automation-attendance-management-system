@@ -4,72 +4,84 @@
 <link rel="stylesheet" href="{{ URL::asset('plugins/chartist/css/chartist.min.css') }}">
 @endsection
 
+@php
+    $wibTime = \Carbon\Carbon::now('Asia/Jakarta');
+    $hour = $wibTime->hour;
+    if ($hour < 12) {
+        $greeting = "Good Morning";
+    } elseif ($hour < 18) {
+        $greeting = "Good Afternoon";
+    } else {
+        $greeting = "Good Evening";
+    }
+    $userName = Auth::user()->name ?? 'Admin';
+    $dateString = "It's " . $wibTime->translatedFormat('l, d F Y') . " • " . $wibTime->format('H:i') . " WIB";
+@endphp
+
 @section('breadcrumb')
-<div class="col-sm-6 text-left">
-    <h4 class="page-title">Dashboard</h4>
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item active">Welcome to Attendance Management System</li>
-    </ol>
+<div class="col-sm-12 text-left mt-3">
+    <h4 class="page-title">{{ $greeting }}, {{ $userName }}</h4>
+    <p class="page-subtitle">{{ $dateString }}</p>
 </div>
 @endsection
 
 @section('content')
 
-{{-- 4 Stat Cards - Dark Native --}}
+{{-- 4 Stat Cards - Minimalist Light --}}
 <div class="row">
     <div class="col-xl-3 col-md-6">
-        <div class="card ams-stat-card" style="border-left: 3px solid #3B82F6;">
+        <div class="card ams-stat-card">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <div class="ams-stat-label">Total Employees</div>
                         <div class="ams-stat-value">{{ $data[0] }}</div>
                     </div>
-                    <div class="ams-stat-icon" style="color: #3B82F6;"><i class="ti-id-badge"></i></div>
+                    <div class="ams-stat-icon" style="background: var(--blue-light); color: var(--blue);"><i class="ti-id-badge"></i></div>
                 </div>
-                <a href="/employees" class="ams-stat-link">Lihat semua →</a>
+                <a href="/employees" class="ams-stat-link">View Details</a>
             </div>
         </div>
     </div>
     <div class="col-xl-3 col-md-6">
-        <div class="card ams-stat-card" style="border-left: 3px solid #22C55E;">
+        <div class="card ams-stat-card">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <div class="ams-stat-label">On Time %</div>
                         <div class="ams-stat-value">{{ $data[3] }}%</div>
                     </div>
-                    <div class="ams-stat-icon" style="color: #22C55E;"><i class="ti-alarm-clock"></i></div>
+                    <div class="ams-stat-icon" style="background: var(--green-light); color: var(--green);"><i class="ti-pie-chart"></i></div>
                 </div>
-                <div class="ams-stat-link" style="opacity:0.5;">Hari ini</div>
+                <div class="ams-stat-link" style="background: transparent; color: var(--text-muted) !important; padding:0;">Today's Rate</div>
             </div>
         </div>
     </div>
     <div class="col-xl-3 col-md-6">
-        <div class="card ams-stat-card" style="border-left: 3px solid #06B6D4;">
+        <div class="card ams-stat-card">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <div class="ams-stat-label">On Time Today</div>
                         <div class="ams-stat-value">{{ $data[1] }}</div>
                     </div>
-                    <div class="ams-stat-icon" style="color: #06B6D4;"><i class="ti-check-box"></i></div>
+                    <div class="ams-stat-icon" style="background: #E0F2FE; color: #0369A1;"><i class="ti-check-box"></i></div>
                 </div>
-                <a href="/attendance" class="ams-stat-link">Lihat attendance →</a>
+                <a href="/attendance" class="ams-stat-link">View Attendance</a>
             </div>
         </div>
     </div>
     <div class="col-xl-3 col-md-6">
-        <div class="card ams-stat-card" style="border-left: 3px solid #EF4444;">
+        <div class="card ams-stat-card">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <div class="ams-stat-label">Late Today</div>
                         <div class="ams-stat-value">{{ $data[2] }}</div>
                     </div>
-                    <div class="ams-stat-icon" style="color: #EF4444;"><i class="ti-alert"></i></div>
+                    <div class="ams-stat-icon" style="background: var(--red-light); color: var(--red);"><i class="ti-alert"></i></div>
                 </div>
-                <a href="/latetime" class="ams-stat-link">Lihat late time →</a>
+                <a href="/latetime" class="ams-stat-link">View Late Logs</a>
             </div>
         </div>
     </div>
