@@ -24,6 +24,29 @@
         background: var(--amber-bg);
         border-color: rgba(133,79,11,0.18) !important;
     }
+    .sheet-summary {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+        min-height: 34px;
+    }
+    .summary-pill {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 4px;
+        padding: 4px 8px;
+        border-radius: 8px;
+        color: var(--text2);
+        background: var(--surface2);
+        font-size: 11px;
+        border: 1px solid var(--border2);
+    }
+    .summary-pill strong {
+        color: var(--text);
+        font-size: 12px;
+        font-weight: 700;
+    }
 
     /* ── Loading Overlay ── */
     .table-loading-overlay {
@@ -295,6 +318,9 @@
         if ($dow === 1 && !empty($weeks)) $weekIdx++; // Mulai minggu baru di Senin
         $weeks[$weekIdx][] = $dateObj;
     }
+
+    $weekendDays = collect($dates)->filter(fn($dateObj) => in_array($dateObj->dayOfWeek, [0, 6], true))->count();
+    $workDays = count($dates) - $weekendDays;
 @endphp
 
 {{-- Hidden form --}}
@@ -337,6 +363,11 @@
                         </option>
                     @endforeach
                 </select>
+            </div>
+            <div class="sheet-summary mr-3 mb-2">
+                <span class="summary-pill"><strong>{{ $filteredEmployees->count() }}</strong> karyawan</span>
+                <span class="summary-pill"><strong>{{ count($dates) }}</strong> hari</span>
+                <span class="summary-pill"><strong>{{ $workDays }}</strong> hari kerja</span>
             </div>
             {{-- Legend --}}
             <div class="ml-auto d-flex align-items-center mb-2 filter-actions">
