@@ -229,6 +229,10 @@
         outline: 2px solid rgba(133,79,11,0.45);
         outline-offset: -3px;
     }
+    .time-cell.is-editing {
+        outline: 2px solid var(--blue);
+        outline-offset: -3px;
+    }
     .time-cell .t-in    { color: var(--green); font-weight: 600; font-size: 11px; display: block; line-height: 1.35; }
     .time-cell .t-out   { color: var(--red); font-weight: 600; font-size: 11px; display: block; line-height: 1.35; }
     .time-cell .t-empty { color: var(--text3); font-size: 13px; display: block; line-height: 46px; }
@@ -582,7 +586,9 @@ let activeCell = null;
 const dirtyCells = new Set();
 
 function openEditModal(cell) {
+    if (activeCell) activeCell.classList.remove('is-editing');
     activeCell = cell;
+    activeCell.classList.add('is-editing');
     $('#modalDayLabel').text(cell.dataset.day);
     $('#modalEmpLabel').text(cell.dataset.name);
     $('#modalIn').val(cell.dataset.in || '');
@@ -693,6 +699,9 @@ refreshSaveState();
 
 // Enter di modal → simpan
 $('#editModal').on('keydown', e => { if (e.key === 'Enter') $('#btnSaveCell').click(); });
+$('#editModal').on('hidden.bs.modal', () => {
+    if (activeCell) activeCell.classList.remove('is-editing');
+});
 
 // Tombol Simpan Semua
 document.querySelectorAll('.js-save-all').forEach(btn => btn.addEventListener('click', () => {
