@@ -6,6 +6,24 @@
     .filter-bar { background: var(--surface); border:1px solid var(--border2); border-radius:10px; padding:14px 18px; margin-bottom:14px; }
     .filter-bar label { font-size:10px; font-weight:600; color:var(--text3); margin-bottom:4px; display:block; text-transform:uppercase; letter-spacing:.5px; }
     .filter-bar select, .filter-bar input { font-size:13px; height:34px; padding:4px 10px; }
+    .filter-actions { gap: 8px; flex-wrap: wrap; }
+    .pending-badge {
+        display: inline-flex;
+        align-items: center;
+        min-height: 26px;
+        padding: 4px 9px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        color: var(--text2);
+        background: var(--surface2);
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .pending-badge.has-changes {
+        color: var(--amber-text);
+        background: var(--amber-bg);
+        border-color: rgba(133,79,11,0.18) !important;
+    }
 
     /* ── Loading Overlay ── */
     .table-loading-overlay {
@@ -38,11 +56,16 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ── Table (border-collapse:separate is REQUIRED for sticky to work) ── */
+    .attendance-table-wrap {
+        isolation: isolate;
+    }
     .check-table {
         border-collapse: separate !important;
         border-spacing: 0 !important;
         font-size: 11.5px;
-        width: 100%;
+        width: max-content;
+        min-width: 100%;
+        table-layout: fixed;
     }
     .check-table th, .check-table td {
         white-space: nowrap;
@@ -51,6 +74,7 @@
         text-align: center;
         border: 1px solid #ddd !important;
         background-color: #fff;
+        box-sizing: border-box;
     }
 
     /* ═══ FROZEN COLUMNS (ID, Nama, Jabatan) ═══ */
@@ -64,15 +88,22 @@
     }
     /* Col 1: ID */
     .check-table th:nth-child(1),
-    .check-table td:nth-child(1) { left: 0 !important; min-width: 42px; width: 42px; }
+    .check-table td:nth-child(1) { left: 0 !important; min-width: 42px; width: 42px; max-width: 42px; }
     /* Col 2: Nama */
     .check-table th:nth-child(2),
-    .check-table td:nth-child(2) { left: 42px !important; min-width: 130px; }
+    .check-table td:nth-child(2) { left: 42px !important; min-width: 130px; width: 130px; max-width: 130px; }
     /* Col 3: Jabatan — thick right border as visual separator */
     .check-table th:nth-child(3),
     .check-table td:nth-child(3) {
-        left: 172px !important; min-width: 72px;
+        left: 172px !important; min-width: 72px; width: 72px; max-width: 72px;
         border-right: 2px solid #aaa !important;
+    }
+    .check-table th:nth-child(2),
+    .check-table td:nth-child(2),
+    .check-table th:nth-child(3),
+    .check-table td:nth-child(3) {
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     /* ═══ FROZEN HEADER ROWS ═══ */
@@ -85,11 +116,40 @@
         letter-spacing: .3px;
         position: sticky !important;
         z-index: 20 !important;
+        line-height: 1.2;
+        background-clip: padding-box;
     }
     /* Row 1 (Week groups): stick to top */
-    .header-row-1 th { top: 0 !important; }
+    .header-row-1 th {
+        top: 0 !important;
+        height: 34px;
+        min-height: 34px;
+    }
     /* Row 2 (Dates): stick below row 1 */
-    .header-row-2 th { top: 26px !important; }
+    .header-row-2 th {
+        top: 34px !important;
+        height: 44px;
+        min-height: 44px;
+        padding: 3px 4px !important;
+    }
+    .header-row-2 th:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(3)) {
+        width: 64px;
+        min-width: 64px;
+        max-width: 64px;
+    }
+    .header-date {
+        display: flex;
+        min-height: 34px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+    }
+    .header-date-day {
+        font-size: 9px;
+        font-weight: 400;
+        line-height: 1;
+    }
     /* Corner cells: header + frozen column = highest z-index */
     .check-table thead th:nth-child(1),
     .check-table thead th:nth-child(2),
@@ -107,15 +167,30 @@
     /* Cell tanggal */
     .time-cell {
         cursor: pointer;
+        width: 64px;
         min-width: 64px;
+        max-width: 64px;
+        height: 62px;
         transition: background 0.12s;
         user-select: none;
+        padding: 4px 5px !important;
     }
     .time-cell:hover { background: var(--surface2) !important; }
-    .time-cell .t-in    { color: var(--green); font-weight: 600; font-size: 11px; display: block; line-height: 1.6; }
-    .time-cell .t-out   { color: var(--red); font-weight: 600; font-size: 11px; display: block; line-height: 1.6; }
-    .time-cell .t-empty { color: var(--text3); font-size: 13px; display: block; line-height: 2.4; }
-    .time-cell .t-divider { color: var(--border); font-size: 8px; }
+    .time-cell:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: -3px;
+    }
+    .time-cell.status-complete { box-shadow: inset 0 -2px 0 rgba(59,109,17,0.55); }
+    .time-cell.status-partial { box-shadow: inset 0 -2px 0 rgba(163,45,45,0.5); }
+    .time-cell.status-empty { color: var(--text3); }
+    .time-cell.is-dirty {
+        outline: 2px solid rgba(133,79,11,0.45);
+        outline-offset: -3px;
+    }
+    .time-cell .t-in    { color: var(--green); font-weight: 600; font-size: 11px; display: block; line-height: 1.35; }
+    .time-cell .t-out   { color: var(--red); font-weight: 600; font-size: 11px; display: block; line-height: 1.35; }
+    .time-cell .t-empty { color: var(--text3); font-size: 13px; display: block; line-height: 46px; }
+    .time-cell .t-divider { color: var(--border); font-size: 8px; display: block; line-height: 1; }
 
     /* Warna hari */
     .day-sunday   { background: var(--amber-bg) !important; }
@@ -130,6 +205,7 @@
         color: var(--text2);
         padding: 2px 4px !important;
         border-left: 2px solid var(--blue) !important;
+        overflow: hidden;
     }
 
     /* Modal */
@@ -140,6 +216,18 @@
     .dot-in  { width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;margin-right:4px; }
     .dot-out { width:6px;height:6px;border-radius:50%;background:var(--red);display:inline-block;margin-right:4px; }
     .btn-clear-time { font-size: 11px; padding: 2px 8px; }
+    .empty-state-row td {
+        height: 120px;
+        color: var(--text2);
+        background: var(--surface) !important;
+        text-align: center !important;
+    }
+    .empty-state-title {
+        display: block;
+        color: var(--text);
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
 </style>
 @endsection
 
@@ -154,8 +242,8 @@
 @endsection
 
 @section('button')
-<button id="btnSaveAll" class="btn btn-success btn-sm">
-    <i class="mdi mdi-content-save mr-1"></i> Simpan Semua
+<button type="button" class="btn btn-success btn-sm js-save-all">
+    <i class="mdi mdi-content-save mr-1"></i> <span class="js-save-label">Simpan Semua</span>
 </button>
 @endsection
 
@@ -251,7 +339,11 @@
                 </select>
             </div>
             {{-- Legend --}}
-            <div class="ml-auto d-flex align-items-center mb-2" style="gap:10px;flex-wrap:wrap;">
+            <div class="ml-auto d-flex align-items-center mb-2 filter-actions">
+                <span id="pendingChangesBadge" class="pending-badge">Belum ada perubahan</span>
+                <button type="button" class="btn btn-success btn-sm js-save-all d-md-none">
+                    <i class="mdi mdi-content-save mr-1"></i> <span class="js-save-label">Simpan Semua</span>
+                </button>
                 <small><span class="dot-in"></span>In</small>
                 <small><span class="dot-out"></span>Out</small>
                 <small><span style="display:inline-block;width:10px;height:10px;background:var(--amber-bg);border:1px solid var(--border);border-radius:2px;margin-right:3px;"></span>Minggu</small>
@@ -265,8 +357,16 @@
                 <div class="table-loading-text">Memuat data...</div>
             </div>
             <div class="card-body p-2">
-                <div class="table-responsive" style="max-height: 74vh; overflow: auto;">
+                <div class="table-responsive attendance-table-wrap" style="max-height: 74vh; overflow: auto;">
                     <table class="table table-bordered table-sm check-table mb-0">
+                        <colgroup>
+                            <col style="width:42px;">
+                            <col style="width:130px;">
+                            <col style="width:72px;">
+                            @foreach($dates as $dateObj)
+                                <col style="width:64px;">
+                            @endforeach
+                        </colgroup>
                         <thead>
                             {{-- Baris 1: Week group --}}
                             <tr class="header-row-1">
@@ -302,15 +402,17 @@
                                             $sep = ($wIdx > 0 && $dIdx === 0) ? 'week-sep' : '';
                                         @endphp
                                         <th class="{{ $cls }} {{ $sep }}">
-                                            {{ $dateObj->format('d') }}<br>
-                                            <span style="font-weight:400;font-size:9px;">{{ $dateObj->locale('id')->isoFormat('ddd') }}</span>
+                                            <span class="header-date">
+                                                <span>{{ $dateObj->format('d') }}</span>
+                                                <span class="header-date-day">{{ $dateObj->locale('id')->isoFormat('ddd') }}</span>
+                                            </span>
                                         </th>
                                     @endforeach
                                 @endforeach
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($filteredEmployees as $employee)
+                            @forelse ($filteredEmployees as $employee)
                                 @php
                                     $empChecks   = $allChecks->get($employee->id, collect());
                                     $checkByDate = $empChecks->keyBy(function($c) {
@@ -342,14 +444,20 @@
                                                     ? \Carbon\Carbon::parse($check->leave_time)->format('H:i')
                                                     : '';
                                                 $dayLabel = $dateObj->locale('id')->isoFormat('dddd, D MMM YYYY');
+                                                $statusCls = $inVal && $outVal ? 'status-complete' : (($inVal || $outVal) ? 'status-partial' : 'status-empty');
                                             @endphp
-                                            <td class="time-cell {{ $cls }} {{ $sep }}"
+                                            <td class="time-cell {{ $statusCls }} {{ $cls }} {{ $sep }}"
                                                 data-date="{{ $dateStr }}"
                                                 data-emp="{{ $employee->id }}"
                                                 data-name="{{ $employee->name }}"
                                                 data-day="{{ $dayLabel }}"
                                                 data-in="{{ $inVal }}"
                                                 data-out="{{ $outVal }}"
+                                                data-original-in="{{ $inVal }}"
+                                                data-original-out="{{ $outVal }}"
+                                                role="button"
+                                                tabindex="0"
+                                                aria-label="Edit absensi {{ $employee->name }} pada {{ $dayLabel }}"
                                                 onclick="openEditModal(this)">
                                                 @if($inVal || $outVal)
                                                     <span class="t-in">{{ $inVal ?: '--:--' }}</span>
@@ -362,7 +470,14 @@
                                         @endforeach
                                     @endforeach
                                 </tr>
-                            @endforeach
+                            @empty
+                                <tr class="empty-state-row">
+                                    <td colspan="{{ 3 + count($dates) }}">
+                                        <span class="empty-state-title">Tidak ada karyawan</span>
+                                        Data karyawan tidak ditemukan untuk filter ini.
+                                    </td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -373,7 +488,7 @@
 </div>
 
 {{-- Modal Edit --}}
-<div class="modal fade" id="editModal" tabindex="-1" role="dialog">
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="modalDayLabel" aria-hidden="true">
     <div class="modal-dialog modal-sm" role="document">
         <div class="modal-content">
             <div class="modal-header modal-header-edit">
@@ -388,14 +503,14 @@
                     <label style="font-size:12px;font-weight:600;"><span class="dot-in"></span> Scan In</label>
                     <div class="d-flex" style="gap:8px;">
                         <input type="time" id="modalIn" class="form-control" step="1">
-                        <button type="button" class="btn btn-outline-secondary btn-clear-time" onclick="$('#modalIn').val('')">✕</button>
+                        <button type="button" class="btn btn-outline-secondary btn-clear-time" aria-label="Kosongkan scan in" title="Kosongkan scan in" onclick="$('#modalIn').val('')">&times;</button>
                     </div>
                 </div>
                 <div>
                     <label style="font-size:12px;font-weight:600;"><span class="dot-out"></span> Scan Out</label>
                     <div class="d-flex" style="gap:8px;">
                         <input type="time" id="modalOut" class="form-control" step="1">
-                        <button type="button" class="btn btn-outline-secondary btn-clear-time" onclick="$('#modalOut').val('')">✕</button>
+                        <button type="button" class="btn btn-outline-secondary btn-clear-time" aria-label="Kosongkan scan out" title="Kosongkan scan out" onclick="$('#modalOut').val('')">&times;</button>
                     </div>
                 </div>
                 <small class="text-muted d-block mt-2">* Kosongkan keduanya untuk hapus data hari ini</small>
@@ -414,6 +529,7 @@
 @section('script')
 <script>
 let activeCell = null;
+const dirtyCells = new Set();
 
 function openEditModal(cell) {
     activeCell = cell;
@@ -449,6 +565,54 @@ function updateCellDisplay(cell, inVal, outVal) {
     } else {
         cell.innerHTML = '<span class="t-empty">·</span>';
     }
+    applyCellStatus(cell, inVal, outVal);
+    updateDirtyState(cell);
+}
+
+function applyCellStatus(cell, inVal, outVal) {
+    cell.classList.remove('status-complete', 'status-partial', 'status-empty');
+    if (inVal && outVal) {
+        cell.classList.add('status-complete');
+    } else if (inVal || outVal) {
+        cell.classList.add('status-partial');
+    } else {
+        cell.classList.add('status-empty');
+    }
+}
+
+function cellKey(cell) {
+    return `${cell.dataset.date}:${cell.dataset.emp}`;
+}
+
+function updateDirtyState(cell) {
+    const changed = (cell.dataset.in || '') !== (cell.dataset.originalIn || '')
+        || (cell.dataset.out || '') !== (cell.dataset.originalOut || '');
+
+    if (changed) {
+        dirtyCells.add(cellKey(cell));
+    } else {
+        dirtyCells.delete(cellKey(cell));
+    }
+
+    cell.classList.toggle('is-dirty', changed);
+    refreshSaveState();
+}
+
+function refreshSaveState() {
+    const count = dirtyCells.size;
+    const badge = document.getElementById('pendingChangesBadge');
+    const label = count > 0 ? `Simpan (${count})` : 'Simpan Semua';
+
+    document.querySelectorAll('.js-save-label').forEach(el => {
+        el.textContent = label;
+    });
+
+    if (!badge) return;
+
+    badge.textContent = count > 0
+        ? `${count} perubahan belum tersimpan`
+        : 'Belum ada perubahan';
+    badge.classList.toggle('has-changes', count > 0);
 }
 
 function updateHiddenInput(type, date, empId, value) {
@@ -468,20 +632,36 @@ document.querySelectorAll('.time-cell').forEach(cell => {
     const { date, emp } = cell.dataset;
     if (cell.dataset.in)  updateHiddenInput('time_in',  date, emp, cell.dataset.in);
     if (cell.dataset.out) updateHiddenInput('time_out', date, emp, cell.dataset.out);
+    cell.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            openEditModal(cell);
+        }
+    });
 });
+refreshSaveState();
 
 // Enter di modal → simpan
 $('#editModal').on('keydown', e => { if (e.key === 'Enter') $('#btnSaveCell').click(); });
 
 // Tombol Simpan Semua
-document.getElementById('btnSaveAll').addEventListener('click', () => {
+document.querySelectorAll('.js-save-all').forEach(btn => btn.addEventListener('click', () => {
+    const overlay = document.getElementById('tableLoadingOverlay');
+    const loadingText = overlay ? overlay.querySelector('.table-loading-text') : null;
+    if (loadingText) loadingText.textContent = 'Menyimpan perubahan...';
+    if (overlay) overlay.style.display = 'flex';
+    document.querySelectorAll('.js-save-all').forEach(saveBtn => {
+        saveBtn.disabled = true;
+    });
     document.getElementById('checkForm').submit();
-});
+}));
 
 // Auto-filter: reload on any dropdown change with loading overlay
 document.querySelectorAll('.auto-filter').forEach(el => {
     el.addEventListener('change', () => {
         const overlay = document.getElementById('tableLoadingOverlay');
+        const loadingText = overlay ? overlay.querySelector('.table-loading-text') : null;
+        if (loadingText) loadingText.textContent = 'Memuat data...';
         if (overlay) overlay.style.display = 'flex';
         const month = document.getElementById('filterMonth').value;
         const year  = document.getElementById('filterYear').value;
