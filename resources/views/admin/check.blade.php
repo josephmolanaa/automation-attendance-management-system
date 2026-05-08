@@ -99,6 +99,25 @@
         background-color: #fff;
         box-sizing: border-box;
     }
+    .check-table tbody td:nth-child(2) {
+        color: var(--text);
+        font-weight: 600;
+    }
+    .check-table tbody td:nth-child(3) {
+        color: var(--text2);
+        font-size: 11px;
+    }
+    .check-table tbody tr:hover td:not(.day-sunday):not(.day-saturday):not(.day-today) {
+        background-color: #FAF9F6 !important;
+    }
+    .check-table tbody tr:hover td.day-sunday { background: #F7E7CB !important; }
+    .check-table tbody tr:hover td.day-saturday { background: #DDECF8 !important; }
+    .check-table tbody tr:hover td.day-today { background: #DFEED0 !important; }
+    .check-table tbody tr:hover td:nth-child(1),
+    .check-table tbody tr:hover td:nth-child(2),
+    .check-table tbody tr:hover td:nth-child(3) {
+        background: #FAF9F6 !important;
+    }
 
     /* ═══ FROZEN COLUMNS (ID, Nama, Jabatan) ═══ */
     .check-table td:nth-child(1),
