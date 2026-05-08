@@ -1,4 +1,4 @@
-FROM php:8.3-apache
+FROM php:8.3-apache-bookworm
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
@@ -15,6 +15,11 @@ RUN apt-get update && apt-get install -y \
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 RUN docker-php-ext-install pdo pdo_mysql mbstring gd zip xml bcmath opcache intl exif pcntl
 
+ENV VIRTUAL_ENV=/opt/ocr-venv
+ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
+RUN python3 -m venv "${VIRTUAL_ENV}" \
+    && python -m pip install --upgrade pip setuptools wheel
+
 # Fix MPM conflict: hapus symlink event & worker secara langsung (lebih reliable dari a2dismod)
 RUN rm -f /etc/apache2/mods-enabled/mpm_event.conf \
            /etc/apache2/mods-enabled/mpm_event.load \
@@ -30,8 +35,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 RUN composer install --no-dev --optimize-autoloader
 
 # Install Python dependencies for OCR service
-RUN pip3 install --no-cache-dir --break-system-packages -r ocr_service/requirements.txt || \
-    pip3 install --no-cache-dir -r ocr_service/requirements.txt
+RUN pip install --no-cache-dir -r ocr_service/requirements.txt
 
 RUN mkdir -p storage/logs bootstrap/cache && chmod -R 755 storage bootstrap/cache
 
