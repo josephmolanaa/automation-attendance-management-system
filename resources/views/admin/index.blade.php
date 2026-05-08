@@ -27,61 +27,41 @@
 
 @section('content')
 
-{{-- 4 Stat Cards - Minimalist Light --}}
+{{-- 4 Stat Cards — Warm Neutral --}}
 <div class="row">
     <div class="col-xl-3 col-md-6">
         <div class="card ams-stat-card">
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="ams-stat-label">Total Employees</div>
-                        <div class="ams-stat-value">{{ $data[0] }}</div>
-                    </div>
-                    <div class="ams-stat-icon" style="background: var(--blue-light); color: var(--blue);"><i class="ti-id-badge"></i></div>
-                </div>
-                <a href="/employees" class="ams-stat-link">View Details</a>
+                <div class="ams-stat-label">Total Karyawan</div>
+                <div class="ams-stat-value">{{ $data[0] }}</div>
+                <a href="/employees" class="ams-stat-link">Lihat semua →</a>
             </div>
         </div>
     </div>
     <div class="col-xl-3 col-md-6">
         <div class="card ams-stat-card">
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="ams-stat-label">On Time %</div>
-                        <div class="ams-stat-value">{{ $data[3] }}%</div>
-                    </div>
-                    <div class="ams-stat-icon" style="background: var(--green-light); color: var(--green);"><i class="ti-pie-chart"></i></div>
-                </div>
-                <div class="ams-stat-link" style="background: transparent; color: var(--text-muted) !important; padding:0;">Today's Rate</div>
+                <div class="ams-stat-label">Tepat Waktu</div>
+                <div class="ams-stat-value" style="color:var(--green)">{{ $data[3] }}%</div>
+                <span class="ams-stat-link">Hari ini</span>
             </div>
         </div>
     </div>
     <div class="col-xl-3 col-md-6">
         <div class="card ams-stat-card">
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="ams-stat-label">On Time Today</div>
-                        <div class="ams-stat-value">{{ $data[1] }}</div>
-                    </div>
-                    <div class="ams-stat-icon" style="background: #E0F2FE; color: #0369A1;"><i class="ti-check-box"></i></div>
-                </div>
-                <a href="/attendance" class="ams-stat-link">View Attendance</a>
+                <div class="ams-stat-label">Hadir Hari Ini</div>
+                <div class="ams-stat-value" style="color:var(--blue)">{{ $data[1] }}</div>
+                <a href="/attendance" class="ams-stat-link">Lihat absensi →</a>
             </div>
         </div>
     </div>
     <div class="col-xl-3 col-md-6">
         <div class="card ams-stat-card">
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="ams-stat-label">Late Today</div>
-                        <div class="ams-stat-value">{{ $data[2] }}</div>
-                    </div>
-                    <div class="ams-stat-icon" style="background: var(--red-light); color: var(--red);"><i class="ti-alert"></i></div>
-                </div>
-                <a href="/latetime" class="ams-stat-link">View Late Logs</a>
+                <div class="ams-stat-label">Terlambat</div>
+                <div class="ams-stat-value" style="color:var(--red)">{{ $data[2] }}</div>
+                <a href="/latetime" class="ams-stat-link">Lihat detail →</a>
             </div>
         </div>
     </div>
