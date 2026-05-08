@@ -658,7 +658,13 @@ document.querySelectorAll('.js-save-all').forEach(btn => btn.addEventListener('c
 
 // Auto-filter: reload on any dropdown change with loading overlay
 document.querySelectorAll('.auto-filter').forEach(el => {
+    el.dataset.currentValue = el.value;
     el.addEventListener('change', () => {
+        if (dirtyCells.size > 0 && !window.confirm('Ada perubahan belum tersimpan. Ganti filter tanpa menyimpan?')) {
+            el.value = el.dataset.currentValue;
+            return;
+        }
+
         const overlay = document.getElementById('tableLoadingOverlay');
         const loadingText = overlay ? overlay.querySelector('.table-loading-text') : null;
         if (loadingText) loadingText.textContent = 'Memuat data...';
