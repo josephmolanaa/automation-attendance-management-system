@@ -1,5 +1,28 @@
 @include('layouts.welcome')
-  
+
+<style>
+    .welcome-btn {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        padding: 12px 32px !important;
+        border-radius: 8px !important;
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        background: #1A1917 !important;
+        color: #F7F6F3 !important;
+        border: none !important;
+        text-decoration: none !important;
+        cursor: pointer !important;
+        font-family: 'DM Sans', sans-serif !important;
+        transition: opacity 0.15s !important;
+    }
+    .welcome-btn:hover {
+        opacity: 0.85 !important;
+        color: #F7F6F3 !important;
+    }
+</style>
+
     <div class="flex-center position-ref full-height">
         <div class="content">
             <div class="title m-b-md">
@@ -9,9 +32,9 @@
                     @if (Route::has('login'))
                         <div style="text-align:center; margin-top: 28px;">
                             @auth
-                            <a href="{{ url('/admin') }}" style="display:inline-flex;align-items:center;gap:6px;padding:10px 28px;border-radius:8px;font-size:14px;font-weight:500;background:#1A1917;color:#F7F6F3;border:none;text-decoration:none;cursor:pointer;">Dashboard</a>
+                            <a href="{{ url('/admin') }}" class="welcome-btn">Dashboard</a>
                             @else
-                            <a href="{{ route('login') }}" style="display:inline-flex;align-items:center;gap:6px;padding:10px 28px;border-radius:8px;font-size:14px;font-weight:500;background:#1A1917;color:#F7F6F3;border:none;text-decoration:none;cursor:pointer;">Login →</a>
+                            <a href="{{ route('login') }}" class="welcome-btn">Login →</a>
                             @endauth
                         </div>
                     @endif
@@ -19,4 +42,3 @@
             </div>
         </div>
     </div>
-

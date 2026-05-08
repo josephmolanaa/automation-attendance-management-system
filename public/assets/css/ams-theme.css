@@ -650,14 +650,7 @@ label {
 .enlarged .footer { left: 70px !important; }
 
 /* ═══════ ATTENDANCE SHEET GRID ═══════ */
-.check-table td, .check-table th {
-  border-left: 1px solid var(--border2) !important;
-  border-right: 1px solid var(--border2) !important;
-  background-color: var(--surface) !important;
-}
-.check-table thead th {
-  background-color: var(--surface2) !important;
-}
+/* Styles handled in check.blade.php to avoid specificity conflicts */
 
 /* ═══════ SWAL / SWEETALERT ═══════ */
 .swal2-popup { border-radius: var(--radius-lg) !important; font-family: 'DM Sans', sans-serif !important; }

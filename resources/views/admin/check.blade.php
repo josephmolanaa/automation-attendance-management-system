@@ -37,49 +37,49 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── Table ── */
+    /* ── Table (border-collapse:separate is REQUIRED for sticky to work) ── */
     .check-table {
-        border-collapse: collapse;
+        border-collapse: separate !important;
+        border-spacing: 0 !important;
         font-size: 11.5px;
+        width: 100%;
     }
     .check-table th, .check-table td {
         white-space: nowrap;
-        padding: 4px 6px !important;
+        padding: 5px 6px !important;
         vertical-align: middle !important;
         text-align: center;
-        border: 1px solid rgba(26,25,23,0.12);
+        border: 1px solid #ddd !important;
+        background-color: #fff;
     }
 
     /* ═══ FROZEN COLUMNS (ID, Nama, Jabatan) ═══ */
-    .check-table tbody td:nth-child(1),
-    .check-table tbody td:nth-child(2),
-    .check-table tbody td:nth-child(3) {
+    .check-table td:nth-child(1),
+    .check-table td:nth-child(2),
+    .check-table td:nth-child(3) {
         text-align: left;
         position: sticky !important;
         z-index: 10 !important;
-        background: #FFFFFF !important;
+        background-color: #fff !important;
     }
-    .check-table thead th:nth-child(1),
-    .check-table thead th:nth-child(2),
-    .check-table thead th:nth-child(3) {
-        text-align: left;
-        position: sticky !important;
-    }
-    /* Column 1: ID */
-    .check-table th:nth-child(1), .check-table td:nth-child(1) { left: 0; min-width: 42px; width: 42px; }
-    /* Column 2: Nama */
-    .check-table th:nth-child(2), .check-table td:nth-child(2) { left: 42px; min-width: 130px; }
-    /* Column 3: Jabatan — add shadow for visual separation */
-    .check-table th:nth-child(3), .check-table td:nth-child(3) {
-        left: 172px; min-width: 72px;
-        border-right: 2px solid rgba(26,25,23,0.15) !important;
+    /* Col 1: ID */
+    .check-table th:nth-child(1),
+    .check-table td:nth-child(1) { left: 0 !important; min-width: 42px; width: 42px; }
+    /* Col 2: Nama */
+    .check-table th:nth-child(2),
+    .check-table td:nth-child(2) { left: 42px !important; min-width: 130px; }
+    /* Col 3: Jabatan — thick right border as visual separator */
+    .check-table th:nth-child(3),
+    .check-table td:nth-child(3) {
+        left: 172px !important; min-width: 72px;
+        border-right: 2px solid #aaa !important;
     }
 
     /* ═══ FROZEN HEADER ROWS ═══ */
     .check-table thead th {
-        background: var(--surface2) !important;
+        background-color: #EDECEA !important;
         font-weight: 600;
-        color: var(--text2);
+        color: #555;
         font-size: 10px;
         text-transform: uppercase;
         letter-spacing: .3px;
@@ -89,14 +89,15 @@
     /* Row 1 (Week groups): stick to top */
     .header-row-1 th { top: 0 !important; }
     /* Row 2 (Dates): stick below row 1 */
-    .header-row-2 th { top: 25px !important; }
-    /* Corner cells (header + frozen column) need highest z-index + opaque bg */
+    .header-row-2 th { top: 26px !important; }
+    /* Corner cells: header + frozen column = highest z-index */
     .check-table thead th:nth-child(1),
     .check-table thead th:nth-child(2),
     .check-table thead th:nth-child(3) {
         z-index: 30 !important;
-        background: #F0EEE9 !important;
-        background-color: #F0EEE9 !important;
+        background-color: #EDECEA !important;
+        text-align: left;
+        position: sticky !important;
     }
 
     /* Week separator */
