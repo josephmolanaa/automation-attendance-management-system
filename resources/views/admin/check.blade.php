@@ -3,9 +3,39 @@
 @section('css')
 <style>
     /* ── Filter bar ── */
-    .filter-bar { background:#f8f9fa; border:1px solid #e0e0e0; border-radius:8px; padding:12px 16px; margin-bottom:12px; }
-    .filter-bar label { font-size:11px; font-weight:600; color:#555; margin-bottom:3px; display:block; }
-    .filter-bar select, .filter-bar input { font-size:12px; height:30px; padding:2px 8px; }
+    .filter-bar { background: var(--surface); border:1px solid var(--border2); border-radius:10px; padding:14px 18px; margin-bottom:14px; }
+    .filter-bar label { font-size:10px; font-weight:600; color:var(--text3); margin-bottom:4px; display:block; text-transform:uppercase; letter-spacing:.5px; }
+    .filter-bar select, .filter-bar input { font-size:13px; height:34px; padding:4px 10px; }
+
+    /* ── Loading Overlay ── */
+    .table-loading-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(247,246,243,0.85);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+        border-radius: 10px;
+        backdrop-filter: blur(2px);
+    }
+    .table-loading-text {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text2);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .table-loading-text::before {
+        content: '';
+        width: 16px; height: 16px;
+        border: 2px solid var(--border);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ── Table ── */
     .check-table {
@@ -18,9 +48,10 @@
         padding: 4px 3px !important;
         vertical-align: middle !important;
         text-align: center;
-        border: 1px solid #e0e0e0;
+        border: 1px solid var(--border2);
     }
-    /* Sticky kolom kiri */
+
+    /* ═══ FROZEN COLUMNS (ID, Nama, Jabatan) ═══ */
     .check-table th:nth-child(1),
     .check-table th:nth-child(2),
     .check-table th:nth-child(3),
@@ -28,28 +59,42 @@
     .check-table td:nth-child(2),
     .check-table td:nth-child(3) {
         text-align: left;
-        position: sticky;
-        z-index: 3;
-        background: #fff;
+        position: sticky !important;
+        z-index: 10 !important;
+        background: var(--surface) !important;
+        border-right: 1px solid var(--border) !important;
     }
     .check-table th:nth-child(1), .check-table td:nth-child(1) { left: 0;    min-width: 36px; }
     .check-table th:nth-child(2), .check-table td:nth-child(2) { left: 40px; min-width: 140px; }
-    .check-table th:nth-child(3), .check-table td:nth-child(3) { left: 180px; min-width: 65px; }
+    .check-table th:nth-child(3), .check-table td:nth-child(3) { left: 180px; min-width: 65px; box-shadow: 3px 0 6px -2px rgba(0,0,0,0.06); }
+
+    /* ═══ FROZEN HEADER ROWS ═══ */
     .check-table thead th {
-        background: #f0f4f8 !important;
+        background: var(--surface2) !important;
         font-weight: 600;
-        color: #444;
-        position: sticky;
+        color: var(--text2);
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: .3px;
+        position: sticky !important;
         top: 0;
-        z-index: 4;
+        z-index: 20 !important;
     }
+    /* Corner cells (header + frozen column) need highest z-index */
     .check-table thead th:nth-child(1),
     .check-table thead th:nth-child(2),
-    .check-table thead th:nth-child(3) { z-index: 5; }
+    .check-table thead th:nth-child(3) {
+        z-index: 30 !important;
+        background: var(--surface2) !important;
+    }
+    /* Second header row (dates) — sticky below first row */
+    .check-table thead tr:nth-child(2) th {
+        top: 28px; /* height of first header row */
+    }
 
     /* Week separator */
-    .week-sep { border-left: 3px solid #90caf9 !important; }
-    .week-header-sep { border-left: 3px solid #90caf9 !important; }
+    .week-sep { border-left: 2px solid var(--blue) !important; }
+    .week-header-sep { border-left: 2px solid var(--blue) !important; }
 
     /* Cell tanggal */
     .time-cell {
@@ -58,34 +103,34 @@
         transition: background 0.12s;
         user-select: none;
     }
-    .time-cell:hover { background: #e8f0fe !important; }
-    .time-cell .t-in    { color: #1a7a3c; font-weight: 700; font-size: 11px; display: block; line-height: 1.6; }
-    .time-cell .t-out   { color: #b71c1c; font-weight: 700; font-size: 11px; display: block; line-height: 1.6; }
-    .time-cell .t-empty { color: #ddd; font-size: 13px; display: block; line-height: 2.4; }
-    .time-cell .t-divider { color: #ddd; font-size: 8px; }
+    .time-cell:hover { background: var(--surface2) !important; }
+    .time-cell .t-in    { color: var(--green); font-weight: 600; font-size: 11px; display: block; line-height: 1.6; }
+    .time-cell .t-out   { color: var(--red); font-weight: 600; font-size: 11px; display: block; line-height: 1.6; }
+    .time-cell .t-empty { color: var(--text3); font-size: 13px; display: block; line-height: 2.4; }
+    .time-cell .t-divider { color: var(--border); font-size: 8px; }
 
     /* Warna hari */
-    .day-sunday   { background: #fff8e1 !important; }
-    .day-saturday { background: #e3f2fd !important; }
-    .day-today    { background: #e8f5e9 !important; }
+    .day-sunday   { background: var(--amber-bg) !important; }
+    .day-saturday { background: var(--blue-bg) !important; }
+    .day-today    { background: var(--green-bg) !important; }
 
     /* Week group header */
     .week-group-th {
-        background: #e8eaf6 !important;
+        background: var(--surface2) !important;
         font-size: 10px;
         font-weight: 600;
-        color: #3949ab;
+        color: var(--text2);
         padding: 2px 4px !important;
-        border-left: 3px solid #90caf9 !important;
+        border-left: 2px solid var(--blue) !important;
     }
 
     /* Modal */
-    .modal-header-edit { background: #1a237e; color: #fff; padding: 10px 16px; }
-    .modal-header-edit .close { color: #fff; opacity: 0.8; }
-    .edit-date-label { font-size: 13px; font-weight: 700; }
-    .edit-emp-label  { font-size: 11px; opacity: 0.85; }
-    .dot-in  { width:8px;height:8px;border-radius:50%;background:#1a7a3c;display:inline-block;margin-right:4px; }
-    .dot-out { width:8px;height:8px;border-radius:50%;background:#b71c1c;display:inline-block;margin-right:4px; }
+    .modal-header-edit { background: var(--accent); color: var(--accent-text); padding: 14px 18px; border-radius: 13px 13px 0 0; }
+    .modal-header-edit .close { color: var(--accent-text); opacity: 0.7; }
+    .edit-date-label { font-size: 13px; font-weight: 600; }
+    .edit-emp-label  { font-size: 11px; opacity: 0.7; }
+    .dot-in  { width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;margin-right:4px; }
+    .dot-out { width:6px;height:6px;border-radius:50%;background:var(--red);display:inline-block;margin-right:4px; }
     .btn-clear-time { font-size: 11px; padding: 2px 8px; }
 </style>
 @endsection
@@ -170,7 +215,7 @@
             {{-- Bulan --}}
             <div class="mr-3 mb-2">
                 <label>Bulan</label>
-                <select id="filterMonth" class="form-control">
+                <select id="filterMonth" class="form-control auto-filter">
                     @foreach($months as $m => $mName)
                         <option value="{{ $m }}" {{ $selMonth == $m ? 'selected' : '' }}>{{ $mName }}</option>
                     @endforeach
@@ -179,7 +224,7 @@
             {{-- Tahun --}}
             <div class="mr-3 mb-2">
                 <label>Tahun</label>
-                <select id="filterYear" class="form-control">
+                <select id="filterYear" class="form-control auto-filter">
                     @for($y = 2024; $y <= 2027; $y++)
                         <option value="{{ $y }}" {{ $selYear == $y ? 'selected' : '' }}>{{ $y }}</option>
                     @endfor
@@ -188,7 +233,7 @@
             {{-- Karyawan --}}
             <div class="mr-3 mb-2">
                 <label>Karyawan</label>
-                <select id="filterEmp" class="form-control" style="min-width:160px;">
+                <select id="filterEmp" class="form-control auto-filter" style="min-width:160px;">
                     <option value="all" {{ $selEmp === 'all' ? 'selected' : '' }}>Semua Karyawan</option>
                     @foreach($allEmployees as $emp)
                         <option value="{{ $emp->id }}" {{ $selEmp == $emp->id ? 'selected' : '' }}>
@@ -197,23 +242,20 @@
                     @endforeach
                 </select>
             </div>
-            {{-- Tombol --}}
-            <div class="mb-2">
-                <button type="button" id="btnFilter" class="btn btn-primary btn-sm" style="height:36px; padding: 0 16px;">
-                    <i class="mdi mdi-filter mr-1"></i> Tampilkan
-                </button>
-            </div>
             {{-- Legend --}}
-            <div class="ml-auto d-flex align-items-center" style="gap:10px;flex-wrap:wrap;">
+            <div class="ml-auto d-flex align-items-center mb-2" style="gap:10px;flex-wrap:wrap;">
                 <small><span class="dot-in"></span>In</small>
                 <small><span class="dot-out"></span>Out</small>
-                <small><span style="display:inline-block;width:10px;height:10px;background:#fff8e1;border:1px solid #ddd;border-radius:2px;margin-right:3px;"></span>Minggu</small>
-                <small><span style="display:inline-block;width:10px;height:10px;background:#e3f2fd;border:1px solid #ddd;border-radius:2px;margin-right:3px;"></span>Sabtu</small>
+                <small><span style="display:inline-block;width:10px;height:10px;background:var(--amber-bg);border:1px solid var(--border);border-radius:2px;margin-right:3px;"></span>Minggu</small>
+                <small><span style="display:inline-block;width:10px;height:10px;background:var(--blue-bg);border:1px solid var(--border);border-radius:2px;margin-right:3px;"></span>Sabtu</small>
                 <small><i class="mdi mdi-cursor-default-click"></i> Klik cell untuk edit</small>
             </div>
         </div>
 
-        <div class="card">
+        <div class="card" style="position:relative;">
+            <div id="tableLoadingOverlay" class="table-loading-overlay" style="display:none;">
+                <div class="table-loading-text">Memuat data...</div>
+            </div>
             <div class="card-body p-2">
                 <div class="table-responsive" style="max-height: 74vh; overflow: auto;">
                     <table class="table table-bordered table-sm check-table mb-0">
@@ -425,12 +467,16 @@ document.getElementById('btnSaveAll').addEventListener('click', () => {
     document.getElementById('checkForm').submit();
 });
 
-// Filter → reload dengan query param
-document.getElementById('btnFilter').addEventListener('click', () => {
-    const month = document.getElementById('filterMonth').value;
-    const year  = document.getElementById('filterYear').value;
-    const emp   = document.getElementById('filterEmp').value;
-    window.location.href = `{{ route('check') }}?month=${month}&year=${year}&emp=${emp}`;
+// Auto-filter: reload on any dropdown change with loading overlay
+document.querySelectorAll('.auto-filter').forEach(el => {
+    el.addEventListener('change', () => {
+        const overlay = document.getElementById('tableLoadingOverlay');
+        if (overlay) overlay.style.display = 'flex';
+        const month = document.getElementById('filterMonth').value;
+        const year  = document.getElementById('filterYear').value;
+        const emp   = document.getElementById('filterEmp').value;
+        window.location.href = `{{ route('check') }}?month=${month}&year=${year}&emp=${emp}`;
+    });
 });
 </script>
 @endsection
