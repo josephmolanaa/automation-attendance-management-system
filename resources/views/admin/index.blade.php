@@ -68,10 +68,9 @@
 </div>
 <!-- end row -->
 
-{{-- Chart + Recent Attendance --}}
+{{-- Monthly Chart --}}
 <div class="row">
-    {{-- Monthly Chart --}}
-    <div class="col-xl-5">
+    <div class="col-12">
         <div class="card">
             <div class="card-body">
                 <h4 class="mt-0 header-title mb-4">Monthly Report</h4>
@@ -79,14 +78,16 @@
             </div>
         </div>
     </div>
+</div>
 
-    {{-- Recent Attendance --}}
-    <div class="col-xl-7">
+{{-- Recent Attendance --}}
+<div class="row">
+    <div class="col-12">
         <div class="card">
             <div class="card-body">
                 <h4 class="mt-0 header-title mb-4">Recent Attendance</h4>
                 <div class="table-responsive">
-                    <table class="table table-sm table-striped mb-0">
+                    <table class="table table-sm mb-0">
                         <thead>
                             <tr>
                                 <th>Nama</th>
@@ -100,12 +101,12 @@
                             <tr>
                                 <td>{{ optional($row->employee)->name ?? '-' }}</td>
                                 <td>{{ \Carbon\Carbon::parse($row->attendance_time)->format('d M Y') }}</td>
-                                <td>{{ \Carbon\Carbon::parse($row->attendance_time)->format('H:i') }}</td>
-                                <td>
+                                <td style="font-family:'DM Mono',monospace;font-size:12px">{{ \Carbon\Carbon::parse($row->attendance_time)->format('H:i') }}</td>
+                                <td style="font-family:'DM Mono',monospace;font-size:12px">
                                     @if($row->leave_time)
                                         {{ \Carbon\Carbon::parse($row->leave_time)->format('H:i') }}
                                     @else
-                                        <span class="text-muted">-</span>
+                                        <span class="text-muted">—</span>
                                     @endif
                                 </td>
                             </tr>
@@ -118,7 +119,7 @@
                     </table>
                 </div>
                 <div class="mt-3 text-right">
-                    <a href="/attendance" class="btn btn-sm btn-outline-primary">Lihat Semua <i class="mdi mdi-arrow-right"></i></a>
+                    <a href="/attendance" class="btn btn-sm" style="border-color:var(--border)">Lihat Semua →</a>
                 </div>
             </div>
         </div>

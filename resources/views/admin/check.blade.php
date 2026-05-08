@@ -61,12 +61,12 @@
         text-align: left;
         position: sticky !important;
         z-index: 10 !important;
-        background: var(--surface) !important;
-        border-right: 1px solid var(--border) !important;
+        background-color: #FFFFFF !important;
+        background: #FFFFFF !important;
     }
-    .check-table th:nth-child(1), .check-table td:nth-child(1) { left: 0;    min-width: 36px; }
-    .check-table th:nth-child(2), .check-table td:nth-child(2) { left: 40px; min-width: 140px; }
-    .check-table th:nth-child(3), .check-table td:nth-child(3) { left: 180px; min-width: 65px; box-shadow: 3px 0 6px -2px rgba(0,0,0,0.06); }
+    .check-table th:nth-child(1), .check-table td:nth-child(1) { left: 0;    min-width: 40px; max-width: 50px; }
+    .check-table th:nth-child(2), .check-table td:nth-child(2) { left: 50px; min-width: 130px; }
+    .check-table th:nth-child(3), .check-table td:nth-child(3) { left: 180px; min-width: 70px; box-shadow: 4px 0 8px -3px rgba(0,0,0,0.1); }
 
     /* ═══ FROZEN HEADER ROWS ═══ */
     .check-table thead th {
@@ -83,12 +83,13 @@
     .header-row-1 th { top: 0 !important; }
     /* Row 2 (Dates): stick below row 1 */
     .header-row-2 th { top: 25px !important; }
-    /* Corner cells (header + frozen column) need highest z-index */
+    /* Corner cells (header + frozen column) need highest z-index + opaque bg */
     .check-table thead th:nth-child(1),
     .check-table thead th:nth-child(2),
     .check-table thead th:nth-child(3) {
         z-index: 30 !important;
-        background: var(--surface2) !important;
+        background: #F0EEE9 !important;
+        background-color: #F0EEE9 !important;
     }
 
     /* Week separator */
