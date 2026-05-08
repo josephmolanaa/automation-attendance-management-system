@@ -77,19 +77,18 @@
         text-transform: uppercase;
         letter-spacing: .3px;
         position: sticky !important;
-        top: 0;
         z-index: 20 !important;
     }
+    /* Row 1 (Week groups): stick to top */
+    .header-row-1 th { top: 0 !important; }
+    /* Row 2 (Dates): stick below row 1 */
+    .header-row-2 th { top: 25px !important; }
     /* Corner cells (header + frozen column) need highest z-index */
     .check-table thead th:nth-child(1),
     .check-table thead th:nth-child(2),
     .check-table thead th:nth-child(3) {
         z-index: 30 !important;
         background: var(--surface2) !important;
-    }
-    /* Second header row (dates) — sticky below first row */
-    .check-table thead tr:nth-child(2) th {
-        top: 28px; /* height of first header row */
     }
 
     /* Week separator */
@@ -261,10 +260,10 @@
                     <table class="table table-bordered table-sm check-table mb-0">
                         <thead>
                             {{-- Baris 1: Week group --}}
-                            <tr>
-                                <th rowspan="2">ID</th>
-                                <th rowspan="2">Nama</th>
-                                <th rowspan="2">Jabatan</th>
+                            <tr class="header-row-1">
+                                <th>ID</th>
+                                <th>Nama</th>
+                                <th>Jabatan</th>
                                 @foreach($weeks as $wIdx => $weekDates)
                                     @php
                                         $wStart = $weekDates[0]->format('d');
@@ -273,12 +272,15 @@
                                     <th colspan="{{ count($weekDates) }}"
                                         class="week-group-th {{ $wIdx > 0 ? 'week-header-sep' : '' }}">
                                         Minggu {{ $wIdx+1 }} &nbsp;
-                                        <span style="font-weight:400;opacity:0.8;">{{ $wStart }}–{{ $wEnd }}</span>
+                                        <span style="font-weight:400;opacity:0.7;">{{ $wStart }}–{{ $wEnd }}</span>
                                     </th>
                                 @endforeach
                             </tr>
                             {{-- Baris 2: Tanggal --}}
-                            <tr>
+                            <tr class="header-row-2">
+                                <th></th>
+                                <th></th>
+                                <th></th>
                                 @php $firstOfWeek = true; @endphp
                                 @foreach($weeks as $wIdx => $weekDates)
                                     @foreach($weekDates as $dIdx => $dateObj)
