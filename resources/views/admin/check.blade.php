@@ -39,34 +39,41 @@
 
     /* ── Table ── */
     .check-table {
-        border-collapse: separate;
-        border-spacing: 0;
+        border-collapse: collapse;
         font-size: 11.5px;
     }
     .check-table th, .check-table td {
         white-space: nowrap;
-        padding: 4px 3px !important;
+        padding: 4px 6px !important;
         vertical-align: middle !important;
         text-align: center;
-        border: 1px solid var(--border2);
+        border: 1px solid rgba(26,25,23,0.12);
     }
 
     /* ═══ FROZEN COLUMNS (ID, Nama, Jabatan) ═══ */
-    .check-table th:nth-child(1),
-    .check-table th:nth-child(2),
-    .check-table th:nth-child(3),
-    .check-table td:nth-child(1),
-    .check-table td:nth-child(2),
-    .check-table td:nth-child(3) {
+    .check-table tbody td:nth-child(1),
+    .check-table tbody td:nth-child(2),
+    .check-table tbody td:nth-child(3) {
         text-align: left;
         position: sticky !important;
         z-index: 10 !important;
-        background-color: #FFFFFF !important;
         background: #FFFFFF !important;
     }
-    .check-table th:nth-child(1), .check-table td:nth-child(1) { left: 0;    min-width: 40px; max-width: 50px; }
-    .check-table th:nth-child(2), .check-table td:nth-child(2) { left: 50px; min-width: 130px; }
-    .check-table th:nth-child(3), .check-table td:nth-child(3) { left: 180px; min-width: 70px; box-shadow: 4px 0 8px -3px rgba(0,0,0,0.1); }
+    .check-table thead th:nth-child(1),
+    .check-table thead th:nth-child(2),
+    .check-table thead th:nth-child(3) {
+        text-align: left;
+        position: sticky !important;
+    }
+    /* Column 1: ID */
+    .check-table th:nth-child(1), .check-table td:nth-child(1) { left: 0; min-width: 42px; width: 42px; }
+    /* Column 2: Nama */
+    .check-table th:nth-child(2), .check-table td:nth-child(2) { left: 42px; min-width: 130px; }
+    /* Column 3: Jabatan — add shadow for visual separation */
+    .check-table th:nth-child(3), .check-table td:nth-child(3) {
+        left: 172px; min-width: 72px;
+        border-right: 2px solid rgba(26,25,23,0.15) !important;
+    }
 
     /* ═══ FROZEN HEADER ROWS ═══ */
     .check-table thead th {
