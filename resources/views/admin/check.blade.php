@@ -560,7 +560,7 @@
                         <button type="button" class="btn btn-outline-secondary btn-clear-time" aria-label="Kosongkan scan in" title="Kosongkan scan in" onclick="$('#modalIn').val('')">&times;</button>
                     </div>
                 </div>
-                <div>
+                <div class="mb-3">
                     <label style="font-size:12px;font-weight:600;"><span class="dot-out"></span> Scan Out</label>
                     <div class="d-flex" style="gap:8px;">
                         <input type="time" id="modalOut" class="form-control" step="1">
@@ -582,6 +582,22 @@
 
 @section('script')
 <script>
+// ── Force opaque backgrounds on frozen columns & headers (bypasses CSS specificity wars) ──
+document.addEventListener('DOMContentLoaded', function() {
+    var table = document.querySelector('.check-table');
+    if (!table) return;
+
+    // Force body cell backgrounds for frozen columns (col 1, 2, 3)
+    table.querySelectorAll('tbody td:nth-child(1), tbody td:nth-child(2), tbody td:nth-child(3)').forEach(function(td) {
+        td.style.setProperty('background-color', '#ffffff', 'important');
+    });
+
+    // Force header cell backgrounds
+    table.querySelectorAll('thead th').forEach(function(th) {
+        th.style.setProperty('background-color', '#EDECEA', 'important');
+    });
+});
+
 let activeCell = null;
 const dirtyCells = new Set();
 
