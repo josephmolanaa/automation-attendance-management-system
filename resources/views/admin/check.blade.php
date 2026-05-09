@@ -125,8 +125,12 @@
     .check-table td:nth-child(3) {
         text-align: left;
         position: sticky !important;
-        z-index: 10 !important;
+        z-index: 400 !important;
         background-color: #fff !important;
+        opacity: 1 !important;
+        transform: translateZ(0); /* Force stacking context */
+        /* Cover sub-pixel gaps at fractional zoom levels */
+        box-shadow: 0 0 0 2px #fff;
     }
     /* Col 1: ID */
     .check-table th:nth-child(1),
@@ -157,9 +161,13 @@
         text-transform: uppercase;
         letter-spacing: .3px;
         position: sticky !important;
-        z-index: 20 !important;
+        z-index: 500 !important;
         line-height: 1.2;
         background-clip: padding-box;
+        transform: translateZ(0); /* Force stacking context */
+        opacity: 1 !important;
+        /* Cover sub-pixel gaps at fractional zoom levels */
+        box-shadow: 0 0 0 2px #EDECEA;
     }
     /* Row 1 (Week groups): stick to top */
     .header-row-1 th {
@@ -192,19 +200,19 @@
         font-weight: 400;
         line-height: 1;
     }
+    .week-header-sep { border-left: 2px solid var(--blue) !important; }
+
     /* Corner cells: header + frozen column = highest z-index */
     .check-table thead th:nth-child(1),
     .check-table thead th:nth-child(2),
     .check-table thead th:nth-child(3) {
-        z-index: 30 !important;
+        z-index: 600 !important;
         background-color: #EDECEA !important;
+        opacity: 1 !important;
+        transform: translateZ(0);
         text-align: left;
         position: sticky !important;
     }
-
-    /* Week separator */
-    .week-sep { border-left: 2px solid var(--blue) !important; }
-    .week-header-sep { border-left: 2px solid var(--blue) !important; }
 
     /* Cell tanggal */
     .time-cell {
