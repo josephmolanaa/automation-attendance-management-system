@@ -27,6 +27,7 @@ Route::group(['middleware' => ['auth', 'Role'], 'roles' => ['admin']], function 
     Route::resource('/schedule', '\App\Http\Controllers\ScheduleController');
     Route::get('/check', '\App\Http\Controllers\CheckController@index')->name('check');
     Route::post('check-store', '\App\Http\Controllers\CheckController@CheckStore')->name('check_store');
+    Route::post('check-single-store', '\App\Http\Controllers\CheckController@CheckSingleStore')->name('check_single_store');
 
     // Fingerprint Devices
     Route::resource('/finger_device', '\App\Http\Controllers\BiometricDeviceController');

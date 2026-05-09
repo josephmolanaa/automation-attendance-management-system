@@ -7,23 +7,6 @@
     .filter-bar label { font-size:10px; font-weight:600; color:var(--text3); margin-bottom:4px; display:block; text-transform:uppercase; letter-spacing:.5px; }
     .filter-bar select, .filter-bar input { font-size:13px; height:34px; padding:4px 10px; }
     .filter-actions { gap: 8px; flex-wrap: wrap; }
-    .pending-badge {
-        display: inline-flex;
-        align-items: center;
-        min-height: 26px;
-        padding: 4px 9px;
-        border: 1px solid var(--border);
-        border-radius: 999px;
-        color: var(--text2);
-        background: var(--surface2);
-        font-size: 11px;
-        font-weight: 600;
-    }
-    .pending-badge.has-changes {
-        color: var(--amber-text);
-        background: var(--amber-bg);
-        border-color: rgba(133,79,11,0.18) !important;
-    }
     .sheet-summary {
         display: flex;
         align-items: center;
@@ -241,6 +224,30 @@
         outline: 2px solid var(--blue);
         outline-offset: -3px;
     }
+    .time-cell.is-saving {
+        position: relative;
+        opacity: .72;
+        pointer-events: none;
+    }
+    .time-cell.is-saving::after {
+        content: '';
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        width: 10px;
+        height: 10px;
+        border: 2px solid rgba(0,0,0,.15);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: spin .7s linear infinite;
+    }
+    .time-cell.is-saved {
+        animation: cellSaved .85s ease-out;
+    }
+    @keyframes cellSaved {
+        0% { box-shadow: inset 0 0 0 999px rgba(59,109,17,.14); }
+        100% { box-shadow: inherit; }
+    }
     .time-cell .t-in    { color: var(--green); font-weight: 600; font-size: 11px; display: block; line-height: 1.35; }
     .time-cell .t-out   { color: var(--red); font-weight: 600; font-size: 11px; display: block; line-height: 1.35; }
     .time-cell .t-empty { color: var(--text3); font-size: 13px; display: block; line-height: 46px; }
@@ -263,13 +270,121 @@
     }
 
     /* Modal */
-    .modal-header-edit { background: var(--accent); color: var(--accent-text); padding: 14px 18px; border-radius: 13px 13px 0 0; }
-    .modal-header-edit .close { color: var(--accent-text); opacity: 0.7; }
-    .edit-date-label { font-size: 13px; font-weight: 600; }
-    .edit-emp-label  { font-size: 11px; opacity: 0.7; }
+    .attendance-edit-dialog { max-width: 340px; }
+    .attendance-edit-modal {
+        border: 0;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 18px 45px rgba(17,24,39,.24);
+    }
+    .modal-header-edit {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--accent);
+        color: var(--accent-text);
+        padding: 14px 16px;
+        border: 0;
+    }
+    .edit-title-wrap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+    .edit-date-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        background: rgba(255,255,255,.12);
+        color: var(--accent-text);
+        flex: 0 0 auto;
+    }
+    .edit-title-text { min-width: 0; }
+    .edit-date-label {
+        max-width: 220px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 13px;
+        line-height: 1.35;
+        font-weight: 700;
+    }
+    .edit-emp-label  {
+        max-width: 220px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 11px;
+        line-height: 1.35;
+        opacity: .72;
+    }
+    .modal-header-edit .edit-close {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        margin: 0;
+        padding: 0;
+        border-radius: 8px;
+        color: var(--accent-text);
+        text-shadow: none;
+        opacity: .8;
+    }
+    .modal-header-edit .edit-close:hover {
+        background: rgba(255,255,255,.12);
+        opacity: 1;
+    }
+    .time-field-label {
+        display: flex;
+        align-items: center;
+        margin-bottom: 7px;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text2);
+        text-transform: uppercase;
+        letter-spacing: .35px;
+    }
+    .time-input-row {
+        display: grid;
+        grid-template-columns: 1fr 38px;
+        gap: 8px;
+        align-items: center;
+    }
+    .time-input-row .form-control {
+        height: 38px;
+        font-size: 14px;
+    }
     .dot-in  { width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;margin-right:4px; }
     .dot-out { width:6px;height:6px;border-radius:50%;background:var(--red);display:inline-block;margin-right:4px; }
-    .btn-clear-time { font-size: 11px; padding: 2px 8px; }
+    .btn-clear-time {
+        width: 38px;
+        height: 38px;
+        padding: 0;
+        border-radius: 8px;
+    }
+    .manual-save-note {
+        padding: 8px 10px;
+        border-radius: 8px;
+        color: var(--text2);
+        background: var(--surface2);
+        font-size: 11px;
+    }
+    .save-feedback {
+        margin-bottom: 12px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .save-feedback.is-error {
+        color: var(--red);
+        background: rgba(163,45,45,.08);
+    }
     .empty-state-row td {
         height: 120px;
         color: var(--text2);
@@ -296,9 +411,6 @@
 @endsection
 
 @section('button')
-<button type="button" class="btn btn-success btn-sm js-save-all">
-    <i class="mdi mdi-content-save mr-1"></i> <span class="js-save-label">Simpan Semua</span>
-</button>
 @endsection
 
 @section('content')
@@ -354,12 +466,6 @@
     $workDays = count($dates) - $weekendDays;
 @endphp
 
-{{-- Hidden form --}}
-<form id="checkForm" action="{{ route('check_store') }}" method="post">
-    @csrf
-    <div id="hiddenInputs"></div>
-</form>
-
 <div class="row">
     <div class="col-12">
 
@@ -402,10 +508,6 @@
             </div>
             {{-- Legend --}}
             <div class="ml-auto d-flex align-items-center mb-2 filter-actions">
-                <span id="pendingChangesBadge" class="pending-badge">Belum ada perubahan</span>
-                <button type="button" class="btn btn-success btn-sm js-save-all d-md-none">
-                    <i class="mdi mdi-content-save mr-1"></i> <span class="js-save-label">Simpan Semua</span>
-                </button>
                 <small><span class="dot-in"></span>In</small>
                 <small><span class="dot-out"></span>Out</small>
                 <small><span style="display:inline-block;width:10px;height:10px;background:var(--amber-bg);border:1px solid var(--border);border-radius:2px;margin-right:3px;"></span>Minggu</small>
@@ -551,36 +653,46 @@
 
 {{-- Modal Edit --}}
 <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="modalDayLabel" aria-hidden="true">
-    <div class="modal-dialog modal-sm" role="document">
-        <div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered modal-sm attendance-edit-dialog" role="document">
+        <div class="modal-content attendance-edit-modal">
             <div class="modal-header modal-header-edit">
-                <div>
-                    <div class="edit-date-label" id="modalDayLabel">-</div>
-                    <div class="edit-emp-label"  id="modalEmpLabel">-</div>
+                <div class="edit-title-wrap">
+                    <span class="edit-date-icon"><i class="mdi mdi-calendar"></i></span>
+                    <div class="edit-title-text">
+                        <div class="edit-date-label" id="modalDayLabel">-</div>
+                        <div class="edit-emp-label"  id="modalEmpLabel">-</div>
+                    </div>
                 </div>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <button type="button" class="close edit-close" data-dismiss="modal" aria-label="Tutup">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
-            <div class="modal-body pb-2">
+            <div class="modal-body pb-2 pt-3">
+                <div id="modalSaveFeedback" class="save-feedback is-error d-none"></div>
                 <div class="mb-3">
-                    <label style="font-size:12px;font-weight:600;"><span class="dot-in"></span> Scan In</label>
-                    <div class="d-flex" style="gap:8px;">
-                        <input type="time" id="modalIn" class="form-control" step="1">
-                        <button type="button" class="btn btn-outline-secondary btn-clear-time" aria-label="Kosongkan scan in" title="Kosongkan scan in" onclick="$('#modalIn').val('')">&times;</button>
+                    <label class="time-field-label" for="modalIn"><span class="dot-in"></span> Scan In</label>
+                    <div class="time-input-row">
+                        <input type="time" id="modalIn" class="form-control" step="60">
+                        <button type="button" class="btn btn-outline-secondary btn-clear-time" aria-label="Kosongkan scan in" title="Kosongkan scan in" onclick="clearTimeInput('modalIn')">
+                            <i class="mdi mdi-close"></i>
+                        </button>
                     </div>
                 </div>
                 <div class="mb-3">
-                    <label style="font-size:12px;font-weight:600;"><span class="dot-out"></span> Scan Out</label>
-                    <div class="d-flex" style="gap:8px;">
-                        <input type="time" id="modalOut" class="form-control" step="1">
-                        <button type="button" class="btn btn-outline-secondary btn-clear-time" aria-label="Kosongkan scan out" title="Kosongkan scan out" onclick="$('#modalOut').val('')">&times;</button>
+                    <label class="time-field-label" for="modalOut"><span class="dot-out"></span> Scan Out</label>
+                    <div class="time-input-row">
+                        <input type="time" id="modalOut" class="form-control" step="60">
+                        <button type="button" class="btn btn-outline-secondary btn-clear-time" aria-label="Kosongkan scan out" title="Kosongkan scan out" onclick="clearTimeInput('modalOut')">
+                            <i class="mdi mdi-close"></i>
+                        </button>
                     </div>
                 </div>
-                <small class="text-muted d-block mt-2">* Kosongkan keduanya untuk hapus data hari ini</small>
+                <div class="manual-save-note">Kosongkan Scan In dan Scan Out untuk menghapus data hari ini.</div>
             </div>
             <div class="modal-footer py-2">
                 <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Batal</button>
                 <button type="button" class="btn btn-primary btn-sm" id="btnSaveCell">
-                    <i class="mdi mdi-content-save mr-1"></i> Simpan
+                    <i class="mdi mdi-content-save mr-1"></i><span class="save-cell-label">Simpan</span>
                 </button>
             </div>
         </div>
@@ -607,7 +719,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 let activeCell = null;
-const dirtyCells = new Set();
 
 function openEditModal(cell) {
     if (activeCell) activeCell.classList.remove('is-editing');
@@ -615,38 +726,71 @@ function openEditModal(cell) {
     activeCell.classList.add('is-editing');
     $('#modalDayLabel').text(cell.dataset.day);
     $('#modalEmpLabel').text(cell.dataset.name);
-    $('#modalIn').val(cell.dataset.in || '');
-    $('#modalOut').val(cell.dataset.out || '');
+    $('#modalIn').val(normalizeTimeForInput(cell.dataset.in || ''));
+    $('#modalOut').val(normalizeTimeForInput(cell.dataset.out || ''));
+    clearModalFeedback();
+    setModalSaving(false);
     $('#editModal').modal('show');
     setTimeout(() => $('#modalIn').focus(), 400);
 }
 
 $('#btnSaveCell').on('click', function() {
     if (!activeCell) return;
-    const date   = activeCell.dataset.date;
-    const empId  = activeCell.dataset.emp;
+    const cell   = activeCell;
+    const date   = cell.dataset.date;
+    const empId  = cell.dataset.emp;
     const inVal  = $('#modalIn').val();
     const outVal = $('#modalOut').val();
 
-    activeCell.dataset.in  = inVal;
-    activeCell.dataset.out = outVal;
-    updateCellDisplay(activeCell, inVal, outVal);
-    updateHiddenInput('time_in',  date, empId, inVal);
-    updateHiddenInput('time_out', date, empId, outVal);
-    $('#editModal').modal('hide');
+    setModalSaving(true);
+    clearModalFeedback();
+    cell.classList.add('is-saving');
+
+    $.ajax({
+        url: '{{ route('check_single_store') }}',
+        type: 'POST',
+        dataType: 'json',
+        data: {
+            _token: '{{ csrf_token() }}',
+            date: date,
+            emp_id: empId,
+            time_in: inVal,
+            time_out: outVal
+        }
+    }).done(function(response) {
+        const savedIn  = normalizeTimeForDisplay(response.time_in !== undefined ? response.time_in : inVal);
+        const savedOut = normalizeTimeForDisplay(response.time_out !== undefined ? response.time_out : outVal);
+
+        cell.dataset.in = savedIn;
+        cell.dataset.out = savedOut;
+        cell.dataset.originalIn = savedIn;
+        cell.dataset.originalOut = savedOut;
+        updateCellDisplay(cell, savedIn, savedOut);
+        $('#editModal').modal('hide');
+
+        cell.classList.add('is-saved');
+        setTimeout(() => cell.classList.remove('is-saved'), 900);
+    }).fail(function(xhr) {
+        const message = xhr.responseJSON && xhr.responseJSON.message
+            ? xhr.responseJSON.message
+            : 'Data belum tersimpan. Coba lagi.';
+        showModalFeedback(message);
+    }).always(function() {
+        cell.classList.remove('is-saving');
+        setModalSaving(false);
+    });
 });
 
 function updateCellDisplay(cell, inVal, outVal) {
     if (inVal || outVal) {
         cell.innerHTML = `
             <span class="t-in">${inVal || '--:--'}</span>
-            <span class="t-divider">──</span>
+            <span class="t-divider">--</span>
             <span class="t-out">${outVal || '--:--'}</span>`;
     } else {
-        cell.innerHTML = '<span class="t-empty">·</span>';
+        cell.innerHTML = '<span class="t-empty">.</span>';
     }
     applyCellStatus(cell, inVal, outVal);
-    updateDirtyState(cell);
 }
 
 function applyCellStatus(cell, inVal, outVal) {
@@ -660,58 +804,38 @@ function applyCellStatus(cell, inVal, outVal) {
     }
 }
 
-function cellKey(cell) {
-    return `${cell.dataset.date}:${cell.dataset.emp}`;
+function normalizeTimeForInput(value) {
+    return normalizeTimeForDisplay(value);
 }
 
-function updateDirtyState(cell) {
-    const changed = (cell.dataset.in || '') !== (cell.dataset.originalIn || '')
-        || (cell.dataset.out || '') !== (cell.dataset.originalOut || '');
-
-    if (changed) {
-        dirtyCells.add(cellKey(cell));
-    } else {
-        dirtyCells.delete(cellKey(cell));
-    }
-
-    cell.classList.toggle('is-dirty', changed);
-    refreshSaveState();
+function normalizeTimeForDisplay(value) {
+    if (!value) return '';
+    const text = String(value);
+    const match = text.match(/^(\d{2}:\d{2})/);
+    return match ? match[1] : text;
 }
 
-function refreshSaveState() {
-    const count = dirtyCells.size;
-    const badge = document.getElementById('pendingChangesBadge');
-    const label = count > 0 ? `Simpan (${count})` : 'Simpan Semua';
-
-    document.querySelectorAll('.js-save-label').forEach(el => {
-        el.textContent = label;
-    });
-
-    if (!badge) return;
-
-    badge.textContent = count > 0
-        ? `${count} perubahan belum tersimpan`
-        : 'Belum ada perubahan';
-    badge.classList.toggle('has-changes', count > 0);
+function clearTimeInput(id) {
+    $('#' + id).val('').focus();
 }
 
-function updateHiddenInput(type, date, empId, value) {
-    const name = `${type}[${date}][${empId}]`;
-    let inp = document.querySelector(`#hiddenInputs input[name="${CSS.escape(name)}"]`);
-    if (!inp) {
-        inp = document.createElement('input');
-        inp.type = 'hidden';
-        inp.name = name;
-        document.getElementById('hiddenInputs').appendChild(inp);
-    }
-    inp.value = value;
+function clearModalFeedback() {
+    $('#modalSaveFeedback').addClass('d-none').text('');
 }
 
-// Load nilai awal ke hidden inputs
+function showModalFeedback(message) {
+    $('#modalSaveFeedback').removeClass('d-none').text(message);
+}
+
+function setModalSaving(isSaving) {
+    const btn = $('#btnSaveCell');
+    btn.prop('disabled', isSaving);
+    btn.find('.save-cell-label').text(isSaving ? 'Menyimpan...' : 'Simpan');
+    $('#modalIn, #modalOut, .btn-clear-time').prop('disabled', isSaving);
+}
+
+// Bind keyboard edit on cells
 document.querySelectorAll('.time-cell').forEach(cell => {
-    const { date, emp } = cell.dataset;
-    if (cell.dataset.in)  updateHiddenInput('time_in',  date, emp, cell.dataset.in);
-    if (cell.dataset.out) updateHiddenInput('time_out', date, emp, cell.dataset.out);
     cell.addEventListener('keydown', event => {
         if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
@@ -719,35 +843,23 @@ document.querySelectorAll('.time-cell').forEach(cell => {
         }
     });
 });
-refreshSaveState();
 
 // Enter di modal → simpan
-$('#editModal').on('keydown', e => { if (e.key === 'Enter') $('#btnSaveCell').click(); });
+$('#editModal').on('keydown', event => {
+    if (event.key === 'Enter' && !$('#btnSaveCell').prop('disabled')) {
+        event.preventDefault();
+        $('#btnSaveCell').click();
+    }
+});
 $('#editModal').on('hidden.bs.modal', () => {
     if (activeCell) activeCell.classList.remove('is-editing');
+    clearModalFeedback();
 });
-
-// Tombol Simpan Semua
-document.querySelectorAll('.js-save-all').forEach(btn => btn.addEventListener('click', () => {
-    const overlay = document.getElementById('tableLoadingOverlay');
-    const loadingText = overlay ? overlay.querySelector('.table-loading-text') : null;
-    if (loadingText) loadingText.textContent = 'Menyimpan perubahan...';
-    if (overlay) overlay.style.display = 'flex';
-    document.querySelectorAll('.js-save-all').forEach(saveBtn => {
-        saveBtn.disabled = true;
-    });
-    document.getElementById('checkForm').submit();
-}));
 
 // Auto-filter: reload on any dropdown change with loading overlay
 document.querySelectorAll('.auto-filter').forEach(el => {
     el.dataset.currentValue = el.value;
     el.addEventListener('change', () => {
-        if (dirtyCells.size > 0 && !window.confirm('Ada perubahan belum tersimpan. Ganti filter tanpa menyimpan?')) {
-            el.value = el.dataset.currentValue;
-            return;
-        }
-
         const overlay = document.getElementById('tableLoadingOverlay');
         const loadingText = overlay ? overlay.querySelector('.table-loading-text') : null;
         if (loadingText) loadingText.textContent = 'Memuat data...';
