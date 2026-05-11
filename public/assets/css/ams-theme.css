@@ -96,6 +96,7 @@ body {
   line-height: 1.5 !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease !important;
 }
 
 *, *::before, *::after { border-color: var(--border2) !important; }
@@ -111,6 +112,7 @@ hr { border-color: var(--border2) !important; }
   width: var(--sidebar-w) !important;
   border-right: 1px solid var(--border2) !important;
   box-shadow: none !important;
+  transition: background-color 0.3s ease !important;
 }
 
 .topbar-left {
@@ -122,6 +124,7 @@ hr { border-color: var(--border2) !important; }
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  transition: background-color 0.3s ease !important;
 }
 
 .topbar-left .logo span h1,
@@ -198,6 +201,15 @@ hr { border-color: var(--border2) !important; }
   height: var(--topbar-h) !important;
 }
 
+.notification-list .nav-link {
+  height: var(--topbar-h) !important;
+  line-height: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.25s ease-in-out !important;
+}
+
 .navbar-custom {
   background: transparent !important;
   box-shadow: none !important;
@@ -261,6 +273,7 @@ hr { border-color: var(--border2) !important; }
   border-radius: var(--radius-lg) !important;
   box-shadow: none !important;
   margin-bottom: 16px !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease !important;
 }
 
 .card-body { padding: 20px !important; }
@@ -277,7 +290,7 @@ hr { border-color: var(--border2) !important; }
   border: 1px solid var(--border2) !important;
   border-radius: var(--radius-lg) !important;
   box-shadow: none !important;
-  transition: border-color var(--speed) !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease !important;
 }
 .ams-stat-card:hover { border-color: var(--border) !important; }
 
