@@ -112,7 +112,8 @@ hr { border-color: var(--border2) !important; }
   width: var(--sidebar-w) !important;
   border-right: 1px solid var(--border2) !important;
   box-shadow: none !important;
-  transition: background-color 0.3s ease !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease !important;
+  top: var(--topbar-h) !important;
 }
 
 .topbar-left {
@@ -124,7 +125,7 @@ hr { border-color: var(--border2) !important; }
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  transition: background-color 0.3s ease !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease !important;
 }
 
 .topbar-left .logo span h1,
@@ -137,6 +138,7 @@ hr { border-color: var(--border2) !important; }
   margin: 0 !important;
   padding: 0 !important;
   line-height: 1 !important;
+  transition: color 0.3s ease !important;
 }
 
 #sidebar-menu { padding-top: 12px; }
@@ -148,6 +150,7 @@ hr { border-color: var(--border2) !important; }
   letter-spacing: 1px !important;
   text-transform: uppercase !important;
   padding: 16px 20px 6px !important;
+  transition: color 0.3s ease !important;
 }
 
 #sidebar-menu ul li a {
@@ -156,7 +159,7 @@ hr { border-color: var(--border2) !important; }
   margin: 0 8px 2px !important;
   font-size: 13px !important;
   font-weight: 400 !important;
-  transition: all var(--speed) !important;
+  transition: all 0.3s ease !important;
   border-radius: 8px !important;
   display: flex !important;
   align-items: center !important;
