@@ -132,5 +132,33 @@
 <script src="{{ URL::asset('plugins/chartist/js/chartist.min.js') }}"></script>
 <script src="{{ URL::asset('plugins/chartist/js/chartist-plugin-tooltip.min.js') }}"></script>
 <script src="{{ URL::asset('plugins/peity-chart/jquery.peity.min.js') }}"></script>
-<script src="{{ URL::asset('assets/pages/dashboard.js') }}"></script>
+<!-- Removed static dashboard.js -->
+<script>
+    $(document).ready(function() {
+        // Line chart with area
+        new Chartist.Line('#chart-with-area', {
+            labels: {!! json_encode($chartLabels) !!},
+            series: [
+                {!! json_encode($chartData) !!}
+            ]
+        }, {
+            low: 0,
+            showArea: true,
+            plugins: [
+                Chartist.plugins.tooltip()
+            ],
+            axisY: {
+                onlyInteger: true
+            }
+        });
+        
+        // Donut and Line (Peity) fallback if still used elsewhere
+        $('.peity-donut').each(function () {
+            $(this).peity("donut", $(this).data());
+        });
+        $('.peity-line').each(function() {
+            $(this).peity("line", $(this).data());
+        });
+    });
+</script>
 @endsection
