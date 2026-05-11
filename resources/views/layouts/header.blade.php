@@ -14,27 +14,27 @@
 </div>
 
 <nav class="navbar-custom">
-    <ul class="navbar-right d-flex list-inline float-right mb-0" style="align-items: center; height: 100%; margin-top: -3px;">
+    <ul class="navbar-right list-inline float-right mb-0">
         <!-- language-->
-        <li class="dropdown notification-list d-none d-md-block">
-            <a class="nav-link dropdown-toggle arrow-none waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false" style="display: flex; align-items: center; padding-top: 0; padding-bottom: 0;">
-                <img src="/assets/images/flags/us_flag.jpg" class="mr-2" height="12" alt="" onerror="this.style.display='none'"/> English <span class="mdi mdi-chevron-down ml-1"></span>
+        <li class="dropdown notification-list list-inline-item d-none d-md-block">
+            <a class="nav-link dropdown-toggle arrow-none waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
+                <img src="/assets/images/flags/us_flag.jpg" class="mr-2" height="12" alt="" onerror="this.style.display='none'"/> <span id="current-lang">English</span> <span class="mdi mdi-chevron-down ml-1"></span>
             </a>
             <div class="dropdown-menu dropdown-menu-right language-switch">
-                <a class="dropdown-item" href="#"><img src="/assets/images/flags/us_flag.jpg" alt="" height="16" onerror="this.style.display='none'"/><span> English </span></a>
-                <a class="dropdown-item" href="#"><img src="/assets/images/flags/indonesia_flag.png" alt="" height="16" onerror="this.style.display='none'"/><span> Indonesia </span></a>
+                <a class="dropdown-item lang-switch" href="#" data-lang="en"><img src="/assets/images/flags/us_flag.jpg" alt="" height="16" onerror="this.style.display='none'"/><span> English </span></a>
+                <a class="dropdown-item lang-switch" href="#" data-lang="id"><img src="/assets/images/flags/indonesia_flag.png" alt="" height="16" onerror="this.style.display='none'"/><span> Indonesia </span></a>
             </div>
         </li>
 
         <!-- dark mode toggle -->
-        <li class="dropdown notification-list d-none d-md-block">
-            <a class="nav-link waves-effect" href="#" id="btn-dark-mode" title="Toggle Dark Mode" style="display: flex; align-items: center; padding-top: 0; padding-bottom: 0;">
+        <li class="dropdown notification-list list-inline-item d-none d-md-block">
+            <a class="nav-link waves-effect" href="#" id="btn-dark-mode" title="Toggle Dark Mode">
                 <i class="mdi mdi-weather-night noti-icon"></i>
             </a>
         </li>
-        <li class="dropdown notification-list" style="display: flex; align-items: center;">
+        <li class="dropdown notification-list list-inline-item">
             <div class="dropdown notification-list nav-pro-img">
-                <a class="dropdown-toggle nav-link arrow-none waves-effect nav-user" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false" style="display: flex; align-items: center; padding-top: 0; padding-bottom: 0;">
+                <a class="dropdown-toggle nav-link arrow-none waves-effect nav-user" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
                     <img src="assets/images/profile1.png" alt="user" class="rounded-circle">
                 </a>
                 <div class="dropdown-menu dropdown-menu-right profile-dropdown ">

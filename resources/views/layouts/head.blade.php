@@ -15,7 +15,7 @@
 <link href="{{ URL::asset('assets/css/icons.css') }}" rel="stylesheet" type="text/css" />
 <link href="{{ URL::asset('assets/css/style.css') }}" rel="stylesheet" type="text/css" />
 <!-- AMS Theme Override -->
-<link href="{{ URL::asset('assets/css/ams-theme.css') }}" rel="stylesheet" type="text/css" />
+<link href="{{ URL::asset('assets/css/ams-theme.css') }}?v={{ time() }}" rel="stylesheet" type="text/css" />
 
 {{-- <link href="{{ URL::asset('plugins/sweet-alert2/sweetalert2.min.css') }}" rel="stylesheet" type="text/css"> --}}
 

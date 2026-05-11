@@ -43,6 +43,7 @@
 
 <script>
     $(document).ready(function() {
+        // Dark Mode Toggle
         $('#btn-dark-mode').on('click', function(e) {
             e.preventDefault();
             let htmlElement = document.documentElement;
@@ -54,6 +55,28 @@
                 localStorage.setItem('theme', 'light');
             }
         });
+
+        // Language Switch Toggle
+        $('.lang-switch').on('click', function(e) {
+            e.preventDefault();
+            var lang = $(this).data('lang');
+            var text = $(this).find('span').text().trim();
+            var imgSrc = $(this).find('img').attr('src');
+            
+            $('#current-lang').text(text);
+            $('#current-lang').prev('img').attr('src', imgSrc);
+            localStorage.setItem('lang', lang);
+        });
+
+        // Initialize language from localStorage
+        var savedLang = localStorage.getItem('lang');
+        if (savedLang) {
+            var selected = $('.lang-switch[data-lang="' + savedLang + '"]');
+            if (selected.length) {
+                $('#current-lang').text(selected.find('span').text().trim());
+                $('#current-lang').prev('img').attr('src', selected.find('img').attr('src'));
+            }
+        }
     });
 </script>
 

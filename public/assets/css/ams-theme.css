@@ -50,7 +50,7 @@
   --speed: 150ms ease;
 }
 
-body.dark-mode, html.dark-mode body {
+:root.dark-mode {
   /* Core Surfaces */
   --bg: #121212;
   --surface: #1E1E1E;
