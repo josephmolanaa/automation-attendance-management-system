@@ -697,7 +697,9 @@ label {
 .enlarged .logo span h1 { display: none !important; }
 .enlarged .logo i h1 { display: block !important; margin: 0 !important; }
 .enlarged #wrapper .topbar .topbar-left .logo i { line-height: var(--topbar-h) !important; display: flex !important; align-items: center !important; justify-content: center !important; height: 100% !important; color: var(--text) !important; }
-.enlarged #wrapper .left.side-menu #sidebar-menu ul li a span { display: none !important; }
+.enlarged #wrapper .left.side-menu #sidebar-menu > ul > li > a > span { display: none !important; }
+.enlarged #wrapper .left.side-menu #sidebar-menu > ul > li:hover > a > span { display: none !important; }
+.enlarged #wrapper .left.side-menu #sidebar-menu ul ul li a span { display: inline !important; }
 .enlarged #wrapper .left.side-menu #sidebar-menu .menu-title { display: none !important; }
 .enlarged #wrapper .left.side-menu #sidebar-menu > ul > li > a i { font-size: 20px !important; margin: 0 !important; width: 20px !important; text-align: center !important; }
 .enlarged #wrapper .left.side-menu #sidebar-menu > ul > li > a { 
