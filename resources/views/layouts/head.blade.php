@@ -23,6 +23,12 @@
     .focus-btn-group { display: none !important; }
 </style>
 
+<script>
+    if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark-mode');
+    }
+</script>
+
 <link href="{{ asset('plugins/sweetalert.min.css') }}" rel="stylesheet">
 <!-- Table css -->
 <link href="{{ URL::asset('plugins/RWD-Table-Patterns/dist/css/rwd-table.min.css') }}" rel="stylesheet" type="text/css" media="screen">

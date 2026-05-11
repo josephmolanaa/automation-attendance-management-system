@@ -50,6 +50,43 @@
   --speed: 150ms ease;
 }
 
+body.dark-mode, html.dark-mode body {
+  /* Core Surfaces */
+  --bg: #121212;
+  --surface: #1E1E1E;
+  --surface2: #2A2A2A;
+
+  /* Typography */
+  --text: #F0F0F0;
+  --text2: #B0B0B0;
+  --text3: #808080;
+
+  /* Accent */
+  --accent: #E0E0E0;
+  --accent-text: #1A1917;
+
+  /* Semantic Colors */
+  --green: #4CAF50;
+  --green-bg: #1B3320;
+  --green-text: #81C784;
+
+  --red: #F44336;
+  --red-bg: #3A1616;
+  --red-text: #E57373;
+
+  --amber: #FF9800;
+  --amber-bg: #3B2A10;
+  --amber-text: #FFB74D;
+
+  --blue: #2196F3;
+  --blue-bg: #102A43;
+  --blue-text: #64B5F6;
+
+  /* Borders */
+  --border: rgba(255,255,255,0.1);
+  --border2: rgba(255,255,255,0.06);
+}
+
 /* ═══════ RESET & BASE ═══════ */
 body {
   font-family: 'DM Sans', system-ui, -apple-system, sans-serif !important;

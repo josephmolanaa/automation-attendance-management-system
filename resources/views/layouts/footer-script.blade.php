@@ -41,4 +41,20 @@
 <script src="{{ URL::asset('assets/pages/datatables.init.js') }}"></script>   
 
 
+<script>
+    $(document).ready(function() {
+        $('#btn-dark-mode').on('click', function(e) {
+            e.preventDefault();
+            let htmlElement = document.documentElement;
+            htmlElement.classList.toggle('dark-mode');
+            
+            if (htmlElement.classList.contains('dark-mode')) {
+                localStorage.setItem('theme', 'dark');
+            } else {
+                localStorage.setItem('theme', 'light');
+            }
+        });
+    });
+</script>
+
 @yield('script-bottom')
