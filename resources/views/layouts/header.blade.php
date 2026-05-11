@@ -14,9 +14,9 @@
 </div>
 
 <nav class="navbar-custom">
-    <ul class="navbar-right list-inline float-right mb-0">
+    <ul class="navbar-right d-flex list-inline float-right mb-0">
         <!-- language-->
-        <li class="dropdown notification-list list-inline-item d-none d-md-block">
+        <li class="dropdown notification-list d-none d-md-block">
             <a class="nav-link dropdown-toggle arrow-none waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
                 <img src="/assets/images/flags/us_flag.jpg" class="mr-2" height="12" alt="" onerror="this.style.display='none'"/> <span id="current-lang">English</span> <span class="mdi mdi-chevron-down ml-1"></span>
             </a>
@@ -27,12 +27,12 @@
         </li>
 
         <!-- dark mode toggle -->
-        <li class="dropdown notification-list list-inline-item d-none d-md-block">
+        <li class="dropdown notification-list d-none d-md-block">
             <a class="nav-link waves-effect" href="#" id="btn-dark-mode" title="Toggle Dark Mode">
                 <i class="mdi mdi-weather-night noti-icon"></i>
             </a>
         </li>
-        <li class="dropdown notification-list list-inline-item">
+        <li class="dropdown notification-list">
             <div class="dropdown notification-list nav-pro-img">
                 <a class="dropdown-toggle nav-link arrow-none waves-effect nav-user" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
                     <img src="assets/images/profile1.png" alt="user" class="rounded-circle">
