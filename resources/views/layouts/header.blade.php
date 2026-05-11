@@ -29,7 +29,7 @@
         <!-- dark mode toggle -->
         <li class="dropdown notification-list d-none d-md-block">
             <a class="nav-link waves-effect" href="#" id="btn-dark-mode" title="Toggle Dark Mode" style="display: flex; align-items: center; padding-top: 0; padding-bottom: 0;">
-                <i class="mdi mdi-moon-waning-crescent noti-icon"></i>
+                <i class="mdi mdi-weather-night noti-icon"></i>
             </a>
         </li>
         <li class="dropdown notification-list" style="display: flex; align-items: center;">
