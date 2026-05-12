@@ -1,0 +1,141 @@
+<?php
+
+return [
+    // Navigation & Menu
+    'home' => 'Beranda',
+    'attendance' => 'Absensi',
+    'employees' => 'Karyawan',
+    'schedule' => 'Jadwal',
+    'reports' => 'Laporan',
+    'settings' => 'Pengaturan',
+    'logout' => 'Keluar',
+    'profile' => 'Profil',
+    'lock_screen' => 'Kunci Layar',
+    
+    // Attendance
+    'attendance_list' => 'Daftar Absensi',
+    'late_time' => 'Keterlambatan',
+    'overtime' => 'Lembur',
+    'leave_permission' => 'Izin & Cuti',
+    'holiday_manager' => 'Kelola Hari Libur',
+    'manual_check' => 'Input Manual',
+    'sheet_report' => 'Laporan Sheet',
+    'import_csv' => 'Import CSV',
+    
+    // Table Headers
+    'employee_id' => 'ID Karyawan',
+    'name' => 'Nama',
+    'position' => 'Posisi',
+    'shift' => 'Shift',
+    'status' => 'Status',
+    'date' => 'Tanggal',
+    'time_in' => 'Jam Masuk',
+    'time_out' => 'Jam Keluar',
+    'duration' => 'Durasi',
+    'late_duration' => 'Durasi Terlambat',
+    'overtime_duration' => 'Durasi Lembur',
+    'reason' => 'Alasan',
+    'note' => 'Catatan',
+    'action' => 'Aksi',
+    
+    // Status
+    'on_time' => 'Tepat Waktu',
+    'late' => 'Terlambat',
+    'no_scan_in' => 'Belum Scan Masuk',
+    'no_scan_out' => 'Belum Scan Keluar',
+    'present' => 'Hadir',
+    'absent' => 'Tidak Hadir',
+    'leave' => 'Cuti',
+    'permission' => 'Izin',
+    'sick' => 'Sakit',
+    
+    // Filters
+    'filter' => 'Filter',
+    'month' => 'Bulan',
+    'year' => 'Tahun',
+    'from_date' => 'Dari Tanggal',
+    'to_date' => 'Sampai Tanggal',
+    'all_months' => 'Semua Bulan',
+    'all_years' => 'Semua Tahun',
+    'reset' => 'Reset',
+    'search' => 'Cari',
+    'show' => 'Tampilkan',
+    'entries' => 'data',
+    
+    // Months
+    'january' => 'Januari',
+    'february' => 'Februari',
+    'march' => 'Maret',
+    'april' => 'April',
+    'may' => 'Mei',
+    'june' => 'Juni',
+    'july' => 'Juli',
+    'august' => 'Agustus',
+    'september' => 'September',
+    'october' => 'Oktober',
+    'november' => 'November',
+    'december' => 'Desember',
+    
+    // Days
+    'sunday' => 'Minggu',
+    'monday' => 'Senin',
+    'tuesday' => 'Selasa',
+    'wednesday' => 'Rabu',
+    'thursday' => 'Kamis',
+    'friday' => 'Jumat',
+    'saturday' => 'Sabtu',
+    
+    // Buttons
+    'add_new' => 'Tambah Baru',
+    'edit' => 'Edit',
+    'delete' => 'Hapus',
+    'save' => 'Simpan',
+    'cancel' => 'Batal',
+    'close' => 'Tutup',
+    'submit' => 'Kirim',
+    'export' => 'Export',
+    'import' => 'Import',
+    'download' => 'Unduh',
+    'upload' => 'Unggah',
+    'back' => 'Kembali',
+    'next' => 'Selanjutnya',
+    'previous' => 'Sebelumnya',
+    
+    // Messages
+    'success' => 'Berhasil!',
+    'error' => 'Gagal!',
+    'warning' => 'Peringatan!',
+    'info' => 'Informasi',
+    'confirm_delete' => 'Apakah Anda yakin ingin menghapus data ini?',
+    'data_saved' => 'Data berhasil disimpan',
+    'data_deleted' => 'Data berhasil dihapus',
+    'data_updated' => 'Data berhasil diperbarui',
+    'no_data' => 'Tidak ada data tersedia',
+    'loading' => 'Memuat...',
+    
+    // Pagination
+    'showing' => 'Menampilkan',
+    'to' => 'sampai',
+    'of' => 'dari',
+    'results' => 'hasil',
+    
+    // Holiday Manager
+    'holiday' => 'Hari Libur',
+    'weekday' => 'Hari Kerja',
+    'saturday' => 'Sabtu',
+    'national_holiday' => 'Tanggal Merah (API)',
+    'admin_override' => 'Override Admin',
+    'day_type' => 'Tipe Hari',
+    'specific_shift' => 'Shift Spesifik',
+    'optional' => 'opsional',
+    'auto_detect' => 'Auto detect dari jam scan',
+    'save_override' => 'Simpan Override',
+    'delete_override' => 'Hapus Override',
+    
+    // Breadcrumb
+    'breadcrumb_home' => 'Beranda',
+    'breadcrumb_attendance' => 'Absensi',
+    'breadcrumb_employees' => 'Karyawan',
+    'breadcrumb_schedule' => 'Jadwal',
+    'breadcrumb_reports' => 'Laporan',
+];

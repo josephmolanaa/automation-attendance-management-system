@@ -1,0 +1,141 @@
+<?php
+
+return [
+    // Navigation & Menu
+    'home' => 'Home',
+    'attendance' => 'Attendance',
+    'employees' => 'Employees',
+    'schedule' => 'Schedule',
+    'reports' => 'Reports',
+    'settings' => 'Settings',
+    'logout' => 'Logout',
+    'profile' => 'Profile',
+    'lock_screen' => 'Lock Screen',
+    
+    // Attendance
+    'attendance_list' => 'Attendance List',
+    'late_time' => 'Late Time',
+    'overtime' => 'Overtime',
+    'leave_permission' => 'Leave & Permission',
+    'holiday_manager' => 'Holiday Manager',
+    'manual_check' => 'Manual Check',
+    'sheet_report' => 'Sheet Report',
+    'import_csv' => 'Import CSV',
+    
+    // Table Headers
+    'employee_id' => 'Employee ID',
+    'name' => 'Name',
+    'position' => 'Position',
+    'shift' => 'Shift',
+    'status' => 'Status',
+    'date' => 'Date',
+    'time_in' => 'Time In',
+    'time_out' => 'Time Out',
+    'duration' => 'Duration',
+    'late_duration' => 'Late Duration',
+    'overtime_duration' => 'Overtime Duration',
+    'reason' => 'Reason',
+    'note' => 'Note',
+    'action' => 'Action',
+    
+    // Status
+    'on_time' => 'On Time',
+    'late' => 'Late',
+    'no_scan_in' => 'No Scan In',
+    'no_scan_out' => 'No Scan Out',
+    'present' => 'Present',
+    'absent' => 'Absent',
+    'leave' => 'Leave',
+    'permission' => 'Permission',
+    'sick' => 'Sick',
+    
+    // Filters
+    'filter' => 'Filter',
+    'month' => 'Month',
+    'year' => 'Year',
+    'from_date' => 'From Date',
+    'to_date' => 'To Date',
+    'all_months' => 'All Months',
+    'all_years' => 'All Years',
+    'reset' => 'Reset',
+    'search' => 'Search',
+    'show' => 'Show',
+    'entries' => 'entries',
+    
+    // Months
+    'january' => 'January',
+    'february' => 'February',
+    'march' => 'March',
+    'april' => 'April',
+    'may' => 'May',
+    'june' => 'June',
+    'july' => 'July',
+    'august' => 'August',
+    'september' => 'September',
+    'october' => 'October',
+    'november' => 'November',
+    'december' => 'December',
+    
+    // Days
+    'sunday' => 'Sunday',
+    'monday' => 'Monday',
+    'tuesday' => 'Tuesday',
+    'wednesday' => 'Wednesday',
+    'thursday' => 'Thursday',
+    'friday' => 'Friday',
+    'saturday' => 'Saturday',
+    
+    // Buttons
+    'add_new' => 'Add New',
+    'edit' => 'Edit',
+    'delete' => 'Delete',
+    'save' => 'Save',
+    'cancel' => 'Cancel',
+    'close' => 'Close',
+    'submit' => 'Submit',
+    'export' => 'Export',
+    'import' => 'Import',
+    'download' => 'Download',
+    'upload' => 'Upload',
+    'back' => 'Back',
+    'next' => 'Next',
+    'previous' => 'Previous',
+    
+    // Messages
+    'success' => 'Success!',
+    'error' => 'Error!',
+    'warning' => 'Warning!',
+    'info' => 'Information',
+    'confirm_delete' => 'Are you sure you want to delete this data?',
+    'data_saved' => 'Data saved successfully',
+    'data_deleted' => 'Data deleted successfully',
+    'data_updated' => 'Data updated successfully',
+    'no_data' => 'No data available',
+    'loading' => 'Loading...',
+    
+    // Pagination
+    'showing' => 'Showing',
+    'to' => 'to',
+    'of' => 'of',
+    'results' => 'results',
+    
+    // Holiday Manager
+    'holiday' => 'Holiday',
+    'weekday' => 'Weekday',
+    'saturday' => 'Saturday',
+    'national_holiday' => 'National Holiday (API)',
+    'admin_override' => 'Admin Override',
+    'day_type' => 'Day Type',
+    'specific_shift' => 'Specific Shift',
+    'optional' => 'optional',
+    'auto_detect' => 'Auto detect from scan time',
+    'save_override' => 'Save Override',
+    'delete_override' => 'Delete Override',
+    
+    // Breadcrumb
+    'breadcrumb_home' => 'Home',
+    'breadcrumb_attendance' => 'Attendance',
+    'breadcrumb_employees' => 'Employees',
+    'breadcrumb_schedule' => 'Schedule',
+    'breadcrumb_reports' => 'Reports',
+];
