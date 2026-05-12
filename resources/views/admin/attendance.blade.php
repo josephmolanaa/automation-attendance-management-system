@@ -256,15 +256,7 @@
                 lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
                 dom: '<"d-flex justify-content-between align-items-center mb-2"lf>rtip',
                 order: [[4, 'desc']],
-                language: {
-                    zeroRecords: '{{ __('app.loading') }}',
-                    emptyTable: '{{ __('app.no_data') }}',
-                    info: '{{ __('app.showing') }} _START_ - _END_ {{ __('app.of') }} _TOTAL_ {{ __('app.results') }}',
-                    infoEmpty: '{{ __('app.showing') }} 0 {{ __('app.results') }}',
-                    search: '{{ __('app.search') }}:',
-                    lengthMenu: '{{ __('app.show') }} _MENU_ {{ __('app.entries') }}',
-                    paginate: { next: '{{ __('app.next') }}', previous: '{{ __('app.previous') }}' }
-                },
+                language: window.DataTableLang,
             });
 
             window.attendanceTable = table;

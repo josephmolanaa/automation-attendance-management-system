@@ -22,6 +22,15 @@ return [
     'sheet_report' => 'Laporan Sheet',
     'import_csv' => 'Import CSV',
     
+    // Page Titles
+    'employees' => 'Karyawan',
+    'manual_attendance' => 'Absensi Manual',
+    'sheet_report' => 'Laporan Sheet',
+    'late_time' => 'Keterlambatan',
+    'leave_permission' => 'Izin & Cuti',
+    'overtime' => 'Lembur',
+    'import_attendance_data' => 'Import Data Absensi',
+    
     // Table Headers
     'employee_id' => 'ID Karyawan',
     'name' => 'Nama',
@@ -37,6 +46,37 @@ return [
     'reason' => 'Alasan',
     'note' => 'Catatan',
     'action' => 'Aksi',
+    
+    'position' => 'Posisi',
+    'email' => 'Email',
+    'schedule' => 'Jadwal',
+    'member_since' => 'Bergabung Sejak',
+    'actions' => 'Aksi',
+    'job_position' => 'Posisi Jabatan',
+    'day' => 'Hari',
+    'week' => 'Minggu',
+    'scan_1' => 'Scan 1',
+    'scan_2' => 'Scan 2',
+    'scan_3' => 'Scan 3',
+    'normal' => 'Normal',
+    'double' => 'Double',
+    'sunday' => 'Minggu',
+    'izin_cuti' => 'Izin/Cuti',
+    'schedule_time_out' => 'Jadwal Keluar',
+    'actual_time_out' => 'Waktu Keluar Aktual',
+    
+    // Upload Scanlog
+    'upload_csv' => 'Upload CSV',
+    'review_preview' => 'Review Preview',
+    'confirm_import' => 'Konfirmasi Import',
+    'upload_csv_file' => 'Upload File CSV Absensi',
+    'need_template' => 'Butuh template CSV?',
+    'download_template' => 'Download Template CSV',
+    'drag_drop_csv' => 'Drag & Drop file CSV di sini',
+    'or_click_to_select' => 'atau klik untuk memilih file. Format: CSV / TXT, max 5MB',
+    'csv_format_detected' => 'Format CSV yang diterima',
+    'back_preview_csv' => 'Back & Preview CSV',
+    'edit_csv_again' => 'Edit file CSV lagi',
     
     // Status
     'on_time' => 'Tepat Waktu',
@@ -84,6 +124,27 @@ return [
     'thursday' => 'Kamis',
     'friday' => 'Jumat',
     'saturday' => 'Sabtu',
+    
+    // DataTables
+    'show' => 'Tampilkan',
+    'entries' => 'data',
+    'search' => 'Cari',
+    'showing' => 'Menampilkan',
+    'to' => 'sampai',
+    'of' => 'dari',
+    'results' => 'hasil',
+    'no_data_available' => 'Tidak ada data tersedia',
+    'loading' => 'Memuat...',
+    'copy' => 'Salin',
+    'excel' => 'Excel',
+    'pdf' => 'PDF',
+    'print' => 'Cetak',
+    
+    // Common Filters
+    'all_employees' => 'Semua Karyawan',
+    'select_employee' => 'Pilih Karyawan',
+    'select_month' => 'Pilih Bulan',
+    'select_year' => 'Pilih Tahun',
     
     // Buttons
     'add_new' => 'Tambah Baru',

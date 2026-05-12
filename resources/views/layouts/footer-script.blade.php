@@ -8,6 +8,9 @@
 <script src="{{ URL::asset('assets/js/waves.min.js') }}"></script>
 
 
+<!-- DataTables Language Helper -->
+<script src="{{ URL::asset('assets/js/datatable-lang.js') }}"></script>
+
 <!-- App js-->
 <script src="{{ URL::asset('assets/js/app.js') }}"></script>
 <script src="{{ URL::asset('assets/js/export-config.js') }}"></script>

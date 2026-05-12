@@ -22,6 +22,15 @@ return [
     'sheet_report' => 'Sheet Report',
     'import_csv' => 'Import CSV',
     
+    // Page Titles
+    'employees' => 'Employees',
+    'manual_attendance' => 'Manual Attendance',
+    'sheet_report' => 'Sheet Report',
+    'late_time' => 'Late Time',
+    'leave_permission' => 'Leave & Permission',
+    'overtime' => 'Overtime',
+    'import_attendance_data' => 'Import Attendance Data',
+    
     // Table Headers
     'employee_id' => 'Employee ID',
     'name' => 'Name',
@@ -37,6 +46,37 @@ return [
     'reason' => 'Reason',
     'note' => 'Note',
     'action' => 'Action',
+    
+    'position' => 'Position',
+    'email' => 'Email',
+    'schedule' => 'Schedule',
+    'member_since' => 'Member Since',
+    'actions' => 'Actions',
+    'job_position' => 'Job Position',
+    'day' => 'Day',
+    'week' => 'Week',
+    'scan_1' => 'Scan 1',
+    'scan_2' => 'Scan 2',
+    'scan_3' => 'Scan 3',
+    'normal' => 'Normal',
+    'double' => 'Double',
+    'sunday' => 'Sunday',
+    'izin_cuti' => 'Leave/Permission',
+    'schedule_time_out' => 'Schedule Time Out',
+    'actual_time_out' => 'Actual Time Out',
+    
+    // Upload Scanlog
+    'upload_csv' => 'Upload CSV',
+    'review_preview' => 'Review Preview',
+    'confirm_import' => 'Confirm Import',
+    'upload_csv_file' => 'Upload CSV Attendance File',
+    'need_template' => 'Need template CSV?',
+    'download_template' => 'Download Template CSV',
+    'drag_drop_csv' => 'Drag & Drop CSV file here',
+    'or_click_to_select' => 'or click to select file. Format: CSV / TXT, max 5MB',
+    'csv_format_detected' => 'CSV format detected',
+    'back_preview_csv' => 'Back & Preview CSV',
+    'edit_csv_again' => 'Edit CSV file again',
     
     // Status
     'on_time' => 'On Time',
@@ -84,6 +124,27 @@ return [
     'thursday' => 'Thursday',
     'friday' => 'Friday',
     'saturday' => 'Saturday',
+    
+    // DataTables
+    'show' => 'Show',
+    'entries' => 'entries',
+    'search' => 'Search',
+    'showing' => 'Showing',
+    'to' => 'to',
+    'of' => 'of',
+    'results' => 'results',
+    'no_data_available' => 'No data available',
+    'loading' => 'Loading...',
+    'copy' => 'Copy',
+    'excel' => 'Excel',
+    'pdf' => 'PDF',
+    'print' => 'Print',
+    
+    // Common Filters
+    'all_employees' => 'All Employees',
+    'select_employee' => 'Select Employee',
+    'select_month' => 'Select Month',
+    'select_year' => 'Select Year',
     
     // Buttons
     'add_new' => 'Add New',
