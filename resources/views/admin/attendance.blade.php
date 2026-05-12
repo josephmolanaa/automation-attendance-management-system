@@ -63,16 +63,16 @@
 
 @section('breadcrumb')
     <div class="col-sm-6">
-        <h4 class="page-title text-left">Attendance</h4>
+        <h4 class="page-title text-left">{{ __('app.attendance') }}</h4>
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="javascript:void(0);">Home</a></li>
-            <li class="breadcrumb-item"><a href="javascript:void(0);">Attendance</a></li>
+            <li class="breadcrumb-item"><a href="javascript:void(0);">{{ __('app.breadcrumb_home') }}</a></li>
+            <li class="breadcrumb-item"><a href="javascript:void(0);">{{ __('app.breadcrumb_attendance') }}</a></li>
         </ol>
     </div>
 @endsection
 
 @section('button')
-    <a href="attendance/assign" class="btn btn-primary btn-sm btn-flat"><i class="mdi mdi-plus mr-2"></i>Add New</a>
+    <a href="attendance/assign" class="btn btn-primary btn-sm btn-flat"><i class="mdi mdi-plus mr-2"></i>{{ __('app.add_new') }}</a>
 @endsection
 
 @section('content')
@@ -87,49 +87,49 @@
                     <div class="d-flex flex-wrap justify-content-between align-items-end mb-3">
                     <div class="d-flex flex-wrap" style="gap:10px; align-items:flex-end">
                         <div>
-                            <label>Bulan</label>
+                            <label>{{ __('app.month') }}</label>
                             <select id="filterMonth" class="form-control">
-                                <option value="">Semua Bulan</option>
-                                <option value="01">Januari</option>
-                                <option value="02">Februari</option>
-                                <option value="03">Maret</option>
-                                <option value="04">April</option>
-                                <option value="05">Mei</option>
-                                <option value="06">Juni</option>
-                                <option value="07">Juli</option>
-                                <option value="08">Agustus</option>
-                                <option value="09">September</option>
-                                <option value="10">Oktober</option>
-                                <option value="11">November</option>
-                                <option value="12">Desember</option>
+                                <option value="">{{ __('app.all_months') }}</option>
+                                <option value="01">{{ __('app.january') }}</option>
+                                <option value="02">{{ __('app.february') }}</option>
+                                <option value="03">{{ __('app.march') }}</option>
+                                <option value="04">{{ __('app.april') }}</option>
+                                <option value="05">{{ __('app.may') }}</option>
+                                <option value="06">{{ __('app.june') }}</option>
+                                <option value="07">{{ __('app.july') }}</option>
+                                <option value="08">{{ __('app.august') }}</option>
+                                <option value="09">{{ __('app.september') }}</option>
+                                <option value="10">{{ __('app.october') }}</option>
+                                <option value="11">{{ __('app.november') }}</option>
+                                <option value="12">{{ __('app.december') }}</option>
                             </select>
                         </div>
                         <div>
-                            <label>Tahun</label>
+                            <label>{{ __('app.year') }}</label>
                             <select id="filterYear" class="form-control">
-                                <option value="">Semua Tahun</option>
+                                <option value="">{{ __('app.all_years') }}</option>
                                 @foreach(range(date('Y'), 2024) as $year)
                                     <option value="{{ $year }}">{{ $year }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div>
-                            <label>Dari Tanggal</label>
+                            <label>{{ __('app.from_date') }}</label>
                             <input type="date" id="filterDateFrom" class="form-control">
                         </div>
                         <div>
-                            <label>Sampai Tanggal</label>  
+                            <label>{{ __('app.to_date') }}</label>  
                             <input type="date" id="filterDateTo" class="form-control">
                         </div>
                         <div>
                             <label>&nbsp;</label>
-                            <button id="btnReset" class="btn btn-secondary d-block">Reset</button>
+                            <button id="btnReset" class="btn btn-secondary d-block">{{ __('app.reset') }}</button>
                         </div>
                     </div>
                     <div>
                         <label>&nbsp;</label>
                         <button class="btn btn-warning d-block" data-toggle="modal" data-target="#holidayManagerModal" style="height:38px;font-size:14px;">
-                            <i class="mdi mdi-calendar-edit mr-1"></i> Holiday Manager
+                            <i class="mdi mdi-calendar-edit mr-1"></i> {{ __('app.holiday_manager') }}
                         </button>
                     </div>
                     </div>
@@ -138,13 +138,13 @@
                         <table id="attendance-table" class="table table-striped table-bordered nowrap" style="border-collapse: collapse; border-spacing: 0; width: 100%; font-size: 14px;">
                             <thead>
                                 <tr>
-                                    <th style="min-width:120px">Employee ID</th>
-                                    <th style="min-width:180px">Name</th>
-                                    <th style="min-width:140px">Shift</th>
-                                    <th style="min-width:100px">Status</th>
-                                    <th style="min-width:110px">Date</th>
-                                    <th style="min-width:100px">Time In</th>
-                                    <th style="min-width:100px">Time Out</th>
+                                    <th style="min-width:120px">{{ __('app.employee_id') }}</th>
+                                    <th style="min-width:180px">{{ __('app.name') }}</th>
+                                    <th style="min-width:140px">{{ __('app.shift') }}</th>
+                                    <th style="min-width:100px">{{ __('app.status') }}</th>
+                                    <th style="min-width:110px">{{ __('app.date') }}</th>
+                                    <th style="min-width:100px">{{ __('app.time_in') }}</th>
+                                    <th style="min-width:100px">{{ __('app.time_out') }}</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -160,7 +160,7 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="mdi mdi-calendar-edit mr-2"></i>Holiday Manager</h5>
+                    <h5 class="modal-title"><i class="mdi mdi-calendar-edit mr-2"></i>{{ __('app.holiday_manager') }}</h5>
                     <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
                 </div>
                 <div class="modal-body">
@@ -257,13 +257,13 @@
                 dom: '<"d-flex justify-content-between align-items-center mb-2"lf>rtip',
                 order: [[4, 'desc']],
                 language: {
-                    zeroRecords: 'Loading...',
-                    emptyTable: 'Tidak ada data tersedia',
-                    info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',
-                    infoEmpty: 'Menampilkan 0 data',
-                    search: 'Cari:',
-                    lengthMenu: 'Tampilkan _MENU_ data',
-                    paginate: { next: 'Selanjutnya', previous: 'Sebelumnya' }
+                    zeroRecords: '{{ __('app.loading') }}',
+                    emptyTable: '{{ __('app.no_data') }}',
+                    info: '{{ __('app.showing') }} _START_ - _END_ {{ __('app.of') }} _TOTAL_ {{ __('app.results') }}',
+                    infoEmpty: '{{ __('app.showing') }} 0 {{ __('app.results') }}',
+                    search: '{{ __('app.search') }}:',
+                    lengthMenu: '{{ __('app.show') }} _MENU_ {{ __('app.entries') }}',
+                    paginate: { next: '{{ __('app.next') }}', previous: '{{ __('app.previous') }}' }
                 },
             });
 

@@ -18,11 +18,24 @@
         <!-- language-->
         <li class="dropdown notification-list d-none d-md-block">
             <a class="nav-link dropdown-toggle arrow-none waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
-                <img src="/assets/images/flags/us_flag.jpg" class="mr-2" height="12" alt="" onerror="this.style.display='none'"/> <span id="current-lang">English</span> <span class="mdi mdi-chevron-down ml-1"></span>
+                @if(app()->getLocale() == 'id')
+                    <img src="/assets/images/flags/indonesia_flag.png" class="mr-2" height="12" alt="" onerror="this.style.display='none'"/> 
+                    <span id="current-lang">Indonesia</span>
+                @else
+                    <img src="/assets/images/flags/us_flag.jpg" class="mr-2" height="12" alt="" onerror="this.style.display='none'"/> 
+                    <span id="current-lang">English</span>
+                @endif
+                <span class="mdi mdi-chevron-down ml-1"></span>
             </a>
             <div class="dropdown-menu dropdown-menu-right language-switch">
-                <a class="dropdown-item lang-switch" href="#" data-lang="en"><img src="/assets/images/flags/us_flag.jpg" alt="" height="16" onerror="this.style.display='none'"/><span> English </span></a>
-                <a class="dropdown-item lang-switch" href="#" data-lang="id"><img src="/assets/images/flags/indonesia_flag.png" alt="" height="16" onerror="this.style.display='none'"/><span> Indonesia </span></a>
+                <a class="dropdown-item" href="{{ route('lang.switch', 'en') }}">
+                    <img src="/assets/images/flags/us_flag.jpg" alt="" height="16" onerror="this.style.display='none'"/>
+                    <span> English </span>
+                </a>
+                <a class="dropdown-item" href="{{ route('lang.switch', 'id') }}">
+                    <img src="/assets/images/flags/indonesia_flag.png" alt="" height="16" onerror="this.style.display='none'"/>
+                    <span> Indonesia </span>
+                </a>
             </div>
         </li>
 
