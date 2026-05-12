@@ -12,6 +12,14 @@ Route::get('attended-before/{user_id}', '\App\Http\Controllers\AttendanceControl
 
 Auth::routes(['register' => false, 'reset' => false]);
 
+// Language Switcher
+Route::get('/lang/{locale}', function ($locale) {
+    if (in_array($locale, config('app.available_locales'))) {
+        session(['locale' => $locale]);
+    }
+    return redirect()->back();
+})->name('lang.switch');
+
 Route::group(['middleware' => ['auth', 'Role'], 'roles' => ['admin']], function () {
     Route::resource('/employees', '\App\Http\Controllers\EmployeeController');
     Route::get('/attendance', '\App\Http\Controllers\AttendanceController@index')->name('attendance');
