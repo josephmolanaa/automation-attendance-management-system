@@ -8,11 +8,11 @@
     $wibTime = \Carbon\Carbon::now('Asia/Jakarta');
     $hour = $wibTime->hour;
     if ($hour < 12) {
-        $greeting = "Good Morning";
+        $greeting = __('app.good_morning');
     } elseif ($hour < 18) {
-        $greeting = "Good Afternoon";
+        $greeting = __('app.good_afternoon');
     } else {
-        $greeting = "Good Evening";
+        $greeting = __('app.good_evening');
     }
     $userName = Auth::user()->name ?? 'Admin';
     $dateString = "It's " . $wibTime->translatedFormat('l, d F Y') . " • " . $wibTime->format('H:i') . " WIB";
@@ -32,36 +32,36 @@
     <div class="col-xl-3 col-md-6">
         <div class="card ams-stat-card">
             <div class="card-body">
-                <div class="ams-stat-label">Total Karyawan</div>
+                <div class="ams-stat-label">{{ __('app.total_employees') }}</div>
                 <div class="ams-stat-value">{{ $data[0] }}</div>
-                <a href="/employees" class="ams-stat-link">Lihat semua →</a>
+                <a href="/employees" class="ams-stat-link">{{ __('app.view_all') }} →</a>
             </div>
         </div>
     </div>
     <div class="col-xl-3 col-md-6">
         <div class="card ams-stat-card">
             <div class="card-body">
-                <div class="ams-stat-label">Tepat Waktu</div>
+                <div class="ams-stat-label">{{ __('app.on_time_percentage') }}</div>
                 <div class="ams-stat-value" style="color:var(--green)">{{ $data[3] }}%</div>
-                <span class="ams-stat-link">Hari ini</span>
+                <span class="ams-stat-link">{{ __('app.today') }}</span>
             </div>
         </div>
     </div>
     <div class="col-xl-3 col-md-6">
         <div class="card ams-stat-card">
             <div class="card-body">
-                <div class="ams-stat-label">Hadir Hari Ini</div>
+                <div class="ams-stat-label">{{ __('app.present_today') }}</div>
                 <div class="ams-stat-value" style="color:var(--blue)">{{ $data[1] }}</div>
-                <a href="/attendance" class="ams-stat-link">Lihat absensi →</a>
+                <a href="/attendance" class="ams-stat-link">{{ __('app.view_attendance') }} →</a>
             </div>
         </div>
     </div>
     <div class="col-xl-3 col-md-6">
         <div class="card ams-stat-card">
             <div class="card-body">
-                <div class="ams-stat-label">Terlambat</div>
+                <div class="ams-stat-label">{{ __('app.late_today') }}</div>
                 <div class="ams-stat-value" style="color:var(--red)">{{ $data[2] }}</div>
-                <a href="/latetime" class="ams-stat-link">Lihat detail →</a>
+                <a href="/latetime" class="ams-stat-link">{{ __('app.view_details') }} →</a>
             </div>
         </div>
     </div>
@@ -73,7 +73,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <h4 class="mt-0 header-title mb-4">Monthly Report</h4>
+                <h4 class="mt-0 header-title mb-4">{{ __('app.monthly_report') }}</h4>
                 <div id="chart-with-area" class="ct-chart earning ct-golden-section"></div>
             </div>
         </div>
@@ -85,15 +85,15 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <h4 class="mt-0 header-title mb-4">Recent Attendance</h4>
+                <h4 class="mt-0 header-title mb-4">{{ __('app.recent_attendance') }}</h4>
                 <div class="table-responsive">
                     <table class="table table-sm mb-0">
                         <thead>
                             <tr>
-                                <th>Nama</th>
-                                <th>Tanggal</th>
-                                <th>Scan In</th>
-                                <th>Scan Out</th>
+                                <th>{{ __('app.name') }}</th>
+                                <th>{{ __('app.date') }}</th>
+                                <th>{{ __('app.scan_in') }}</th>
+                                <th>{{ __('app.scan_out') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -112,14 +112,14 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="4" class="text-center text-muted">Belum ada data attendance</td>
+                                <td colspan="4" class="text-center text-muted">{{ __('app.no_attendance_data') }}</td>
                             </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
                 <div class="mt-3 text-right">
-                    <a href="/attendance" class="btn btn-sm" style="border-color:var(--border)">Lihat Semua →</a>
+                    <a href="/attendance" class="btn btn-sm" style="border-color:var(--border)">{{ __('app.view_all') }} →</a>
                 </div>
             </div>
         </div>
