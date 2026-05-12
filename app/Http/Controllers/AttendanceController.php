@@ -25,32 +25,47 @@ class AttendanceController extends Controller
 
     /**
      * AJAX endpoint untuk DataTables
+     * Optimized with eager loading and proper query building
      */
     public function ajaxData(Request $request)
     {
-        $query = Check::with(['employee'])->orderBy('attendance_time', 'desc');
+        // Build query with eager loading untuk menghindari N+1 problem
+        $query = Check::with(['employee:id,emp_id,name', 'schedule:id,slug,time_in,time_out'])
+            ->select('id', 'emp_id', 'attendance_time', 'leave_time', 'schedule_id')
+            ->orderBy('attendance_time', 'desc');
 
-        // Filter bulan
+        // Filter bulan - Fixed: gunakan where dengan closure untuk OR condition
         if ($request->bulan) {
-            $query->whereMonth('attendance_time', $request->bulan)
+            $query->where(function($q) use ($request) {
+                $q->whereMonth('attendance_time', $request->bulan)
                   ->orWhereMonth('leave_time', $request->bulan);
+            });
         }
-        // Filter tahun
+        
+        // Filter tahun - Fixed: gunakan where dengan closure untuk OR condition
         if ($request->tahun) {
-            $query->whereYear('attendance_time', $request->tahun)
+            $query->where(function($q) use ($request) {
+                $q->whereYear('attendance_time', $request->tahun)
                   ->orWhereYear('leave_time', $request->tahun);
+            });
         }
+        
         // Filter dari tanggal
         if ($request->dari) {
             $query->whereDate('attendance_time', '>=', $request->dari);
         }
+        
         // Filter sampai tanggal
         if ($request->sampai) {
             $query->whereDate('attendance_time', '<=', $request->sampai);
         }
 
         $checks = $query->get();
-        $allSchedules = Schedule::all();
+        
+        // Cache schedules untuk menghindari query berulang
+        $allSchedules = cache()->remember('all_schedules', 3600, function() {
+            return Schedule::all();
+        });
 
         $data = $checks->map(function ($check) use ($allSchedules) {
             $scanIn  = $check->attendance_time ? Carbon::parse($check->attendance_time) : null;
@@ -118,9 +133,16 @@ class AttendanceController extends Controller
 
     public function lateTimeData(Request $request)
     {
-        $allSchedules = Schedule::all();
+        // Cache schedules
+        $allSchedules = cache()->remember('all_schedules', 3600, function() {
+            return Schedule::all();
+        });
 
-        $query = Check::with(['employee'])->orderBy('attendance_time', 'desc');
+        // Optimized query dengan eager loading dan select specific columns
+        $query = Check::with(['employee:id,emp_id,name'])
+            ->select('id', 'emp_id', 'attendance_time', 'leave_time', 'schedule_id')
+            ->whereNotNull('attendance_time')
+            ->orderBy('attendance_time', 'desc');
 
         if ($request->bulan) {
             $query->whereMonth('attendance_time', $request->bulan);
@@ -199,18 +221,26 @@ class AttendanceController extends Controller
 
     /**
      * AJAX endpoint untuk Overtime — hitung real-time dari checks
+     * Optimized with eager loading and caching
      */
     public function overtimeData(Request $request)
     {
-        $query = Check::with(['employee'])->whereNotNull('leave_time');
+        // Optimized query dengan eager loading
+        $query = Check::with(['employee:id,emp_id,name'])
+            ->select('id', 'emp_id', 'attendance_time', 'leave_time', 'schedule_id')
+            ->whereNotNull('leave_time');
 
         if ($request->bulan)  $query->whereMonth('leave_time', $request->bulan);
         if ($request->tahun)  $query->whereYear('leave_time', $request->tahun);
         if ($request->dari)   $query->whereDate('leave_time', '>=', $request->dari);
         if ($request->sampai) $query->whereDate('leave_time', '<=', $request->sampai);
 
-        $checks       = $query->orderBy('leave_time', 'desc')->get();
-        $allSchedules = Schedule::all();
+        $checks = $query->orderBy('leave_time', 'desc')->get();
+        
+        // Cache schedules
+        $allSchedules = cache()->remember('all_schedules', 3600, function() {
+            return Schedule::all();
+        });
 
         $data = [];
 
