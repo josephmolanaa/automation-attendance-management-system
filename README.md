@@ -189,8 +189,6 @@ Switch between languages anytime:
 |----------|------|--------|
 | English | `en` | ✅ Supported |
 | Indonesian | `id` | ✅ Supported |
-| Spanish | `es` | 🔜 Coming Soon |
-| French | `fr` | 🔜 Coming Soon |
 
 **How to switch:** Click the language dropdown in the top-right corner.
 
