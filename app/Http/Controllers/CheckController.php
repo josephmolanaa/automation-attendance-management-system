@@ -106,7 +106,7 @@ class CheckController extends Controller
                 $timeOut = $this->normalizeTimeInput($outsForDate[$empId] ?? '');
 
                 if ($timeIn === null || $timeOut === null) {
-                    flash()->error('Error', 'Format jam tidak valid. Gunakan HH:MM.');
+                    flash()->error(__('app.error'), __('app.invalid_time_format'));
                     return back();
                 }
 
@@ -153,7 +153,7 @@ class CheckController extends Controller
             }
         }
 
-        flash()->success('Success', 'Data kehadiran berhasil disimpan!');
+        flash()->success(__('app.success'), __('app.attendance_saved'));
         return back();
     }
 
@@ -168,11 +168,11 @@ class CheckController extends Controller
         $timeOut = $this->normalizeTimeInput($request->input('time_out', ''));
 
         if (!$date || !$empId) {
-            return response()->json(['success' => false, 'message' => 'Missing date or employee ID'], 400);
+            return response()->json(['success' => false, 'message' => __('app.missing_date_or_employee')], 400);
         }
 
         if ($timeIn === null || $timeOut === null) {
-            return response()->json(['success' => false, 'message' => 'Format jam tidak valid. Gunakan HH:MM.'], 422);
+            return response()->json(['success' => false, 'message' => __('app.invalid_time_format')], 422);
         }
 
         if ($timeIn === '' && $timeOut === '') {
@@ -180,7 +180,7 @@ class CheckController extends Controller
             $this->deleteCheckForDate($empId, $date);
             return response()->json([
                 'success' => true,
-                'message' => 'Data dihapus',
+                'message' => __('app.data_removed'),
                 'time_in' => '',
                 'time_out' => '',
             ]);
@@ -223,7 +223,7 @@ class CheckController extends Controller
         }
 
         return response()->json(array_merge(
-            ['success' => true, 'message' => 'Tersimpan'],
+            ['success' => true, 'message' => __('app.saved')],
             $this->manualCheckPayload($check)
         ));
     }

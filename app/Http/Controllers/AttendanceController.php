@@ -98,18 +98,18 @@ class AttendanceController extends Controller
             $shiftBadge = "<span class='badge' style='background:{$color};color:#fff;padding:4px 8px;border-radius:4px;font-size:14px'>{$shiftSlug}</span>";
 
             // Status
-            $statusBadge = '<span class="badge badge-secondary badge-pill" style="font-size:14px">No Scan In</span>';
+            $statusBadge = '<span class="badge badge-secondary badge-pill" style="font-size:14px">' . __('app.no_scan_in') . '</span>';
             if ($scanIn && $matchedSchedule) {
                 $schedIn   = Carbon::parse($dateStr . ' ' . $matchedSchedule->time_in);
                 $toleranceSecs = 60;
                 $diffMin       = $schedIn->diffInSeconds($scanIn, false);
                 if ($diffMin <= $toleranceSecs) {
-                    $statusBadge = '<span class="badge badge-success badge-pill" style="font-size:14px">On Time</span>';
+                    $statusBadge = '<span class="badge badge-success badge-pill" style="font-size:14px">' . __('app.on_time') . '</span>';
                 } else {
-                    $statusBadge = '<span class="badge badge-danger badge-pill" style="font-size:14px">Late</span>';
+                    $statusBadge = '<span class="badge badge-danger badge-pill" style="font-size:14px">' . __('app.late') . '</span>';
                 }
             } elseif ($scanIn) {
-                $statusBadge = '<span class="badge badge-success badge-pill" style="font-size:14px">On Time</span>';
+                $statusBadge = '<span class="badge badge-success badge-pill" style="font-size:14px">' . __('app.on_time') . '</span>';
             }
 
             return [

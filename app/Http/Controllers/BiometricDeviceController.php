@@ -71,9 +71,9 @@ class BiometricDeviceController extends Controller
 
             FingerDevices::create($request->validated() + ['serialNumber' => $serial]);
 
-            flash()->success('Success', 'Biometric Device created successfully !');
+            flash()->success(__('app.success'), __('app.biometric_created'));
         } else {
-            flash()->error('Oops', ' Failed connecting to Biometric Device !');
+            flash()->error(__('app.error'), __('app.biometric_connect_failed'));
         }
 
         return redirect()->route('finger_device.index');
@@ -93,7 +93,7 @@ class BiometricDeviceController extends Controller
     {
         $fingerDevice->update($request->validated());
 
-        flash()->success('Success', 'Biometric Device Updated successfully !');
+        flash()->success(__('app.success'), __('app.biometric_updated'));
 
         return redirect()->route('finger_device.index');
     }
@@ -105,7 +105,7 @@ class BiometricDeviceController extends Controller
             toast("Failed to delete {$fingerDevice->name}", 'error');
         }
 
-        flash()->success('Success', 'Biometric Device deleted successfully !');
+        flash()->success(__('app.success'), __('app.biometric_deleted'));
 
         return back();
     }
@@ -127,7 +127,7 @@ class BiometricDeviceController extends Controller
         foreach ($employees as $employee) {
             $device->setUser($i++, $employee->id, $employee->name, '', '0', '0');
         }
-        flash()->success('Success', 'All Employees added to Biometric device successfully!');
+        flash()->success(__('app.success'), __('app.biometric_employees_added'));
 
         return back();
     }
@@ -197,7 +197,7 @@ class BiometricDeviceController extends Controller
         }
 
         
-        flash()->success('Success', 'Attendance Queue will run in a minute!');
+        flash()->success(__('app.success'), __('app.attendance_queue_started'));
 
         return back();
     }
