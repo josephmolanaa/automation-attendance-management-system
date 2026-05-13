@@ -21,10 +21,10 @@
 
 @section('breadcrumb')
     <div class="col-sm-6">
-        <h4 class="page-title text-left">Over Time</h4>
+        <h4 class="page-title text-left">{{ __('app.overtime') }}</h4>
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="javascript:void(0);">Home</a></li>
-            <li class="breadcrumb-item"><a href="javascript:void(0);">Over Time</a></li>
+            <li class="breadcrumb-item"><a href="javascript:void(0);">{{ __('app.breadcrumb_home') }}</a></li>
+            <li class="breadcrumb-item"><a href="javascript:void(0);">{{ __('app.overtime') }}</a></li>
         </ol>
     </div>
 @endsection
@@ -40,43 +40,43 @@
                     {{-- Filter Bar --}}
                     <div class="d-flex flex-wrap" style="gap:10px; align-items:flex-end; margin-bottom:16px;">
                         <div>
-                            <label>Bulan</label>
+                            <label>{{ __('app.month') }}</label>
                             <select id="filterMonth" class="form-control">
-                                <option value="">Semua Bulan</option>
-                                <option value="01">Januari</option>
-                                <option value="02">Februari</option>
-                                <option value="03">Maret</option>
-                                <option value="04">April</option>
-                                <option value="05">Mei</option>
-                                <option value="06">Juni</option>
-                                <option value="07">Juli</option>
-                                <option value="08">Agustus</option>
-                                <option value="09">September</option>
-                                <option value="10">Oktober</option>
-                                <option value="11">November</option>
-                                <option value="12">Desember</option>
+                                <option value="">{{ __('app.all_months') }}</option>
+                                <option value="01">{{ __('app.january') }}</option>
+                                <option value="02">{{ __('app.february') }}</option>
+                                <option value="03">{{ __('app.march') }}</option>
+                                <option value="04">{{ __('app.april') }}</option>
+                                <option value="05">{{ __('app.may') }}</option>
+                                <option value="06">{{ __('app.june') }}</option>
+                                <option value="07">{{ __('app.july') }}</option>
+                                <option value="08">{{ __('app.august') }}</option>
+                                <option value="09">{{ __('app.september') }}</option>
+                                <option value="10">{{ __('app.october') }}</option>
+                                <option value="11">{{ __('app.november') }}</option>
+                                <option value="12">{{ __('app.december') }}</option>
                             </select>
                         </div>
                         <div>
-                            <label>Tahun</label>
+                            <label>{{ __('app.year') }}</label>
                             <select id="filterYear" class="form-control">
-                                <option value="">Semua Tahun</option>
+                                <option value="">{{ __('app.all_years') }}</option>
                                 @foreach(range(date('Y'), 2024) as $year)
                                     <option value="{{ $year }}" {{ $year == date('Y') ? 'selected' : '' }}>{{ $year }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div>
-                            <label>Dari Tanggal</label>
+                            <label>{{ __('app.from_date') }}</label>
                             <input type="date" id="filterDateFrom" class="form-control">
                         </div>
                         <div>
-                            <label>Sampai Tanggal</label>
+                            <label>{{ __('app.to_date') }}</label>
                             <input type="date" id="filterDateTo" class="form-control">
                         </div>
                         <div>
                             <label>&nbsp;</label>
-                            <button id="btnReset" class="btn btn-secondary d-block">Reset</button>
+                            <button id="btnReset" class="btn btn-secondary d-block">{{ __('app.reset') }}</button>
                         </div>
                     </div>
 
@@ -85,13 +85,13 @@
                             <table id="overtime-table" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%;font-size:14px;">
                                 <thead>
                                     <tr>
-                                        <th>Date</th>
-                                        <th>Employee ID</th>
-                                        <th>Name</th>
-                                        <th>Shift</th>
-                                        <th>Schedule Time Out</th>
-                                        <th>Actual Time Out</th>
-                                        <th>Over Time</th>
+                                        <th>{{ __('app.date') }}</th>
+                                        <th>{{ __('app.employee_id') }}</th>
+                                        <th>{{ __('app.name') }}</th>
+                                        <th>{{ __('app.shift') }}</th>
+                                        <th>{{ __('app.schedule_time_out') }}</th>
+                                        <th>{{ __('app.actual_time_out') }}</th>
+                                        <th>{{ __('app.overtime') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -132,22 +132,15 @@ $(function () {
             { data: 'overtime_duration', orderable: false },
         ],
         pageLength: 25,
-        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, '{{ __('app.all') }}']],
         dom: '<"d-flex justify-content-between align-items-center mb-2"lBf>rtip',
         buttons: [
-            { extend: 'copy',  text: '<i class="mdi mdi-content-copy mr-1"></i> Copy',  className: 'btn btn-sm btn-secondary' },
-            { extend: 'excel', text: '<i class="mdi mdi-file-excel mr-1"></i> Excel',   className: 'btn btn-sm btn-success', title: 'Overtime Data' },
-            { extend: 'pdf',   text: '<i class="mdi mdi-file-pdf mr-1"></i> PDF',       className: 'btn btn-sm btn-danger',  title: 'Overtime Data', orientation: 'landscape', pageSize: 'A4' },
+            { extend: 'copy',  text: '<i class="mdi mdi-content-copy mr-1"></i> {{ __('app.copy') }}',  className: 'btn btn-sm btn-secondary' },
+            { extend: 'excel', text: '<i class="mdi mdi-file-excel mr-1"></i> Excel',   className: 'btn btn-sm btn-success', title: '{{ __('app.overtime_data') }}' },
+            { extend: 'pdf',   text: '<i class="mdi mdi-file-pdf mr-1"></i> PDF',       className: 'btn btn-sm btn-danger',  title: '{{ __('app.overtime_data') }}', orientation: 'landscape', pageSize: 'A4' },
         ],
         order: [[0, 'desc']],
-        language: {
-            emptyTable: 'Tidak ada data tersedia',
-            info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',
-            infoEmpty: 'Menampilkan 0 data',
-            search: 'Cari:',
-            lengthMenu: 'Tampilkan _MENU_ data',
-            paginate: { next: 'Selanjutnya', previous: 'Sebelumnya' }
-        },
+        language: window.DataTableLang,
     });
 
     $('#filterMonth, #filterYear, #filterDateFrom, #filterDateTo').on('change', function() {

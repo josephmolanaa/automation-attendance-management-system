@@ -8,16 +8,16 @@
 
 @section('breadcrumb')
     <div class="col-sm-6">
-        <h4 class="page-title text-left">Schedules</h4>
+        <h4 class="page-title text-left">{{ __('app.schedules') }}</h4>
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="javascript:void(0);">Home</a></li>
-            <li class="breadcrumb-item"><a href="javascript:void(0);">Schedule</a></li>
+            <li class="breadcrumb-item"><a href="javascript:void(0);">{{ __('app.breadcrumb_home') }}</a></li>
+            <li class="breadcrumb-item"><a href="javascript:void(0);">{{ __('app.breadcrumb_schedule') }}</a></li>
         </ol>
     </div>
 @endsection
 
 @section('button')
-    <a href="#addnew" data-toggle="modal" class="btn btn-primary btn-sm btn-flat"><i class="mdi mdi-plus mr-2"></i>Add</a>
+    <a href="#addnew" data-toggle="modal" class="btn btn-primary btn-sm btn-flat"><i class="mdi mdi-plus mr-2"></i>{{ __('app.add') }}</a>
 @endsection
 
 @section('content')
@@ -41,11 +41,11 @@
                             <table id="datatable-buttons" class="table table-striped table-bordered dt-responsive nowrap" style="border-collapse: collapse; border-spacing: 0; width: 100%;">
                                 <thead>
                                     <tr>
-                                        <th data-priority="1">ID</th>
-                                        <th data-priority="2">Shift</th>
-                                        <th data-priority="3">Time In</th>
-                                        <th data-priority="4">Time Out</th>
-                                        <th data-priority="5">Action</th>
+                                        <th data-priority="1">{{ __('app.id') }}</th>
+                                        <th data-priority="2">{{ __('app.shift') }}</th>
+                                        <th data-priority="3">{{ __('app.time_in') }}</th>
+                                        <th data-priority="4">{{ __('app.time_out') }}</th>
+                                        <th data-priority="5">{{ __('app.action') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -57,9 +57,9 @@
                                             <td> {{ $schedule->time_out }} </td>
                                             <td>
                                                 <a href="#edit{{ $schedule->slug }}" data-toggle="modal"
-                                                    class="btn btn-success btn-sm edit btn-flat"><i class='fa fa-edit'></i> Edit</a>
+                                                    class="btn btn-success btn-sm edit btn-flat"><i class='fa fa-edit'></i> {{ __('app.edit') }}</a>
                                                 <a href="#delete{{ $schedule->slug }}" data-toggle="modal"
-                                                    class="btn btn-danger btn-sm delete btn-flat"><i class='fa fa-trash'></i> Delete</a>
+                                                    class="btn btn-danger btn-sm delete btn-flat"><i class='fa fa-trash'></i> {{ __('app.delete') }}</a>
                                             </td>
                                         </tr>
                                     @endforeach

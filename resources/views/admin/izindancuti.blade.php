@@ -21,17 +21,17 @@
 
 @section('breadcrumb')
     <div class="col-sm-6">
-        <h4 class="page-title text-left">Izin & Cuti</h4>
+        <h4 class="page-title text-left">{{ __('app.leave_permission') }}</h4>
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="javascript:void(0);">Home</a></li>
-            <li class="breadcrumb-item"><a href="javascript:void(0);">Izin & Cuti</a></li>
+            <li class="breadcrumb-item"><a href="javascript:void(0);">{{ __('app.breadcrumb_home') }}</a></li>
+            <li class="breadcrumb-item"><a href="javascript:void(0);">{{ __('app.leave_permission') }}</a></li>
         </ol>
     </div>
 @endsection
 
 @section('button')
     <button class="btn btn-primary btn-sm btn-flat" data-toggle="modal" data-target="#addIzinDanCutiModal">
-        <i class="mdi mdi-plus mr-2"></i>Add New
+        <i class="mdi mdi-plus mr-2"></i>{{ __('app.add_new') }}
     </button>
 @endsection
 
@@ -44,37 +44,37 @@
                     {{-- Filter Bar --}}
                     <div class="d-flex flex-wrap" style="gap:10px; align-items:flex-end; margin-bottom:16px;">
                         <div>
-                            <label>Bulan</label>
+                            <label>{{ __('app.month') }}</label>
                             <select id="filterMonth" class="form-control">
-                                <option value="">Semua Bulan</option>
-                                <option value="01">Januari</option><option value="02">Februari</option>
-                                <option value="03">Maret</option><option value="04">April</option>
-                                <option value="05">Mei</option><option value="06">Juni</option>
-                                <option value="07">Juli</option><option value="08">Agustus</option>
-                                <option value="09">September</option><option value="10">Oktober</option>
-                                <option value="11">November</option><option value="12">Desember</option>
+                                <option value="">{{ __('app.all_months') }}</option>
+                                <option value="01">{{ __('app.january') }}</option><option value="02">{{ __('app.february') }}</option>
+                                <option value="03">{{ __('app.march') }}</option><option value="04">{{ __('app.april') }}</option>
+                                <option value="05">{{ __('app.may') }}</option><option value="06">{{ __('app.june') }}</option>
+                                <option value="07">{{ __('app.july') }}</option><option value="08">{{ __('app.august') }}</option>
+                                <option value="09">{{ __('app.september') }}</option><option value="10">{{ __('app.october') }}</option>
+                                <option value="11">{{ __('app.november') }}</option><option value="12">{{ __('app.december') }}</option>
                             </select>
                         </div>
                         <div>
-                            <label>Tahun</label>
+                            <label>{{ __('app.year') }}</label>
                             <select id="filterYear" class="form-control">
-                                <option value="">Semua Tahun</option>
+                                <option value="">{{ __('app.all_years') }}</option>
                                 @foreach(range(date('Y'), 2024) as $year)
                                     <option value="{{ $year }}" {{ $year == date('Y') ? 'selected' : '' }}>{{ $year }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div>
-                            <label>Dari Tanggal</label>
+                            <label>{{ __('app.from_date') }}</label>
                             <input type="date" id="filterDateFrom" class="form-control">
                         </div>
                         <div>
-                            <label>Sampai Tanggal</label>
+                            <label>{{ __('app.to_date') }}</label>
                             <input type="date" id="filterDateTo" class="form-control">
                         </div>
                         <div>
                             <label>&nbsp;</label>
-                            <button id="btnReset" class="btn btn-secondary d-block">Reset</button>
+                            <button id="btnReset" class="btn btn-secondary d-block">{{ __('app.reset') }}</button>
                         </div>
                     </div>
 
@@ -83,12 +83,12 @@
                             <table id="izindancuti-table" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%;font-size:14px;">
                                 <thead>
                                     <tr>
-                                        <th>Date</th>
-                                        <th>Employee ID</th>
-                                        <th>Name</th>
-                                        <th>Reason</th>
-                                        <th>Note</th>
-                                        <th>Action</th>
+                                        <th>{{ __('app.date') }}</th>
+                                        <th>{{ __('app.employee_id') }}</th>
+                                        <th>{{ __('app.name') }}</th>
+                                        <th>{{ __('app.reason') }}</th>
+                                        <th>{{ __('app.note') }}</th>
+                                        <th>{{ __('app.action') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -100,10 +100,11 @@
                                         <td>
                                             @php
                                                 $reasonColors = ['sakit' => 'danger', 'izin' => 'warning', 'cuti' => 'info', 'dinas' => 'primary'];
+                                                $reasonLabels = ['sakit' => __('app.sick'), 'izin' => __('app.permission'), 'cuti' => __('app.leave'), 'dinas' => __('app.outside_duty')];
                                                 $color = $reasonColors[$izindancuti->reason] ?? 'secondary';
                                             @endphp
                                             <span class="badge badge-{{ $color }} badge-pill">
-                                                {{ ucfirst($izindancuti->reason ?? '-') }}
+                                                {{ $reasonLabels[$izindancuti->reason] ?? '-' }}
                                             </span>
                                         </td>
                                         <td>{{ $izindancuti->note ?? '-' }}</td>
@@ -130,14 +131,14 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="mdi mdi-calendar-plus mr-2"></i>Tambah Izin & Cuti</h5>
+                    <h5 class="modal-title"><i class="mdi mdi-calendar-plus mr-2"></i>{{ __('app.add_leave_permission') }}</h5>
                     <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label>Karyawan</label>
+                        <label>{{ __('app.employee') }}</label>
                         <input type="text" id="izindancutiEmpName" class="form-control"
-                               placeholder="Ketik nama karyawan..."
+                               placeholder="{{ __('app.employee_name_placeholder') }}"
                                list="employeeList" autocomplete="off">
                         <input type="hidden" id="izindancutiEmpId">
                         <datalist id="employeeList">
@@ -147,26 +148,26 @@
                         </datalist>
                     </div>
                     <div class="form-group">
-                        <label>Tanggal</label>
+                        <label>{{ __('app.date') }}</label>
                         <input type="date" id="izindancutiDate" class="form-control">
                     </div>
                     <div class="form-group">
-                        <label>Alasan</label>
+                        <label>{{ __('app.reason') }}</label>
                         <select id="izindancutiReason" class="form-control">
-                            <option value="sakit">Sakit</option>
-                            <option value="izin">Izin</option>
-                            <option value="cuti">Cuti</option>
-                            <option value="dinas">Dinas Luar</option>
+                            <option value="sakit">{{ __('app.sick') }}</option>
+                            <option value="izin">{{ __('app.permission') }}</option>
+                            <option value="cuti">{{ __('app.leave') }}</option>
+                            <option value="dinas">{{ __('app.outside_duty') }}</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Catatan <small class="text-muted">(opsional)</small></label>
-                        <textarea id="izindancutiNote" class="form-control" rows="3" placeholder="contoh: demam tinggi, perlu istirahat"></textarea>
+                        <label>{{ __('app.note') }} <small class="text-muted">({{ __('app.optional') }})</small></label>
+                        <textarea id="izindancutiNote" class="form-control" rows="3" placeholder="{{ __('app.note_placeholder_leave') }}"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                    <button class="btn btn-primary" onclick="saveIzinDanCuti()"><i class="mdi mdi-content-save mr-1"></i>Simpan</button>
+                    <button class="btn btn-secondary" data-dismiss="modal">{{ __('app.cancel') }}</button>
+                    <button class="btn btn-primary" onclick="saveIzinDanCuti()"><i class="mdi mdi-content-save mr-1"></i>{{ __('app.save') }}</button>
                 </div>
             </div>
         </div>
@@ -180,22 +181,15 @@ $(function() {
     var table = $('#izindancuti-table').DataTable({
         destroy: true,
         pageLength: 10,
-        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, '{{ __('app.all') }}']],
         dom: '<"d-flex justify-content-between align-items-center mb-2"lBf>rtip',
         buttons: [
-            { extend: 'copy',  text: '<i class="mdi mdi-content-copy mr-1"></i> Copy',  className: 'btn btn-sm btn-secondary' },
-            { extend: 'excel', text: '<i class="mdi mdi-file-excel mr-1"></i> Excel',   className: 'btn btn-sm btn-success', title: 'Izin & Cuti Data' },
-            { extend: 'pdf',   text: '<i class="mdi mdi-file-pdf mr-1"></i> PDF',       className: 'btn btn-sm btn-danger',  title: 'Izin & Cuti Data', orientation: 'landscape' },
+            { extend: 'copy',  text: '<i class="mdi mdi-content-copy mr-1"></i> {{ __('app.copy') }}',  className: 'btn btn-sm btn-secondary' },
+            { extend: 'excel', text: '<i class="mdi mdi-file-excel mr-1"></i> Excel',   className: 'btn btn-sm btn-success', title: '{{ __('app.leave_permission') }}' },
+            { extend: 'pdf',   text: '<i class="mdi mdi-file-pdf mr-1"></i> PDF',       className: 'btn btn-sm btn-danger',  title: '{{ __('app.leave_permission') }}', orientation: 'landscape' },
         ],
         order: [[0, 'desc']],
-        language: {
-            emptyTable: 'Tidak ada data tersedia',
-            info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',
-            infoEmpty: 'Menampilkan 0 data',
-            search: 'Cari:',
-            lengthMenu: 'Tampilkan _MENU_ data',
-            paginate: { next: 'Selanjutnya', previous: 'Sebelumnya' }
-        },
+        language: window.DataTableLang,
     });
 
     $.fn.dataTable.ext.search.push(function(settings, data) {
@@ -241,7 +235,7 @@ function saveIzinDanCuti() {
     var note   = $('#izindancutiNote').val();
 
     if (!empId || !date) {
-        swal({ title: 'Perhatian', text: 'Karyawan dan tanggal wajib diisi!', icon: 'warning', button: 'OK' });
+        swal({ title: '{{ __('app.warning') }}', text: '{{ __('app.employee_date_required') }}', icon: 'warning', button: '{{ __('app.alert.button.ok') }}' });
         return;
     }
 
@@ -254,22 +248,22 @@ function saveIzinDanCuti() {
     }, function(res) {
         if (res.success) {
             $('#addIzinDanCutiModal').modal('hide');
-            swal({ title: 'Berhasil!', text: 'Data berhasil disimpan', icon: 'success', button: true, timer: 2000 })
+            swal({ title: '{{ __('app.success') }}', text: '{{ __('app.data_saved') }}', icon: 'success', button: true, timer: 2000 })
                 .then(function() { location.reload(); });
         } else {
-            swal({ title: 'Gagal', text: res.message || 'Gagal menyimpan', icon: 'error', button: 'OK' });
+            swal({ title: '{{ __('app.error') }}', text: res.message || '{{ __('app.save_failed') }}', icon: 'error', button: '{{ __('app.alert.button.ok') }}' });
         }
     }).fail(function() {
-        swal({ title: 'Error', text: 'Terjadi kesalahan, coba lagi', icon: 'error', button: 'OK' });
+        swal({ title: '{{ __('app.error') }}', text: '{{ __('app.try_again_error') }}', icon: 'error', button: '{{ __('app.alert.button.ok') }}' });
     });
 }
 
 function deleteIzinDanCuti(id) {
     swal({
-        title: 'Hapus data ini?',
-        text: 'Data izin/cuti akan dihapus permanen.',
+        title: '{{ __('app.delete_this_data') }}',
+        text: '{{ __('app.delete_leave_text') }}',
         icon: 'warning',
-        buttons: ['Batal', 'Hapus'],
+        buttons: ['{{ __('app.cancel') }}', '{{ __('app.delete') }}'],
         dangerMode: true,
     }).then(function(confirm) {
         if (!confirm) return;
@@ -279,10 +273,10 @@ function deleteIzinDanCuti(id) {
             data: { _token: '{{ csrf_token() }}', id: id },
             success: function(res) {
                 if (res.success) {
-                    swal({ title: 'Berhasil!', text: 'Data berhasil dihapus', icon: 'success', button: true, timer: 2000 })
+                    swal({ title: '{{ __('app.success') }}', text: '{{ __('app.data_deleted') }}', icon: 'success', button: true, timer: 2000 })
                         .then(function() { location.reload(); });
                 } else {
-                    swal({ title: 'Gagal', text: res.message || 'Gagal menghapus', icon: 'error', button: 'OK' });
+                    swal({ title: '{{ __('app.error') }}', text: res.message || '{{ __('app.delete_failed') }}', icon: 'error', button: '{{ __('app.alert.button.ok') }}' });
                 }
             }
         });
