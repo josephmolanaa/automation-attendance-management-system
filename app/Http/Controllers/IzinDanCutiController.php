@@ -26,17 +26,17 @@ class IzinDanCutiController extends Controller
         $izinDanCuti->status     = 1;
         $izinDanCuti->save();
 
-        return response()->json(['success' => true, 'message' => 'Leave berhasil disimpan']);
+        return response()->json(['success' => true, 'message' => __('app.leave_saved')]);
     }
 
     public function destroy(Request $request)
     {
         $izinDanCuti = IzinDanCuti::find($request->id);
         if (!$izinDanCuti) {
-            return response()->json(['success' => false, 'message' => 'Data tidak ditemukan']);
+            return response()->json(['success' => false, 'message' => __('app.message.error.not_found')]);
         }
         $izinDanCuti->delete();
-        return response()->json(['success' => true, 'message' => 'Leave berhasil dihapus']);
+        return response()->json(['success' => true, 'message' => __('app.leave_deleted')]);
     }
 
     public function indexOvertime()

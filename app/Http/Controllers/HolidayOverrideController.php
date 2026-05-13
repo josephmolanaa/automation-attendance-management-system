@@ -16,26 +16,26 @@ class HolidayOverrideController extends Controller
     {
         $date = $request->date; // format: Y-m-d
 
-        $carbon       = \Carbon\Carbon::parse($date);
+        $carbon = \Carbon\Carbon::parse($date);
         $originalType = HolidayService::getDayType($date);
-        $override     = HolidayOverride::where('date', $date)->first();
-        $schedules    = Schedule::all();
+        $override = HolidayOverride::where('date', $date)->first();
+        $schedules = Schedule::all();
 
         // Nama hari dalam bahasa Indonesia
-        $hariMap = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+        $hariMap = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
         $namaHari = $hariMap[$carbon->dayOfWeek];
 
         // Cek apakah tanggal merah dari API
         $isApiHoliday = HolidayService::isHoliday($date);
-        $schedules    = Schedule::all();
+        $schedules = Schedule::all();
 
         return response()->json([
-            'date'          => $date,
-            'nama_hari'     => $namaHari,
+            'date' => $date,
+            'nama_hari' => $namaHari,
             'original_type' => $originalType,
-            'is_api_holiday'=> $isApiHoliday,
-            'override'      => $override,
-            'schedules'     => $schedules,
+            'is_api_holiday' => $isApiHoliday,
+            'override' => $override,
+            'schedules' => $schedules,
         ]);
     }
 
@@ -45,10 +45,10 @@ class HolidayOverrideController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'date'          => 'required|date',
+            'date' => 'required|date',
             'override_type' => 'required|in:weekday,friday,saturday,holiday',
-            'schedule_id'   => 'nullable|exists:schedules,id',
-            'note'          => 'nullable|string|max:255',
+            'schedule_id' => 'nullable|exists:schedules,id',
+            'note' => 'nullable|string|max:255',
         ]);
 
         $originalType = HolidayService::getDayType($request->date);
@@ -58,8 +58,8 @@ class HolidayOverrideController extends Controller
             [
                 'original_type' => $originalType,
                 'override_type' => $request->override_type,
-                'schedule_id'   => $request->schedule_id,
-                'note'          => $request->note,
+                'schedule_id' => $request->schedule_id,
+                'note' => $request->note,
             ]
         );
 
@@ -70,7 +70,7 @@ class HolidayOverrideController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Override berhasil disimpan!',
-            'data'    => $override,
+            'data' => $override,
         ]);
     }
 
@@ -97,17 +97,17 @@ class HolidayOverrideController extends Controller
      */
     public function getMonthData(Request $request)
     {
-        $year  = $request->year  ?? now()->year;
+        $year = $request->year ?? now()->year;
         $month = $request->month ?? now()->month;
 
-        $holidays  = HolidayService::getHolidays($year, $month);
+        $holidays = HolidayService::getHolidays($year, $month);
         $overrides = HolidayOverride::whereYear('date', $year)
-                        ->whereMonth('date', $month)
-                        ->get()
-                        ->keyBy('date');
+            ->whereMonth('date', $month)
+            ->get()
+            ->keyBy('date');
 
         return response()->json([
-            'holidays'  => $holidays,
+            'holidays' => $holidays,
             'overrides' => $overrides,
         ]);
     }
@@ -118,7 +118,7 @@ class HolidayOverrideController extends Controller
      */
     public function clearCache(Request $request)
     {
-        $year  = (int) ($request->year  ?? now()->year);
+        $year = (int) ($request->year ?? now()->year);
         $month = (int) ($request->month ?? now()->month);
 
         HolidayService::clearCache($year, $month);
