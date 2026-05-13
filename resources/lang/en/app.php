@@ -1,6 +1,238 @@
 <?php
 
 return [
+    /*
+    |--------------------------------------------------------------------------
+    | Navigation
+    |--------------------------------------------------------------------------
+    */
+    'nav' => [
+        'home' => 'Home',
+        'dashboard' => 'Dashboard',
+        'employees' => 'Employees',
+        'attendance' => 'Attendance',
+        'schedule' => 'Schedule',
+        'reports' => 'Reports',
+        'settings' => 'Settings',
+        'logout' => 'Logout',
+        'profile' => 'Profile',
+        'lock_screen' => 'Lock Screen',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sidebar Menu
+    |--------------------------------------------------------------------------
+    */
+    'sidebar' => [
+        'main' => 'Main',
+        'dashboard' => 'Dashboard',
+        'employees_menu' => 'Employees',
+        'employees_list' => 'Employees List',
+        'management' => 'Management',
+        'schedule_menu' => 'Schedule',
+        'attendance_sheet' => 'Attendance Sheet',
+        'sheet_report_menu' => 'Sheet Report',
+        'attendance_logs' => 'Attendance Logs',
+        'late_time_menu' => 'Late Time',
+        'leave_permission_menu' => 'Leave & Permission',
+        'overtime_menu' => 'Overtime',
+        'tools' => 'Tools',
+        'biometric_device' => 'Biometric Device',
+        'upload_scanlog' => 'Upload Scanlog',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Breadcrumb
+    |--------------------------------------------------------------------------
+    */
+    'breadcrumb' => [
+        'home' => 'Home',
+        'attendance' => 'Attendance',
+        'employees' => 'Employees',
+        'schedule' => 'Schedule',
+        'reports' => 'Reports',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Forms
+    |--------------------------------------------------------------------------
+    */
+    'form' => [
+        'label' => [
+            'name' => 'Name',
+            'email' => 'Email',
+            'phone' => 'Phone',
+            'position' => 'Position',
+            'employee_id' => 'Employee ID',
+            'shift' => 'Shift',
+            'status' => 'Status',
+            'date' => 'Date',
+            'time_in' => 'Time In',
+            'time_out' => 'Time Out',
+            'duration' => 'Duration',
+            'reason' => 'Reason',
+            'note' => 'Note',
+            'required' => 'required',
+        ],
+        'placeholder' => [
+            'search' => 'Search...',
+            'select' => 'Select...',
+            'enter_name' => 'Enter name',
+            'enter_email' => 'Enter email',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Buttons
+    |--------------------------------------------------------------------------
+    */
+    'button' => [
+        'save' => 'Save',
+        'cancel' => 'Cancel',
+        'delete' => 'Delete',
+        'edit' => 'Edit',
+        'add' => 'Add',
+        'add_new' => 'Add New',
+        'search' => 'Search',
+        'filter' => 'Filter',
+        'reset' => 'Reset',
+        'close' => 'Close',
+        'submit' => 'Submit',
+        'export' => 'Export',
+        'import' => 'Import',
+        'download' => 'Download',
+        'upload' => 'Upload',
+        'back' => 'Back',
+        'next' => 'Next',
+        'previous' => 'Previous',
+        'view_all' => 'View All',
+        'view_details' => 'View Details',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Messages
+    |--------------------------------------------------------------------------
+    */
+    'message' => [
+        'success' => [
+            'title' => 'Success!',
+            'save' => 'Data saved successfully',
+            'delete' => 'Data deleted successfully',
+            'update' => 'Data updated successfully',
+            'import' => 'Data imported successfully',
+        ],
+        'error' => [
+            'title' => 'Error!',
+            'general' => 'An error occurred',
+            'not_found' => 'Data not found',
+            'validation' => 'Validation error occurred',
+        ],
+        'warning' => [
+            'title' => 'Warning!',
+        ],
+        'info' => [
+            'title' => 'Information',
+            'no_data' => 'No data available',
+            'loading' => 'Loading...',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Alerts
+    |--------------------------------------------------------------------------
+    */
+    'alert' => [
+        'confirm_delete' => 'Are you sure you want to delete this data?',
+        'confirm_save' => 'Are you sure you want to save changes?',
+        'button' => [
+            'yes_delete' => 'Yes, Delete',
+            'yes' => 'Yes',
+            'no' => 'No',
+            'cancel' => 'Cancel',
+            'ok' => 'OK',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | DataTables
+    |--------------------------------------------------------------------------
+    */
+    'datatable' => [
+        'show' => 'Show',
+        'entries' => 'entries',
+        'search' => 'Search',
+        'showing' => 'Showing',
+        'to' => 'to',
+        'of' => 'of',
+        'results' => 'results',
+        'no_data_available' => 'No data available',
+        'loading' => 'Loading...',
+        'copy' => 'Copy',
+        'excel' => 'Excel',
+        'pdf' => 'PDF',
+        'print' => 'Print',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Dates - Month Names
+    |--------------------------------------------------------------------------
+    */
+    'month' => [
+        'january' => 'January',
+        'february' => 'February',
+        'march' => 'March',
+        'april' => 'April',
+        'may' => 'May',
+        'june' => 'June',
+        'july' => 'July',
+        'august' => 'August',
+        'september' => 'September',
+        'october' => 'October',
+        'november' => 'November',
+        'december' => 'December',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Dates - Day Names
+    |--------------------------------------------------------------------------
+    */
+    'day' => [
+        'monday' => 'Monday',
+        'tuesday' => 'Tuesday',
+        'wednesday' => 'Wednesday',
+        'thursday' => 'Thursday',
+        'friday' => 'Friday',
+        'saturday' => 'Saturday',
+        'sunday' => 'Sunday',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Dates - Relative Time
+    |--------------------------------------------------------------------------
+    */
+    'date' => [
+        'today' => 'Today',
+        'yesterday' => 'Yesterday',
+        'last_week' => 'Last Week',
+        'from_date' => 'From Date',
+        'to_date' => 'To Date',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Legacy Keys (Backward Compatibility)
+    |--------------------------------------------------------------------------
+    */
     // Navigation & Menu
     'home' => 'Home',
     'attendance' => 'Attendance',
@@ -23,12 +255,7 @@ return [
     'import_csv' => 'Import CSV',
     
     // Page Titles
-    'employees' => 'Employees',
     'manual_attendance' => 'Manual Attendance',
-    'sheet_report' => 'Sheet Report',
-    'late_time' => 'Late Time',
-    'leave_permission' => 'Leave & Permission',
-    'overtime' => 'Overtime',
     'import_attendance_data' => 'Import Attendance Data',
     
     // Table Headers
@@ -46,10 +273,7 @@ return [
     'reason' => 'Reason',
     'note' => 'Note',
     'action' => 'Action',
-    
-    'position' => 'Position',
     'email' => 'Email',
-    'schedule' => 'Schedule',
     'member_since' => 'Member Since',
     'actions' => 'Actions',
     'job_position' => 'Job Position',
@@ -60,7 +284,6 @@ return [
     'scan_3' => 'Scan 3',
     'normal' => 'Normal',
     'double' => 'Double',
-    'sunday' => 'Sunday',
     'izin_cuti' => 'Leave/Permission',
     'schedule_time_out' => 'Schedule Time Out',
     'actual_time_out' => 'Actual Time Out',
@@ -93,8 +316,6 @@ return [
     'filter' => 'Filter',
     'month' => 'Month',
     'year' => 'Year',
-    'from_date' => 'From Date',
-    'to_date' => 'To Date',
     'all_months' => 'All Months',
     'all_years' => 'All Years',
     'reset' => 'Reset',
@@ -102,7 +323,7 @@ return [
     'show' => 'Show',
     'entries' => 'entries',
     
-    // Months
+    // Months (flat keys for backward compatibility)
     'january' => 'January',
     'february' => 'February',
     'march' => 'March',
@@ -116,7 +337,7 @@ return [
     'november' => 'November',
     'december' => 'December',
     
-    // Days
+    // Days (flat keys for backward compatibility)
     'sunday' => 'Sunday',
     'monday' => 'Monday',
     'tuesday' => 'Tuesday',
@@ -125,10 +346,7 @@ return [
     'friday' => 'Friday',
     'saturday' => 'Saturday',
     
-    // DataTables
-    'show' => 'Show',
-    'entries' => 'entries',
-    'search' => 'Search',
+    // DataTables (flat keys for backward compatibility)
     'showing' => 'Showing',
     'to' => 'to',
     'of' => 'of',
@@ -146,7 +364,7 @@ return [
     'select_month' => 'Select Month',
     'select_year' => 'Select Year',
     
-    // Buttons
+    // Buttons (flat keys for backward compatibility)
     'add_new' => 'Add New',
     'edit' => 'Edit',
     'delete' => 'Delete',
@@ -162,7 +380,7 @@ return [
     'next' => 'Next',
     'previous' => 'Previous',
     
-    // Messages
+    // Messages (flat keys for backward compatibility)
     'success' => 'Success!',
     'error' => 'Error!',
     'warning' => 'Warning!',
@@ -172,18 +390,12 @@ return [
     'data_deleted' => 'Data deleted successfully',
     'data_updated' => 'Data updated successfully',
     'no_data' => 'No data available',
-    'loading' => 'Loading...',
-    
-    // Pagination
-    'showing' => 'Showing',
-    'to' => 'to',
-    'of' => 'of',
-    'results' => 'results',
+    'from_date' => 'From Date',
+    'to_date' => 'To Date',
     
     // Holiday Manager
     'holiday' => 'Holiday',
     'weekday' => 'Weekday',
-    'saturday' => 'Saturday',
     'national_holiday' => 'National Holiday (API)',
     'admin_override' => 'Admin Override',
     'day_type' => 'Day Type',
@@ -211,7 +423,7 @@ return [
     'scan_in' => 'Scan In',
     'scan_out' => 'Scan Out',
     
-    // Sidebar Menu
+    // Sidebar Menu (flat keys for backward compatibility)
     'main' => 'Main',
     'dashboard' => 'Dashboard',
     'employees_menu' => 'Employees',
@@ -228,7 +440,7 @@ return [
     'biometric_device' => 'Biometric Device',
     'upload_scanlog' => 'Upload Scanlog',
     
-    // Breadcrumb
+    // Breadcrumb (flat keys for backward compatibility)
     'breadcrumb_home' => 'Home',
     'breadcrumb_attendance' => 'Attendance',
     'breadcrumb_employees' => 'Employees',
