@@ -22,10 +22,10 @@
 
 @section('breadcrumb')
     <div class="col-sm-6">
-        <h4 class="page-title text-left">Sheet Report</h4>
+        <h4 class="page-title text-left">{{ __('app.sheet_report') }}</h4>
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="javascript:void(0);">Home</a></li>
-            <li class="breadcrumb-item"><a href="javascript:void(0);">Sheet Report</a></li>
+            <li class="breadcrumb-item"><a href="javascript:void(0);">{{ __('app.breadcrumb_home') }}</a></li>
+            <li class="breadcrumb-item"><a href="javascript:void(0);">{{ __('app.sheet_report') }}</a></li>
         </ol>
     </div>
 @endsection
@@ -39,24 +39,24 @@
                     {{-- Filter Bar --}}
                     <div class="d-flex flex-wrap" style="gap:10px; align-items:flex-end; margin-bottom:16px;">
                         <div>
-                            <label>Bulan</label>
+                            <label>{{ __('app.month') }}</label>
                             <select id="filterMonth" class="form-control">
-                                <option value="01">Januari</option>
-                                <option value="02">Februari</option>
-                                <option value="03">Maret</option>
-                                <option value="04">April</option>
-                                <option value="05">Mei</option>
-                                <option value="06">Juni</option>
-                                <option value="07">Juli</option>
-                                <option value="08">Agustus</option>
-                                <option value="09">September</option>
-                                <option value="10">Oktober</option>
-                                <option value="11">November</option>
-                                <option value="12">Desember</option>
+                                <option value="01">{{ __('app.january') }}</option>
+                                <option value="02">{{ __('app.february') }}</option>
+                                <option value="03">{{ __('app.march') }}</option>
+                                <option value="04">{{ __('app.april') }}</option>
+                                <option value="05">{{ __('app.may') }}</option>
+                                <option value="06">{{ __('app.june') }}</option>
+                                <option value="07">{{ __('app.july') }}</option>
+                                <option value="08">{{ __('app.august') }}</option>
+                                <option value="09">{{ __('app.september') }}</option>
+                                <option value="10">{{ __('app.october') }}</option>
+                                <option value="11">{{ __('app.november') }}</option>
+                                <option value="12">{{ __('app.december') }}</option>
                             </select>
                         </div>
                         <div>
-                            <label>Tahun</label>
+                            <label>{{ __('app.year') }}</label>
                             <select id="filterYear" class="form-control">
                                 @foreach(range(date('Y'), 2024) as $year)
                                     <option value="{{ $year }}" {{ $year == date('Y') ? 'selected' : '' }}>{{ $year }}</option>
@@ -66,12 +66,12 @@
 
                         <div>
                             <label>&nbsp;</label>
-                            <button id="btnReset" class="btn btn-secondary d-block">Reset</button>
+                            <button id="btnReset" class="btn btn-secondary d-block">{{ __('app.reset') }}</button>
                         </div>
                         <div>
                             <label>&nbsp;</label>
                             <button id="btnExport" class="btn btn-success d-block">
-                                <i class="mdi mdi-file-excel mr-1"></i> Export Excel
+                                <i class="mdi mdi-file-excel mr-1"></i> {{ __('app.export_excel') }}
                             </button>
                         </div>
                     </div>
@@ -81,18 +81,18 @@
                             <table id="sheet-report-table" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%;font-size:13px;">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Nama</th>
-                                        <th>Jabatan</th>
-                                        <th>Hari</th>
-                                        <th>Tanggal</th>
-                                        <th>Scan 1</th>
-                                        <th>Scan 2</th>
-                                        <th>Scan 3</th>
-                                        <th>Normal</th>
-                                        <th>Double</th>
-                                        <th>Minggu</th>
-                                        <th>Izin/Cuti</th>
+                                        <th>{{ __('app.id') }}</th>
+                                        <th>{{ __('app.name') }}</th>
+                                        <th>{{ __('app.position') }}</th>
+                                        <th>{{ __('app.day') }}</th>
+                                        <th>{{ __('app.date') }}</th>
+                                        <th>{{ __('app.scan_1') }}</th>
+                                        <th>{{ __('app.scan_2') }}</th>
+                                        <th>{{ __('app.scan_3') }}</th>
+                                        <th>{{ __('app.normal') }}</th>
+                                        <th>{{ __('app.double') }}</th>
+                                        <th>{{ __('app.sunday_label') }}</th>
+                                        <th>{{ __('app.izin_cuti') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -162,17 +162,10 @@ $(function() {
         ],
         order: [[4, 'desc']],
         pageLength: 25,
-        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, '{{ __('app.all') }}']],
         dom: '<"d-flex justify-content-between align-items-center mb-2"lf>rtip',
-        buttons: [...amsExportButtons('Sheet Report')],
-        language: {
-            emptyTable: 'Tidak ada data yang tersedia',
-            info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',
-            infoEmpty: 'Menampilkan 0 data',
-            search: 'Cari:',
-            lengthMenu: 'Tampilkan _MENU_ data',
-            paginate: { next: 'Selanjutnya', previous: 'Sebelumnya' }
-        },
+        buttons: [...amsExportButtons('{{ __('app.sheet_report_data') }}')],
+        language: window.DataTableLang,
     });
 
     $('#btnExport').on('click', function() {

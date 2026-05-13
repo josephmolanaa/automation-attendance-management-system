@@ -11,8 +11,8 @@
     <div class="wrapper-page" style="margin-top: 5%;">
         <div class="card overflow-hidden account-card mx-3" style="border:1px solid rgba(26,25,23,0.06); border-radius:14px; box-shadow:0 8px 30px rgba(0,0,0,0.06);">
             <div class="login-header" style="background:#1A1917; padding:28px 24px 48px; text-align:center; position:relative;">
-                <h4 style="font-family:'DM Sans',sans-serif; font-size:20px; font-weight:600; margin-bottom:6px; color:#f2f2f2 !important;">Selamat Datang</h4>
-                <p style="font-size:13px; margin-bottom:0; color:rgba(255,255,255,0.7) !important;">Masuk sebagai Admin</p>
+                <h4 style="font-family:'DM Sans',sans-serif; font-size:20px; font-weight:600; margin-bottom:6px; color:#f2f2f2 !important;">{{ __('app.welcome') }}</h4>
+                <p style="font-size:13px; margin-bottom:0; color:rgba(255,255,255,0.7) !important;">{{ __('app.admin_login') }}</p>
                 <a href="{{ route('welcome') }}" class="logo logo-admin" style="position:absolute; left:50%; bottom:-24px; transform:translateX(-50%); width:48px; height:48px; border-radius:50%; background:#FFFFFF; border:3px solid #FFFFFF; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
                     <span style="font-family:'DM Mono',monospace; font-size:18px; font-weight:600; color:#1A1917;">A</span>
                 </a>
@@ -52,12 +52,12 @@
                                 <input class="form-check-input" type="checkbox" name="remember" id="remember"
                                     {{ old('remember') ? 'checked' : '' }} style="width:14px; height:14px;">
                                 <label class="form-check-label" for="remember" style="font-size:12px; color:#6B6860;">
-                                    {{ __('Remember Me') }}
+                                    {{ __('app.remember_me') }}
                                 </label>
                             </div>
                         </div>
                         <div class="col-sm-6 text-right">
-                            <button type="submit" style="display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 24px;border-radius:8px;font-size:13px;font-weight:500;background:#1A1917;color:#F7F6F3;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;">Log In</button>
+                            <button type="submit" style="display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 24px;border-radius:8px;font-size:13px;font-weight:500;background:#1A1917;color:#F7F6F3;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;">{{ __('app.login') }}</button>
                         </div>
                     </div>
                 </form>
