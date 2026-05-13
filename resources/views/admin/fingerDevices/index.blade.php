@@ -30,7 +30,7 @@
 
                     <i class="fas fa-cog"></i>
 
-                    Clear device attendance
+                    {{ __('app.clear_device_attendance') }}
 
                 </a>
 
@@ -87,12 +87,12 @@
 
                         <th>
 
-                            Status
+                            {{ __('app.status') }}
 
                         </th>
 
                         <th>
-                            Actions
+                            {{ __('app.actions') }}
 
                         </th>
 
@@ -150,7 +150,7 @@
 
                                     <div class="badge badge-success">
 
-                                        Active
+                                        {{ __('app.active') }}
 
                                     </div>
 
@@ -158,7 +158,7 @@
 
                                     <div class="badge badge-danger">
 
-                                        Deactivate
+                                        {{ __('app.inactive') }}
 
                                     </div>
 
@@ -172,7 +172,7 @@
 
                                         <i class="fas fa-plus"></i>
 
-                                        Add Employee
+                                        {{ __('app.add_employee') }}
 
                                     </a>
                                     
@@ -182,7 +182,7 @@
 
                                         <i class="fas fa-plus"></i>
 
-                                        Get Attendance
+                                        {{ __('app.get_attendance') }}
 
                                     </a>
 

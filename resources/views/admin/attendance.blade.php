@@ -165,57 +165,57 @@
                 </div>
                 <div class="modal-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <button class="btn btn-sm btn-outline-secondary" id="calPrevMonth">&#8249; Prev</button>
+                        <button class="btn btn-sm btn-outline-secondary" id="calPrevMonth">&#8249; {{ __('app.prev') }}</button>
                         <h6 class="mb-0" id="calTitle"></h6>
-                        <button class="btn btn-sm btn-outline-secondary" id="calNextMonth">Next &#8250;</button>
+                        <button class="btn btn-sm btn-outline-secondary" id="calNextMonth">{{ __('app.next_label') }} &#8250;</button>
                     </div>
                     <div id="calendarGrid" class="mb-3">
                         <div class="row text-center font-weight-bold mb-1">
-                            <div class="col">Min</div><div class="col">Sen</div><div class="col">Sel</div>
-                            <div class="col">Rab</div><div class="col">Kam</div><div class="col">Jum</div>
-                            <div class="col">Sab</div>
+                            <div class="col">{{ __('app.sunday') }}</div><div class="col">{{ __('app.monday') }}</div><div class="col">{{ __('app.tuesday') }}</div>
+                            <div class="col">{{ __('app.wednesday') }}</div><div class="col">{{ __('app.thursday') }}</div><div class="col">{{ __('app.friday') }}</div>
+                            <div class="col">{{ __('app.saturday') }}</div>
                         </div>
                         <div id="calDays"></div>
                     </div>
                     <div class="d-flex flex-wrap mb-3" style="gap:8px">
-                        <span><span class="badge" style="background:#e74c3c">&nbsp;&nbsp;</span> Tanggal Merah (API)</span>
-                        <span><span class="badge" style="background:#f39c12">&nbsp;&nbsp;</span> Override Admin</span>
-                        <span><span class="badge" style="background:#3498db">&nbsp;&nbsp;</span> Weekday</span>
-                        <span><span class="badge" style="background:#2ecc71">&nbsp;&nbsp;</span> Sabtu</span>
-                        <span><span class="badge" style="background:#95a5a6">&nbsp;&nbsp;</span> Minggu</span>
+                        <span><span class="badge" style="background:#e74c3c">&nbsp;&nbsp;</span> {{ __('app.red_date_api') }}</span>
+                        <span><span class="badge" style="background:#f39c12">&nbsp;&nbsp;</span> {{ __('app.admin_override') }}</span>
+                        <span><span class="badge" style="background:#3498db">&nbsp;&nbsp;</span> {{ __('app.weekday_label') }}</span>
+                        <span><span class="badge" style="background:#2ecc71">&nbsp;&nbsp;</span> {{ __('app.saturday_label') }}</span>
+                        <span><span class="badge" style="background:#95a5a6">&nbsp;&nbsp;</span> {{ __('app.sunday_label') }}</span>
                     </div>
                     <div id="overrideForm" class="card card-body bg-light d-none">
                         <h6 id="overrideFormTitle" class="mb-3"></h6>
                         <div class="form-group">
-                            <label>Tipe Hari</label>
+                            <label>{{ __('app.day_type') }}</label>
                             <select id="overrideType" class="form-control">
-                                <option value="weekday">Weekday (Masuk Kerja Biasa)</option>
-                                <option value="saturday">Sabtu</option>
-                                <option value="holiday">Holiday / Libur</option>
+                                <option value="weekday">{{ __('app.weekday_label') }} ({{ __('app.regular_workday') }})</option>
+                                <option value="saturday">{{ __('app.saturday_label') }}</option>
+                                <option value="holiday">{{ __('app.holiday') }} / {{ __('app.holiday_leave') }}</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Shift Spesifik <small class="text-muted">(opsional)</small></label>
+                            <label>{{ __('app.specific_shift') }} <small class="text-muted">({{ __('app.optional') }})</small></label>
                             <select id="overrideSchedule" class="form-control">
-                                <option value="">-- Auto detect dari jam scan --</option>
+                                <option value="">-- {{ __('app.auto_detect') }} --</option>
                                 @foreach(\App\Models\Schedule::all() as $s)
                                     <option value="{{ $s->id }}">{{ $s->slug }} ({{ $s->time_in }} - {{ $s->time_out }})</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Catatan</label>
-                            <input type="text" id="overrideNote" class="form-control" placeholder="contoh: Masuk kerja meski libur nasional">
+                            <label>{{ __('app.note') }}</label>
+                            <input type="text" id="overrideNote" class="form-control" placeholder="{{ __('app.note_placeholder_holiday') }}">
                         </div>
                         <input type="hidden" id="overrideDate">
                         <div class="d-flex" style="gap:8px">
                             <button class="btn btn-primary btn-sm" id="btnSaveOverride">
-                                <i class="mdi mdi-content-save mr-1"></i> Simpan Override
+                                <i class="mdi mdi-content-save mr-1"></i> {{ __('app.save_override') }}
                             </button>
                             <button class="btn btn-danger btn-sm d-none" id="btnDeleteOverride">
-                                <i class="mdi mdi-delete mr-1"></i> Hapus Override
+                                <i class="mdi mdi-delete mr-1"></i> {{ __('app.delete_override') }}
                             </button>
-                            <button class="btn btn-secondary btn-sm" id="btnCancelOverride">Batal</button>
+                            <button class="btn btn-secondary btn-sm" id="btnCancelOverride">{{ __('app.cancel') }}</button>
                         </div>
                     </div>
                 </div>
@@ -285,8 +285,11 @@
     function loadCalendar(year, month) {
         calYear  = year;
         calMonth = month;
-        var monthNames = ['Januari','Februari','Maret','April','Mei','Juni',
-                          'Juli','Agustus','September','Oktober','November','Desember'];
+        var monthNames = [
+            '{{ __('app.january') }}','{{ __('app.february') }}','{{ __('app.march') }}','{{ __('app.april') }}',
+            '{{ __('app.may') }}','{{ __('app.june') }}','{{ __('app.july') }}','{{ __('app.august') }}',
+            '{{ __('app.september') }}','{{ __('app.october') }}','{{ __('app.november') }}','{{ __('app.december') }}'
+        ];
         $('#calTitle').text(monthNames[month - 1] + ' ' + year);
         $.get('/holiday-overrides/month', { year: year, month: month }, function(res) {
             calHolidays  = res.holidays  || [];
@@ -312,15 +315,15 @@
                 var dow     = new Date(year, month - 1, day).getDay();
                 var bg = '#fff', color = '#333', title = '';
                 if (calOverrides[dateStr]) {
-                    bg = '#f39c12'; color = '#fff'; title = 'Override: ' + calOverrides[dateStr].override_type;
+                    bg = '#f39c12'; color = '#fff'; title = '{{ __('app.admin_override') }}: ' + calOverrides[dateStr].override_type;
                 } else if (calHolidays.includes(dateStr)) {
-                    bg = '#e74c3c'; color = '#fff'; title = 'Tanggal Merah';
+                    bg = '#e74c3c'; color = '#fff'; title = '{{ __('app.red_date') }}';
                 } else if (dow === 0) {
-                    bg = '#95a5a6'; color = '#fff'; title = 'Minggu';
+                    bg = '#95a5a6'; color = '#fff'; title = '{{ __('app.sunday_label') }}';
                 } else if (dow === 6) {
-                    bg = '#2ecc71'; color = '#fff'; title = 'Sabtu';
+                    bg = '#2ecc71'; color = '#fff'; title = '{{ __('app.saturday_label') }}';
                 } else {
-                    bg = '#3498db'; color = '#fff'; title = 'Weekday';
+                    bg = '#3498db'; color = '#fff'; title = '{{ __('app.weekday_label') }}';
                 }
                 html += '<div class="col p-1"><div class="rounded text-center py-1 px-0 cal-day" '
                       + 'data-date="' + dateStr + '" title="' + title + '" '
@@ -341,7 +344,7 @@
             $('#overrideDate').val(date);
             $('#overrideFormTitle').html(
                 '<i class="mdi mdi-calendar mr-1"></i> ' + res.nama_hari + ', ' + date
-                + (res.is_api_holiday ? ' <span class="badge badge-danger ml-1">Tanggal Merah</span>' : '')
+                + (res.is_api_holiday ? ' <span class="badge badge-danger ml-1">{{ __('app.red_date') }}</span>' : '')
             );
             if (res.override) {
                 $('#overrideType').val(res.override.override_type);
@@ -377,7 +380,7 @@
             note:          $('#overrideNote').val(),
         }, function(res) {
             if (res.success) {
-                swal({ title: 'Berhasil!', text: res.message, icon: 'success', button: true, timer: 2500 })
+                swal({ title: '{{ __('app.success') }}', text: res.message, icon: 'success', button: true, timer: 2500 })
                     .then(function() {
                         loadCalendar(calYear, calMonth);
                         if (window.attendanceTable) window.attendanceTable.ajax.reload();

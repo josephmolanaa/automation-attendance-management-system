@@ -45,17 +45,17 @@
 
 @section('breadcrumb')
 <div class="col-sm-6">
-    <h4 class="page-title text-left">Employees</h4>
+    <h4 class="page-title text-left">{{ __('app.employees') }}</h4>
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="javascript:void(0);">Home</a></li>
-        <li class="breadcrumb-item"><a href="javascript:void(0);">Employees</a></li>
-        <li class="breadcrumb-item"><a href="javascript:void(0);">Employees List</a></li>
+        <li class="breadcrumb-item"><a href="javascript:void(0);">{{ __('app.breadcrumb_home') }}</a></li>
+        <li class="breadcrumb-item"><a href="javascript:void(0);">{{ __('app.breadcrumb_employees') }}</a></li>
+        <li class="breadcrumb-item"><a href="javascript:void(0);">{{ __('app.employees_list') }}</a></li>
     </ol>
 </div>
 @endsection
 
 @section('button')
-<a href="#addnew" data-toggle="modal" class="btn btn-primary btn-sm btn-flat"><i class="mdi mdi-plus mr-2"></i>Add</a>
+<a href="#addnew" data-toggle="modal" class="btn btn-primary btn-sm btn-flat"><i class="mdi mdi-plus mr-2"></i>{{ __('app.add') }}</a>
 @endsection
 
 @section('content')
@@ -77,13 +77,13 @@
                 <table id="employee-table" class="table table-striped table-bordered dt-responsive nowrap" style="border-collapse: collapse; border-spacing: 0; width: 100%;">
                     <thead>
                         <tr>
-                            <th>Employee ID</th>
-                            <th>Name</th>
-                            <th>Position</th>
-                            <th>Email</th>
-                            <th>Schedule</th>
-                            <th>Member Since</th>
-                            <th>Actions</th>
+                            <th>{{ __('app.employee_id') }}</th>
+                            <th>{{ __('app.name') }}</th>
+                            <th>{{ __('app.position') }}</th>
+                            <th>{{ __('app.email') }}</th>
+                            <th>{{ __('app.schedule') }}</th>
+                            <th>{{ __('app.member_since') }}</th>
+                            <th>{{ __('app.actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -100,8 +100,8 @@
                             </td>
                             <td>{{ $employee->created_at }}</td>
                             <td>
-                                <a href="#edit{{ $employee->id }}" data-toggle="modal" class="btn btn-success btn-sm btn-flat"><i class='fa fa-edit'></i> Edit</a>
-                                <a href="#delete{{ $employee->id }}" data-toggle="modal" class="btn btn-danger btn-sm btn-flat"><i class='fa fa-trash'></i> Delete</a>
+                                <a href="#edit{{ $employee->id }}" data-toggle="modal" class="btn btn-success btn-sm btn-flat"><i class='fa fa-edit'></i> {{ __('app.edit') }}</a>
+                                <a href="#delete{{ $employee->id }}" data-toggle="modal" class="btn btn-danger btn-sm btn-flat"><i class='fa fa-trash'></i> {{ __('app.delete') }}</a>
                             </td>
                         </tr>
                         @endforeach
@@ -129,15 +129,15 @@ $(function () {
     $('#employee-table').DataTable({
         lengthChange: true,
         pageLength: 25,
-        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'All']],
+        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, '{{ __('app.all') }}']],
         dom: '<"d-flex justify-content-between align-items-center mb-2"lf>rtip',
 
         language: {
-            lengthMenu: 'Tampilkan _MENU_ data',
-            search: 'Cari:',
-            info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',
-            infoEmpty: 'Menampilkan 0 data',
-            paginate: { next: 'Selanjutnya', previous: 'Sebelumnya' }
+            lengthMenu: '{{ __('app.datatable_length') }}',
+            search: '{{ __('app.datatable_search') }}',
+            info: '{{ __('app.showing_data_range') }}',
+            infoEmpty: '{{ __('app.showing_zero_data') }}',
+            paginate: { next: '{{ __('app.next') }}', previous: '{{ __('app.previous') }}' }
         }
     });
 });

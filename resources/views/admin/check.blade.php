@@ -402,10 +402,10 @@
 
 @section('breadcrumb')
 <div class="col-sm-6">
-    <h4 class="page-title text-left">Manual Attendance</h4>
+    <h4 class="page-title text-left">{{ __('app.manual_attendance') }}</h4>
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="javascript:void(0);">Home</a></li>
-        <li class="breadcrumb-item">Manual Attendance</li>
+        <li class="breadcrumb-item"><a href="javascript:void(0);">{{ __('app.breadcrumb_home') }}</a></li>
+        <li class="breadcrumb-item">{{ __('app.manual_attendance') }}</li>
     </ol>
 </div>
 @endsection
@@ -448,9 +448,9 @@
     })->get()->groupBy('emp_id');
 
     $months = [
-        1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',
-        5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',
-        9=>'September',10=>'Oktober',11=>'November',12=>'Desember'
+        1=>__('app.january'),2=>__('app.february'),3=>__('app.march'),4=>__('app.april'),
+        5=>__('app.may'),6=>__('app.june'),7=>__('app.july'),8=>__('app.august'),
+        9=>__('app.september'),10=>__('app.october'),11=>__('app.november'),12=>__('app.december')
     ];
 
     // Kelompokkan tanggal per minggu
@@ -473,7 +473,7 @@
         <div class="filter-bar d-flex flex-wrap align-items-end">
             {{-- Bulan --}}
             <div class="mr-3 mb-2">
-                <label>Bulan</label>
+                <label>{{ __('app.month') }}</label>
                 <select id="filterMonth" class="form-control auto-filter">
                     @foreach($months as $m => $mName)
                         <option value="{{ $m }}" {{ $selMonth == $m ? 'selected' : '' }}>{{ $mName }}</option>
@@ -482,7 +482,7 @@
             </div>
             {{-- Tahun --}}
             <div class="mr-3 mb-2">
-                <label>Tahun</label>
+                <label>{{ __('app.year') }}</label>
                 <select id="filterYear" class="form-control auto-filter">
                     @for($y = 2024; $y <= 2027; $y++)
                         <option value="{{ $y }}" {{ $selYear == $y ? 'selected' : '' }}>{{ $y }}</option>
@@ -491,9 +491,9 @@
             </div>
             {{-- Karyawan --}}
             <div class="mr-3 mb-2">
-                <label>Karyawan</label>
+                <label>{{ __('app.employee') }}</label>
                 <select id="filterEmp" class="form-control auto-filter" style="min-width:160px;">
-                    <option value="all" {{ $selEmp === 'all' ? 'selected' : '' }}>Semua Karyawan</option>
+                    <option value="all" {{ $selEmp === 'all' ? 'selected' : '' }}>{{ __('app.all_employees') }}</option>
                     @foreach($allEmployees as $emp)
                         <option value="{{ $emp->id }}" {{ $selEmp == $emp->id ? 'selected' : '' }}>
                             {{ $emp->name }}
@@ -502,17 +502,17 @@
                 </select>
             </div>
             <div class="sheet-summary mr-3 mb-2">
-                <span class="summary-pill"><strong>{{ $filteredEmployees->count() }}</strong> karyawan</span>
-                <span class="summary-pill"><strong>{{ count($dates) }}</strong> hari</span>
-                <span class="summary-pill"><strong>{{ $workDays }}</strong> hari kerja</span>
+                <span class="summary-pill"><strong>{{ $filteredEmployees->count() }}</strong> {{ __('app.employees_count') }}</span>
+                <span class="summary-pill"><strong>{{ count($dates) }}</strong> {{ __('app.days_count') }}</span>
+                <span class="summary-pill"><strong>{{ $workDays }}</strong> {{ __('app.work_days_count') }}</span>
             </div>
             {{-- Legend --}}
             <div class="ml-auto d-flex align-items-center mb-2 filter-actions">
-                <small><span class="dot-in"></span>In</small>
-                <small><span class="dot-out"></span>Out</small>
-                <small><span style="display:inline-block;width:10px;height:10px;background:var(--amber-bg);border:1px solid var(--border);border-radius:2px;margin-right:3px;"></span>Minggu</small>
-                <small><span style="display:inline-block;width:10px;height:10px;background:var(--blue-bg);border:1px solid var(--border);border-radius:2px;margin-right:3px;"></span>Sabtu</small>
-                <small><i class="mdi mdi-cursor-default-click"></i> Klik cell untuk edit</small>
+                <small><span class="dot-in"></span>{{ __('app.scan_in') }}</small>
+                <small><span class="dot-out"></span>{{ __('app.scan_out') }}</small>
+                <small><span style="display:inline-block;width:10px;height:10px;background:var(--amber-bg);border:1px solid var(--border);border-radius:2px;margin-right:3px;"></span>{{ __('app.sunday_label') }}</small>
+                <small><span style="display:inline-block;width:10px;height:10px;background:var(--blue-bg);border:1px solid var(--border);border-radius:2px;margin-right:3px;"></span>{{ __('app.saturday_label') }}</small>
+                <small><i class="mdi mdi-cursor-default-click"></i> {{ __('app.cell_edit_hint') }}</small>
             </div>
         </div>
 
@@ -535,8 +535,8 @@
                             {{-- Baris 1: Week group --}}
                             <tr class="header-row-1">
                                 <th>ID</th>
-                                <th>Nama</th>
-                                <th>Jabatan</th>
+                                <th>{{ __('app.name') }}</th>
+                                <th>{{ __('app.position') }}</th>
                                 @foreach($weeks as $wIdx => $weekDates)
                                     @php
                                         $wStart = $weekDates[0]->format('d');
@@ -544,7 +544,7 @@
                                     @endphp
                                     <th colspan="{{ count($weekDates) }}"
                                         class="week-group-th {{ $wIdx > 0 ? 'week-header-sep' : '' }}">
-                                        Minggu {{ $wIdx+1 }} &nbsp;
+                                        {{ __('app.week') }} {{ $wIdx+1 }} &nbsp;
                                         <span style="font-weight:400;opacity:0.7;">{{ $wStart }}–{{ $wEnd }}</span>
                                     </th>
                                 @endforeach
@@ -568,7 +568,7 @@
                                         <th class="{{ $cls }} {{ $sep }}">
                                             <span class="header-date">
                                                 <span>{{ $dateObj->format('d') }}</span>
-                                                <span class="header-date-day">{{ $dateObj->locale('id')->isoFormat('ddd') }}</span>
+                                                <span class="header-date-day">{{ $dateObj->locale(app()->getLocale())->isoFormat('ddd') }}</span>
                                             </span>
                                         </th>
                                     @endforeach
@@ -607,7 +607,7 @@
                                                 $outVal = $check && $check->leave_time
                                                     ? \Carbon\Carbon::parse($check->leave_time)->format('H:i')
                                                     : '';
-                                                $dayLabel = $dateObj->locale('id')->isoFormat('dddd, D MMM YYYY');
+                                                $dayLabel = $dateObj->locale(app()->getLocale())->isoFormat('dddd, D MMM YYYY');
                                                 $statusCls = $inVal && $outVal ? 'status-complete' : (($inVal || $outVal) ? 'status-partial' : 'status-empty');
                                             @endphp
                                             <td class="time-cell {{ $statusCls }} {{ $cls }} {{ $sep }}"
@@ -621,7 +621,7 @@
                                                 data-original-out="{{ $outVal }}"
                                                 role="button"
                                                 tabindex="0"
-                                                aria-label="Edit absensi {{ $employee->name }} pada {{ $dayLabel }}"
+                                                aria-label="{{ __('app.edit_attendance_aria', ['name' => $employee->name, 'day' => $dayLabel]) }}"
                                                 onclick="openEditModal(this)">
                                                 @if($inVal || $outVal)
                                                     <span class="t-in">{{ $inVal ?: '--:--' }}</span>
@@ -637,8 +637,8 @@
                             @empty
                                 <tr class="empty-state-row">
                                     <td colspan="{{ 3 + count($dates) }}">
-                                        <span class="empty-state-title">Tidak ada karyawan</span>
-                                        Data karyawan tidak ditemukan untuk filter ini.
+                                        <span class="empty-state-title">{{ __('app.no_employees') }}</span>
+                                        {{ __('app.no_employees_for_filter') }}
                                     </td>
                                 </tr>
                             @endforelse
@@ -663,36 +663,36 @@
                         <div class="edit-emp-label"  id="modalEmpLabel">-</div>
                     </div>
                 </div>
-                <button type="button" class="close edit-close" data-dismiss="modal" aria-label="Tutup">
+                <button type="button" class="close edit-close" data-dismiss="modal" aria-label="{{ __('app.close') }}">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body pb-2 pt-3">
                 <div id="modalSaveFeedback" class="save-feedback is-error d-none"></div>
                 <div class="mb-3">
-                    <label class="time-field-label" for="modalIn"><span class="dot-in"></span> Scan In</label>
+                    <label class="time-field-label" for="modalIn"><span class="dot-in"></span> {{ __('app.scan_in') }}</label>
                     <div class="time-input-row">
                         <input type="time" id="modalIn" class="form-control" step="60">
-                        <button type="button" class="btn btn-outline-secondary btn-clear-time" aria-label="Kosongkan scan in" title="Kosongkan scan in" onclick="clearTimeInput('modalIn')">
+                        <button type="button" class="btn btn-outline-secondary btn-clear-time" aria-label="{{ __('app.clear_scan_in') }}" title="{{ __('app.clear_scan_in') }}" onclick="clearTimeInput('modalIn')">
                             <i class="mdi mdi-close"></i>
                         </button>
                     </div>
                 </div>
                 <div class="mb-3">
-                    <label class="time-field-label" for="modalOut"><span class="dot-out"></span> Scan Out</label>
+                    <label class="time-field-label" for="modalOut"><span class="dot-out"></span> {{ __('app.scan_out') }}</label>
                     <div class="time-input-row">
                         <input type="time" id="modalOut" class="form-control" step="60">
-                        <button type="button" class="btn btn-outline-secondary btn-clear-time" aria-label="Kosongkan scan out" title="Kosongkan scan out" onclick="clearTimeInput('modalOut')">
+                        <button type="button" class="btn btn-outline-secondary btn-clear-time" aria-label="{{ __('app.clear_scan_out') }}" title="{{ __('app.clear_scan_out') }}" onclick="clearTimeInput('modalOut')">
                             <i class="mdi mdi-close"></i>
                         </button>
                     </div>
                 </div>
-                <div class="manual-save-note">Kosongkan Scan In dan Scan Out untuk menghapus data hari ini.</div>
+                <div class="manual-save-note">{{ __('app.clear_day_attendance_hint') }}</div>
             </div>
             <div class="modal-footer py-2">
-                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">{{ __('app.cancel') }}</button>
                 <button type="button" class="btn btn-primary btn-sm" id="btnSaveCell">
-                    <i class="mdi mdi-content-save mr-1"></i><span class="save-cell-label">Simpan</span>
+                    <i class="mdi mdi-content-save mr-1"></i><span class="save-cell-label">{{ __('app.save') }}</span>
                 </button>
             </div>
         </div>
@@ -773,7 +773,7 @@ $('#btnSaveCell').on('click', function() {
     }).fail(function(xhr) {
         const message = xhr.responseJSON && xhr.responseJSON.message
             ? xhr.responseJSON.message
-            : 'Data belum tersimpan. Coba lagi.';
+            : '{{ __('app.data_not_saved_retry') }}';
         showModalFeedback(message);
     }).always(function() {
         cell.classList.remove('is-saving');
@@ -830,7 +830,7 @@ function showModalFeedback(message) {
 function setModalSaving(isSaving) {
     const btn = $('#btnSaveCell');
     btn.prop('disabled', isSaving);
-    btn.find('.save-cell-label').text(isSaving ? 'Menyimpan...' : 'Simpan');
+    btn.find('.save-cell-label').text(isSaving ? '{{ __('app.saving') }}' : '{{ __('app.save') }}');
     $('#modalIn, #modalOut, .btn-clear-time').prop('disabled', isSaving);
 }
 
@@ -862,7 +862,7 @@ document.querySelectorAll('.auto-filter').forEach(el => {
     el.addEventListener('change', () => {
         const overlay = document.getElementById('tableLoadingOverlay');
         const loadingText = overlay ? overlay.querySelector('.table-loading-text') : null;
-        if (loadingText) loadingText.textContent = 'Memuat data...';
+        if (loadingText) loadingText.textContent = '{{ __('app.loading') }}';
         if (overlay) overlay.style.display = 'flex';
         const month = document.getElementById('filterMonth').value;
         const year  = document.getElementById('filterYear').value;
