@@ -41,24 +41,24 @@
 
         <!-- dark mode toggle -->
         <li class="dropdown notification-list d-none d-md-block">
-            <a class="nav-link waves-effect" href="#" id="btn-dark-mode" title="Toggle Dark Mode">
+            <a class="nav-link waves-effect" href="#" id="btn-dark-mode" title="{{ __('app.dark_mode') }}">
                 <i class="mdi mdi-weather-night noti-icon"></i>
             </a>
         </li>
         <li class="dropdown notification-list">
             <div class="dropdown notification-list nav-pro-img">
                 <a class="dropdown-toggle nav-link arrow-none waves-effect nav-user" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
-                    <img src="assets/images/profile1.png" alt="user" class="rounded-circle">
+                    <img src="assets/images/profile1.png" alt="{{ __('app.profile') }}" class="rounded-circle">
                 </a>
                 <div class="dropdown-menu dropdown-menu-right profile-dropdown ">
                     <!-- item-->
-                    <a class="dropdown-item" href="#"><i class="mdi mdi-account-circle m-r-5"></i> Profile</a>
+                    <a class="dropdown-item" href="#"><i class="mdi mdi-account-circle m-r-5"></i> {{ __('app.profile') }}</a>
             
                     {{-- <a class="dropdown-item d-block" href="#"><span class="badge badge-success float-right">11</span><i class="mdi mdi-settings m-r-5"></i> Settings</a> --}}
-                    <a class="dropdown-item" href="#"><i class="mdi mdi-lock-open-outline m-r-5"></i> Lock screen</a>
+                    <a class="dropdown-item" href="#"><i class="mdi mdi-lock-open-outline m-r-5"></i> {{ __('app.lock_screen') }}</a>
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item text-danger" href="{{ route('logout') }}" onclick="event.preventDefault();
-                    document.getElementById('logout-form').submit();"><i class="mdi mdi-power text-danger"></i> {{ __('Logout') }}</a>
+                    document.getElementById('logout-form').submit();"><i class="mdi mdi-power text-danger"></i> {{ __('app.logout') }}</a>
                     <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                     @csrf
                 </form>
