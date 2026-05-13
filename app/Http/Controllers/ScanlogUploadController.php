@@ -118,7 +118,7 @@ class ScanlogUploadController extends Controller
         if (empty($rawRows)) {
             return response()->json([
                 'success' => false,
-                'message' => 'File CSV kosong atau format tidak valid. Pastikan menggunakan template yang benar.',
+                'message' => __('app.csv_empty_or_invalid'),
             ], 422);
         }
 
@@ -176,7 +176,7 @@ class ScanlogUploadController extends Controller
         if (empty($grouped)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Tidak ada baris data yang valid. Cek format tanggal (YYYY-MM-DD) dan nama kolom.',
+                'message' => __('app.csv_no_valid_rows'),
             ], 422);
         }
 
@@ -210,7 +210,7 @@ class ScanlogUploadController extends Controller
             'total_rows'      => $totalRows,
             'found_count'     => $foundCount,
             'not_found_count' => $notFoundCount,
-            'message'         => count($employees) . ' karyawan, ' . $totalRows . ' record berhasil dibaca dari CSV.',
+            'message'         => __('app.csv_read_summary', ['employees' => count($employees), 'records' => $totalRows]),
         ]);
     }
 
@@ -226,7 +226,7 @@ class ScanlogUploadController extends Controller
         $createNew      = (bool) $request->input('create_employees', false);
 
         if (json_last_error() !== JSON_ERROR_NONE || empty($employees)) {
-            return response()->json(['success' => false, 'message' => 'Data JSON tidak valid.'], 422);
+            return response()->json(['success' => false, 'message' => __('app.json_invalid')], 422);
         }
 
         $totalInserted    = 0;
@@ -259,7 +259,7 @@ class ScanlogUploadController extends Controller
                 $details[] = [
                     'nama'    => $empName,
                     'status'  => 'not_found',
-                    'message' => 'Karyawan tidak ditemukan di database.',
+                    'message' => __('app.employee_not_found_db'),
                 ];
                 continue;
             }
@@ -330,9 +330,9 @@ class ScanlogUploadController extends Controller
         Log::info('[CSV Import] emp_created=' . $totalEmpCreated . ' inserted=' . $totalInserted
             . ' updated=' . $totalUpdated . ' skipped=' . $totalSkipped . ' not_found=' . $totalNotFound);
 
-        $msg = "Import selesai: {$totalInserted} ditambahkan, {$totalUpdated} diperbarui, {$totalSkipped} dilewati";
-        if ($totalEmpCreated > 0) $msg .= ", {$totalEmpCreated} karyawan baru dibuat";
-        if ($totalNotFound    > 0) $msg .= ", {$totalNotFound} tidak ditemukan di database";
+        $msg = __('app.import_done_summary', ['inserted' => $totalInserted, 'updated' => $totalUpdated, 'skipped' => $totalSkipped]);
+        if ($totalEmpCreated > 0) $msg .= __('app.employees_created_suffix', ['count' => $totalEmpCreated]);
+        if ($totalNotFound    > 0) $msg .= __('app.not_found_suffix', ['count' => $totalNotFound]);
 
         return response()->json([
             'success' => true,

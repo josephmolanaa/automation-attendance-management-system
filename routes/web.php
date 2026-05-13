@@ -14,9 +14,18 @@ Auth::routes(['register' => false, 'reset' => false]);
 
 // Language Switcher
 Route::get('/lang/{locale}', function ($locale) {
-    if (in_array($locale, config('app.available_locales'))) {
-        session(['locale' => $locale]);
+    $switcher = new \App\Services\Translation\LanguageSwitcher();
+    $result = $switcher->switchLocale($locale);
+    
+    if (!$result->isSuccessful()) {
+        // Flash error message if switch failed
+        session()->flash('error', $result->getError());
+    } else {
+        // Flash success message
+        $localeName = $locale === 'id' ? 'Indonesia' : 'English';
+        session()->flash('success', __('app.language_switched', ['locale' => $localeName]));
     }
+    
     return redirect()->back();
 })->name('lang.switch');
 
