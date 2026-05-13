@@ -8,10 +8,11 @@ use Illuminate\Support\Facades\Log;
 
 class HolidayService
 {
-    const API_PRIMARY  = 'https://libur.deno.dev/api';
+    const API_PRIMARY = 'https://libur.deno.dev/api';
     const API_FALLBACK = 'https://api-hari-libur.vercel.app/api';
 
-    public static function isHoliday(string $date): bool {
+    public static function isHoliday(string $date): bool
+    {
         $carbon = \Carbon\Carbon::parse($date);
         return in_array($date, self::getHolidays($carbon->year, $carbon->month));
     }
@@ -32,14 +33,15 @@ class HolidayService
     {
         try {
             $response = Http::timeout(5)->get(self::API_PRIMARY, [
-                'year' => $year, 'month' => $month,
+                'year' => $year,
+                'month' => $month,
             ]);
             if ($response->successful()) {
                 return collect($response->json())
-                    ->filter(function($item) {
+                    ->filter(function ($item) {
                         return !isset($item['is_national_holiday']) || $item['is_national_holiday'] === true;
                     })
-                    ->map(function($item) {
+                    ->map(function ($item) {
                         return $item['holiday_date'] ?? $item['date'] ?? null;
                     })
                     ->filter()
@@ -56,7 +58,8 @@ class HolidayService
     {
         try {
             $response = Http::timeout(5)->get(self::API_FALLBACK, [
-                'year' => $year, 'month' => $month,
+                'year' => $year,
+                'month' => $month,
             ]);
             if ($response->successful()) {
                 $json = $response->json();
@@ -80,7 +83,7 @@ class HolidayService
             return $override->override_type;
         }
 
-        $carbon    = \Carbon\Carbon::parse($date);
+        $carbon = \Carbon\Carbon::parse($date);
         $dayOfWeek = $carbon->dayOfWeek;
 
         // 2. Minggu atau tanggal merah API → holiday
