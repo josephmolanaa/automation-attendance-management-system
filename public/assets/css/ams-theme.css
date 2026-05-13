@@ -699,7 +699,6 @@ label {
 .enlarged #wrapper .topbar .topbar-left .logo i { line-height: var(--topbar-h) !important; display: flex !important; align-items: center !important; justify-content: center !important; height: 100% !important; color: var(--text) !important; }
 .enlarged #wrapper .left.side-menu #sidebar-menu > ul > li > a > span { display: none !important; }
 .enlarged #wrapper .left.side-menu #sidebar-menu > ul > li:hover > a > span { display: none !important; }
-.enlarged #wrapper .left.side-menu #sidebar-menu ul ul li a span { display: inline !important; }
 .enlarged #wrapper .left.side-menu #sidebar-menu .menu-title { display: none !important; }
 .enlarged #wrapper .left.side-menu #sidebar-menu > ul > li > a i { font-size: 20px !important; margin: 0 !important; width: 20px !important; text-align: center !important; }
 .enlarged #wrapper .left.side-menu #sidebar-menu > ul > li > a { 
@@ -721,10 +720,13 @@ label {
   background-color: var(--surface2) !important;
 }
 .enlarged #wrapper .left.side-menu #sidebar-menu ul > li:hover > ul {
-  background-color: var(--surface) !important;
-  border: 1px solid var(--border2) !important;
-  border-radius: var(--radius-lg) !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+  display: none !important;
+}
+.enlarged #wrapper .left.side-menu #sidebar-menu ul > li:hover > a > span {
+  display: none !important;
+}
+.enlarged #wrapper .left.side-menu #sidebar-menu ul ul li:hover > ul {
+  display: none !important;
 }
 .enlarged #wrapper .left.side-menu #sidebar-menu ul ul li > a:hover {
   color: var(--accent) !important;
