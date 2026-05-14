@@ -18,7 +18,7 @@ RUN docker-php-ext-install pdo pdo_mysql mbstring gd zip xml bcmath opcache intl
 ENV VIRTUAL_ENV=/opt/ocr-venv
 ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
 RUN python3 -m venv "${VIRTUAL_ENV}" \
-    && python -m pip install --upgrade pip setuptools wheel
+    && python -m pip --version
 
 # Fix MPM conflict: hapus symlink event & worker secara langsung (lebih reliable dari a2dismod)
 RUN rm -f /etc/apache2/mods-enabled/mpm_event.conf \
@@ -35,7 +35,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 RUN composer install --no-dev --optimize-autoloader
 
 # Install Python dependencies for OCR service
-RUN pip install --no-cache-dir -r ocr_service/requirements.txt
+RUN pip install --no-cache-dir --retries 5 --timeout 60 -r ocr_service/requirements.txt
 
 RUN mkdir -p storage/logs bootstrap/cache && chmod -R 755 storage bootstrap/cache
 
