@@ -54,7 +54,7 @@
             position: sticky !important;
             top: 0 !important;
             z-index: 10 !important;
-            background: #f8f9fa !important;
+            background: var(--surface) !important;
             box-shadow: 0 2px 2px -1px rgba(0,0,0,0.15) !important;
         }
     </style>
