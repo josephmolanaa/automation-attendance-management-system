@@ -46,7 +46,24 @@
             font-size: 120px;
             margin: 0 150px;
             padding: 10px;
-            color: #1A1917;
+            color: var(--text, #1A1917);
             width: 900px;
             text-align: center;
+        }
+
+        .welcome-date {
+            color: var(--text2, #6B6860) !important;
+            font-size: 20px;
+            text-align: center;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+
+        :root.dark-mode .clockStyle {
+            color: #F7F6F3 !important;
+            text-shadow: 0 0 28px rgba(247, 246, 243, 0.08);
+        }
+
+        :root.dark-mode .welcome-date {
+            color: #D0CCC4 !important;
         }

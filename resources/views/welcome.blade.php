@@ -28,7 +28,7 @@
             <div class="title m-b-md">
                 <div class="title m-b-md">
                     <div class="clockStyle" id="clock">123</div>
-                    <div id="date" style="color: #6B6860; font-size: 20px; text-align: center; margin-top: 10px; font-weight: 500;"></div>
+                    <div id="date" class="welcome-date"></div>
                     @if (Route::has('login'))
                         <div style="text-align:center; margin-top: 28px;">
                             @auth
