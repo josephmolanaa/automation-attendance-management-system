@@ -29,7 +29,7 @@
                     </div>
                     <div class="form-group">
                         <label for="schedule" class="col-sm-3 control-label">{{ __('app.schedule') }}</label>
-                        <select class="form-control" id="schedule" name="schedule" required>
+                        <select class="form-control" id="schedule" name="schedule">
                             <option value="" selected>- {{ __('app.select') }} -</option>
                             @foreach ($schedules as $schedule)
                                 <option value="{{ $schedule->slug }}">{{ $schedule->slug }} -> {{ __('app.from') }} {{ $schedule->time_in }} {{ __('app.to_time') }} {{ $schedule->time_out }}</option>
