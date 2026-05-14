@@ -527,14 +527,14 @@ hr { border-color: var(--border2) !important; }
 
 .btn-primary {
   background: var(--accent) !important;
-  color: #fff !important;
+  color: var(--accent-text) !important;
   border-color: var(--accent) !important;
   box-shadow: none !important;
 }
-.btn-primary:hover { opacity: 0.88 !important; background: var(--accent) !important; color: #fff !important; }
+.btn-primary:hover { opacity: 0.88 !important; background: var(--accent) !important; color: var(--accent-text) !important; }
 .btn-primary i,
 .btn-primary span {
-  color: #fff !important;
+  color: var(--accent-text) !important;
 }
 
 .btn-success {
