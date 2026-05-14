@@ -2,6 +2,27 @@
 
 @section('css')
 <style>
+    :root {
+        --check-table-bg: #FFFFFF;
+        --check-table-header-bg: #EDECEA;
+        --check-table-border: #DDDDDD;
+        --check-table-text: var(--text);
+        --check-table-muted: var(--text2);
+        --check-table-header-text: #555555;
+        --check-table-hover-bg: #FAF9F6;
+        --check-frozen-separator: #AAAAAA;
+    }
+    :root.dark-mode {
+        --check-table-bg: var(--surface);
+        --check-table-header-bg: #242424;
+        --check-table-border: var(--border);
+        --check-table-text: var(--text);
+        --check-table-muted: var(--text2);
+        --check-table-header-text: var(--text2);
+        --check-table-hover-bg: var(--surface2);
+        --check-frozen-separator: var(--border);
+    }
+
     /* ── Filter bar ── */
     .filter-bar { background: var(--surface); border:1px solid var(--border2); border-radius:10px; padding:14px 18px; margin-bottom:14px; }
     .filter-bar label { font-size:10px; font-weight:600; color:var(--text3); margin-bottom:4px; display:block; text-transform:uppercase; letter-spacing:.5px; }
@@ -78,8 +99,9 @@
         padding: 5px 6px !important;
         vertical-align: middle !important;
         text-align: center;
-        border: 1px solid #ddd !important;
-        background-color: #fff;
+        border: 1px solid var(--check-table-border) !important;
+        background-color: var(--check-table-bg);
+        color: var(--check-table-text);
         box-sizing: border-box;
     }
     .check-table tbody td:nth-child(2) {
@@ -87,19 +109,19 @@
         font-weight: 600;
     }
     .check-table tbody td:nth-child(3) {
-        color: var(--text2);
+        color: var(--check-table-muted);
         font-size: 11px;
     }
     .check-table tbody tr:hover td:not(.day-sunday):not(.day-saturday):not(.day-today) {
-        background-color: #FAF9F6 !important;
+        background-color: var(--check-table-hover-bg) !important;
     }
-    .check-table tbody tr:hover td.day-sunday { background: #F7E7CB !important; }
-    .check-table tbody tr:hover td.day-saturday { background: #DDECF8 !important; }
-    .check-table tbody tr:hover td.day-today { background: #DFEED0 !important; }
+    .check-table tbody tr:hover td.day-sunday { background: var(--amber-bg) !important; }
+    .check-table tbody tr:hover td.day-saturday { background: var(--blue-bg) !important; }
+    .check-table tbody tr:hover td.day-today { background: var(--green-bg) !important; }
     .check-table tbody tr:hover td:nth-child(1),
     .check-table tbody tr:hover td:nth-child(2),
     .check-table tbody tr:hover td:nth-child(3) {
-        background: #FAF9F6 !important;
+        background: var(--check-table-hover-bg) !important;
     }
 
     /* ═══ FROZEN COLUMNS (ID, Nama, Jabatan) ═══ */
@@ -109,11 +131,11 @@
         text-align: left;
         position: sticky !important;
         z-index: 400 !important;
-        background-color: #fff !important;
+        background-color: var(--check-table-bg) !important;
         opacity: 1 !important;
         transform: translateZ(0); /* Force stacking context */
         /* Cover sub-pixel gaps at fractional zoom levels */
-        box-shadow: 0 0 0 2px #fff;
+        box-shadow: 0 0 0 2px var(--check-table-bg);
     }
     /* Col 1: ID */
     .check-table th:nth-child(1),
@@ -124,8 +146,8 @@
     /* Col 3: Jabatan — thick right border as visual separator */
     .check-table th:nth-child(3),
     .check-table td:nth-child(3) {
-        left: 172px !important; min-width: 72px; width: 72px; max-width: 72px;
-        border-right: 2px solid #aaa !important;
+        left: 172px !important; min-width: 96px; width: 96px; max-width: 96px;
+        border-right: 2px solid var(--check-frozen-separator) !important;
     }
     .check-table th:nth-child(2),
     .check-table td:nth-child(2),
@@ -137,9 +159,9 @@
 
     /* ═══ FROZEN HEADER ROWS ═══ */
     .check-table thead th {
-        background-color: #EDECEA !important;
+        background-color: var(--check-table-header-bg) !important;
         font-weight: 600;
-        color: #555;
+        color: var(--check-table-header-text);
         font-size: 10px;
         text-transform: uppercase;
         letter-spacing: .3px;
@@ -150,7 +172,7 @@
         transform: translateZ(0); /* Force stacking context */
         opacity: 1 !important;
         /* Cover sub-pixel gaps at fractional zoom levels */
-        box-shadow: 0 0 0 2px #EDECEA;
+        box-shadow: 0 0 0 2px var(--check-table-header-bg);
     }
     /* Row 1 (Week groups): stick to top */
     .header-row-1 th {
@@ -190,7 +212,7 @@
     .check-table thead th:nth-child(2),
     .check-table thead th:nth-child(3) {
         z-index: 600 !important;
-        background-color: #EDECEA !important;
+        background-color: var(--check-table-header-bg) !important;
         opacity: 1 !important;
         transform: translateZ(0);
         text-align: left;
@@ -526,7 +548,7 @@
                         <colgroup>
                             <col style="width:42px;">
                             <col style="width:130px;">
-                            <col style="width:72px;">
+                            <col style="width:96px;">
                             @foreach($dates as $dateObj)
                                 <col style="width:64px;">
                             @endforeach
@@ -709,12 +731,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Force body cell backgrounds for frozen columns (col 1, 2, 3)
     table.querySelectorAll('tbody td:nth-child(1), tbody td:nth-child(2), tbody td:nth-child(3)').forEach(function(td) {
-        td.style.setProperty('background-color', '#ffffff', 'important');
+        td.style.setProperty('background-color', 'var(--check-table-bg)', 'important');
     });
 
     // Force header cell backgrounds
     table.querySelectorAll('thead th').forEach(function(th) {
-        th.style.setProperty('background-color', '#EDECEA', 'important');
+        th.style.setProperty('background-color', 'var(--check-table-header-bg)', 'important');
     });
 });
 
