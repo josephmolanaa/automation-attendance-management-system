@@ -609,7 +609,11 @@
                                 <tr>
                                     <td>{{ $employee->id }}</td>
                                     <td>{{ $employee->name }}</td>
-                                    <td>{{ $employee->position ?? '-' }}</td>
+                                    @php
+                                        $position = trim((string) ($employee->position ?? ''));
+                                        $positionKey = 'app.position_values.' . mb_strtolower($position);
+                                    @endphp
+                                    <td>{{ $position !== '' ? (\Illuminate\Support\Facades\Lang::has($positionKey) ? __($positionKey) : $position) : '-' }}</td>
 
                                     @foreach($weeks as $wIdx => $weekDates)
                                         @foreach($weekDates as $dIdx => $dateObj)

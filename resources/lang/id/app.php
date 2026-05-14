@@ -593,4 +593,7 @@ return [
     'import_done_summary' => 'Import selesai: :inserted ditambahkan, :updated diperbarui, :skipped dilewati',
     'employees_created_suffix' => ', :count karyawan baru dibuat',
     'not_found_suffix' => ', :count tidak ditemukan di database',
+    'position_values' => [
+        'karyawan' => 'Karyawan',
+    ],
 ];

@@ -595,4 +595,7 @@ return [
     'import_done_summary' => 'Import complete: :inserted inserted, :updated updated, :skipped skipped',
     'employees_created_suffix' => ', :count new employees created',
     'not_found_suffix' => ', :count not found in database',
+    'position_values' => [
+        'karyawan' => 'Employee',
+    ],
 ];
