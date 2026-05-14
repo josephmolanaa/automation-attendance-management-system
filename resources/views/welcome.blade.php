@@ -1,6 +1,12 @@
 @include('layouts.welcome')
 
 <style>
+    .clockStyle {
+        color: #1A1917 !important;
+    }
+    :root.dark-mode .clockStyle {
+        color: #F7F6F3 !important;
+    }
     .welcome-btn {
         display: inline-flex !important;
         align-items: center !important;
