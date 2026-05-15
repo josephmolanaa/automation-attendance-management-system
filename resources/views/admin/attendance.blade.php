@@ -5,58 +5,26 @@
         /* Hide Focus button from RWD plugin */
         .btn-focus-column, [id*="focus"], button[id*="focus"] { display: none !important; }
 
-        .dataTables_length,
-        .dataTables_filter {
-            display: flex !important;
-            align-items: center !important;
-            gap: 8px !important;
-            font-size: 15px !important;
-        }
         .dataTables_length label,
-        .dataTables_filter label {
-            display: flex !important;
-            align-items: center !important;
-            gap: 6px !important;
-            margin-bottom: 0 !important;
-            font-size: 15px !important;
-            white-space: nowrap !important;
-        }
+        .dataTables_filter label,
+        .dataTables_length select,
+        .dataTables_filter input { font-size: 14px !important; }
         .dataTables_length select {
-            height: 38px !important;
-            font-size: 15px !important;
-            width: 80px !important;
+            height: 36px !important;
+            width: 75px !important;
             padding: 4px 8px !important;
-            border-radius: 6px !important;
-            border: 1px solid #ced4da !important;
             background-image: none !important;
             -webkit-appearance: auto !important;
-            -moz-appearance: auto !important;
             appearance: auto !important;
         }
         .dataTables_filter input {
-            height: 38px !important;
-            font-size: 15px !important;
+            height: 36px !important;
             padding: 4px 10px !important;
             border-radius: 6px !important;
             border: 1px solid #ced4da !important;
         }
-        .dataTables_info,
-        .dataTables_paginate {
-            font-size: 14px !important;
-            padding-top: 10px !important;
-        }
-        .dataTables_paginate .paginate_button { font-size: 14px !important; }
         .dt-buttons { display: flex !important; align-items: center !important; gap: 6px !important; }
         .dt-buttons .btn { height: 38px !important; font-size: 14px !important; display: flex !important; align-items: center !important; }
-
-        /* Sticky header */
-        #attendance-table thead th {
-            position: sticky !important;
-            top: 0 !important;
-            z-index: 10 !important;
-            background: var(--surface) !important;
-            box-shadow: 0 2px 2px -1px rgba(0,0,0,0.15) !important;
-        }
     </style>
     <link href="{{ URL::asset('plugins/datatables/buttons.bootstrap4.min.css') }}" rel="stylesheet" type="text/css">
 @endsection
@@ -84,8 +52,7 @@
                 <div class="card-body">
 
                     {{-- Filter Bar + Holiday Manager --}}
-                    <div class="d-flex flex-wrap justify-content-between align-items-end mb-3">
-                    <div class="d-flex flex-wrap" style="gap:10px; align-items:flex-end">
+                    <div class="d-flex flex-wrap" style="gap:10px; align-items:flex-end; margin-bottom:16px;">
                         <div>
                             <label>{{ __('app.month') }}</label>
                             <select id="filterMonth" class="form-control">
@@ -125,30 +92,31 @@
                             <label>&nbsp;</label>
                             <button id="btnReset" class="btn btn-secondary d-block">{{ __('app.reset') }}</button>
                         </div>
-                    </div>
-                    <div>
-                        <label>&nbsp;</label>
-                        <button class="btn btn-warning d-block" data-toggle="modal" data-target="#holidayManagerModal" style="height:38px;font-size:14px;">
-                            <i class="mdi mdi-calendar-edit mr-1"></i> {{ __('app.holiday_manager') }}
-                        </button>
-                    </div>
+                        <div>
+                            <label>&nbsp;</label>
+                            <button class="btn btn-warning d-block" data-toggle="modal" data-target="#holidayManagerModal" style="height:38px;font-size:14px;">
+                                <i class="mdi mdi-calendar-edit mr-1"></i> {{ __('app.holiday_manager') }}
+                            </button>
+                        </div>
                     </div>
 
-                    <div class="table-responsive mb-0">
-                        <table id="attendance-table" class="table table-striped table-bordered nowrap" style="border-collapse: collapse; border-spacing: 0; width: 100%; font-size: 14px;">
-                            <thead>
-                                <tr>
-                                    <th style="min-width:120px">{{ __('app.employee_id') }}</th>
-                                    <th style="min-width:180px">{{ __('app.name') }}</th>
-                                    <th style="min-width:140px">{{ __('app.shift') }}</th>
-                                    <th style="min-width:100px">{{ __('app.status') }}</th>
-                                    <th style="min-width:110px">{{ __('app.date') }}</th>
-                                    <th style="min-width:100px">{{ __('app.time_in') }}</th>
-                                    <th style="min-width:100px">{{ __('app.time_out') }}</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
+                    <div class="table-rep-plugin">
+                        <div class="table-responsive mb-0">
+                            <table id="attendance-table" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%;font-size:14px;">
+                                <thead>
+                                    <tr>
+                                        <th>{{ __('app.employee_id') }}</th>
+                                        <th>{{ __('app.name') }}</th>
+                                        <th>{{ __('app.shift') }}</th>
+                                        <th>{{ __('app.status') }}</th>
+                                        <th>{{ __('app.date') }}</th>
+                                        <th>{{ __('app.time_in') }}</th>
+                                        <th>{{ __('app.time_out') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
