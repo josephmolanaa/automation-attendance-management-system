@@ -16,7 +16,7 @@
 <nav class="navbar-custom">
     <ul class="navbar-right d-flex list-inline float-right mb-0">
         <!-- language-->
-        <li class="dropdown notification-list d-none d-md-block">
+        <li class="dropdown notification-list">
             <a class="nav-link dropdown-toggle arrow-none waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
                 @if(app()->getLocale() == 'id')
                     <img src="/assets/images/flags/indonesia_flag.png" class="mr-2" height="12" alt="" onerror="this.style.display='none'"/> 
@@ -40,7 +40,7 @@
         </li>
 
         <!-- dark mode toggle -->
-        <li class="dropdown notification-list d-none d-md-block">
+        <li class="dropdown notification-list">
             <a class="nav-link waves-effect" href="#" id="btn-dark-mode" title="{{ __('app.dark_mode') }}">
                 <i class="mdi mdi-weather-night noti-icon"></i>
             </a>
