@@ -48,6 +48,18 @@
             event.preventDefault();
             $("body").toggleClass("enlarged");
         });
+
+        // Close sidebar on backdrop click (mobile)
+        $(document).on('click', function(e) {
+            if ($(window).width() <= 768) {
+                // If sidebar is open and click is outside sidebar & hamburger
+                if (!$('body').hasClass('enlarged') &&
+                    !$(e.target).closest('.left.side-menu').length &&
+                    !$(e.target).closest('.button-menu-mobile').length) {
+                    $('body').addClass('enlarged');
+                }
+            }
+        });
     },
 
     MainApp.prototype.initEnlarge = function () {
@@ -56,6 +68,15 @@
         } else {
             $('body').removeClass('enlarged');
         }
+
+        // Re-sync on resize
+        $(window).on('resize', function() {
+            if ($(window).width() < 1025) {
+                if (!$('body').hasClass('enlarged')) {
+                    $('body').addClass('enlarged');
+                }
+            }
+        });
     },
 
     MainApp.prototype.initActiveMenu = function () {
@@ -128,5 +149,3 @@ function ($) {
     "use strict";
     $.MainApp.init();
 }(window.jQuery);
-
-
