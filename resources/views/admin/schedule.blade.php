@@ -4,6 +4,7 @@
     <!-- Table css -->
     <link href="{{ URL::asset('plugins/RWD-Table-Patterns/dist/css/rwd-table.min.css') }}" rel="stylesheet"
         type="text/css" media="screen">
+    @include('includes.datatable-controls-style')
 @endsection
 
 @section('breadcrumb')
@@ -37,15 +38,15 @@
             <div class="card">
                 <div class="card-body">
                     <div class="table-rep-plugin">
-                        <div class="table-responsive mb-0" data-pattern="priority-columns">
-                            <table id="datatable-buttons" class="table table-striped table-bordered dt-responsive nowrap" style="border-collapse: collapse; border-spacing: 0; width: 100%;">
+                        <div class="table-responsive mb-0">
+                            <table id="schedule-table" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%;font-size:14px;">
                                 <thead>
                                     <tr>
-                                        <th data-priority="1">{{ __('app.id') }}</th>
-                                        <th data-priority="2">{{ __('app.shift') }}</th>
-                                        <th data-priority="3">{{ __('app.time_in') }}</th>
-                                        <th data-priority="4">{{ __('app.time_out') }}</th>
-                                        <th data-priority="5">{{ __('app.action') }}</th>
+                                        <th>{{ __('app.id') }}</th>
+                                        <th>{{ __('app.shift') }}</th>
+                                        <th>{{ __('app.time_in') }}</th>
+                                        <th>{{ __('app.time_out') }}</th>
+                                        <th>{{ __('app.action') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -83,8 +84,13 @@
 @section('script-bottom')
     <script>
         $(function() {
-            $('.table-responsive').responsiveTable({
-                addDisplayAllBtn: 'btn btn-secondary'
+            $('#schedule-table').DataTable({
+                destroy: true,
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, '{{ __('app.all') }}']],
+                dom: '<"d-flex justify-content-between align-items-center mb-2"lf>rtip',
+                order: [[0, 'asc']],
+                language: window.DataTableLang,
             });
         });
     </script>
