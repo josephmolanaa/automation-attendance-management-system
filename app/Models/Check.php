@@ -19,4 +19,9 @@ class Check extends Model
     {
         return $this->belongsTo(Schedule::class);
     }
+
+    public function latenessRecord()
+    {
+        return $this->hasOne(LatenessRecord::class, 'check_id');
+    }
 }

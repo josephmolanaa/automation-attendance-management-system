@@ -38,6 +38,10 @@ class Employee extends Model
     {
         return $this->hasMany(Latetime::class);
     }
+    public function latenessRecords()
+    {
+        return $this->hasMany(LatenessRecord::class, 'employee_id');
+    }
     public function leave()
     {
         return $this->hasMany(Leave::class);
