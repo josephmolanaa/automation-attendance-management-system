@@ -34,9 +34,9 @@ class SheetReportExport implements FromArray, WithEvents
         $bulan = $this->bulan;
         $tahun = $this->tahun;
 
-        $employees    = Employee::orderBy('id')->get();
+        $employees = Employee::orderBy('id')->get();
         $allSchedules = Schedule::all();
-        $daysInMonth  = Carbon::createFromDate($tahun, $bulan, 1)->daysInMonth;
+        $daysInMonth = Carbon::createFromDate($tahun, $bulan, 1)->daysInMonth;
 
         $checks = Check::whereYear('attendance_time', $tahun)
             ->whereMonth('attendance_time', $bulan)
@@ -49,10 +49,10 @@ class SheetReportExport implements FromArray, WithEvents
         $rows = [];
         $rows[] = [' ', '', '', '', '', '', '', '', '', '', '']; // Row 1
         $this->rowMeta[] = ['type' => 'empty'];
-        
+
         $rows[] = [' ', '', '', '', '', '', '', '', '', '', '']; // Row 2
         $this->rowMeta[] = ['type' => 'empty'];
-        
+
         $rows[] = ['', '', 'DATA SCANLOG']; // Row 3
         $this->rowMeta[] = ['type' => 'title'];
 
@@ -62,10 +62,10 @@ class SheetReportExport implements FromArray, WithEvents
             $empChecks = $checks->get($employee->id, collect());
             $empLeaves = $leaves->get($employee->id, collect());
 
-            $checksByDate = $empChecks->groupBy(function($c) {
+            $checksByDate = $empChecks->groupBy(function ($c) {
                 return Carbon::parse($c->attendance_time)->format('Y-m-d');
             });
-            $leavesByDate = $empLeaves->keyBy(function($l) {
+            $leavesByDate = $empLeaves->keyBy(function ($l) {
                 return Carbon::parse($l->leave_date)->format('Y-m-d');
             });
 
@@ -80,16 +80,19 @@ class SheetReportExport implements FromArray, WithEvents
             $rows[] = $headerRow;
             $this->rowMeta[] = ['type' => 'header'];
 
-            $totalNormal = 0; $totalDouble = 0; $totalMinggu = 0; $totalIzin = 0;
+            $totalNormal = 0;
+            $totalDouble = 0;
+            $totalMinggu = 0;
+            $totalIzin = 0;
 
             for ($d = 1; $d <= $daysInMonth; $d++) {
-                $dateStr   = Carbon::createFromDate($tahun, $bulan, $d)->format('Y-m-d');
-                $dateObj   = Carbon::parse($dateStr);
-                $dayName   = strtoupper($dateObj->locale('id')->dayName);
+                $dateStr = Carbon::createFromDate($tahun, $bulan, $d)->format('Y-m-d');
+                $dateObj = Carbon::parse($dateStr);
+                $dayName = strtoupper($dateObj->locale('id')->dayName);
                 $dayOfWeek = $dateObj->dayOfWeek;
 
                 $dayChecks = $checksByDate->get($dateStr, collect());
-                $leave     = $leavesByDate->get($dateStr);
+                $leave = $leavesByDate->get($dateStr);
 
                 $scan1 = $dayChecks->sortBy('attendance_time')->first();
                 $scan1Time = $scan1 && $scan1->attendance_time
@@ -97,14 +100,17 @@ class SheetReportExport implements FromArray, WithEvents
                 $scan2Time = $scan1 && $scan1->leave_time
                     ? Carbon::parse($scan1->leave_time)->format('H:i:s') : null;
 
-                $normal = null; $double = null; $minggu = null; $izinCuti = null;
+                $normal = null;
+                $double = null;
+                $minggu = null;
+                $izinCuti = null;
                 $isSunday = $dayOfWeek === 0;
 
                 if ($leave) {
                     $izinCuti = strtoupper($leave->reason ?? 'IZIN');
                     $totalIzin++;
                 } elseif ($scan1 && $scan1->leave_time) {
-                    $scanIn  = Carbon::parse($scan1->attendance_time);
+                    $scanIn = Carbon::parse($scan1->attendance_time);
                     $scanOut = Carbon::parse($scan1->leave_time);
 
                     // ── Shift detection: baca dari DB, fallback ke service ──
@@ -114,7 +120,8 @@ class SheetReportExport implements FromArray, WithEvents
                     }
                     if (!$matchedSchedule) {
                         $matchedSchedule = ShiftDetectionService::detectAsSchedule(
-                            $dateStr, $scanIn->format('H:i:s')
+                            $dateStr,
+                            $scanIn->format('H:i:s')
                         );
                     }
 
@@ -126,21 +133,26 @@ class SheetReportExport implements FromArray, WithEvents
                         $diffMin = $schedOut->diffInMinutes($scanOut, false);
 
                         if ($isSunday) {
-                            $minggu = 1; $totalMinggu++;
+                            $minggu = 1;
+                            $totalMinggu++;
                         } elseif ($diffMin > 15) {
                             $totalHours = floor($diffMin / 60);
                             if ($totalHours <= 3) {
-                                $normal = $totalHours; $totalNormal += $normal;
+                                $normal = $totalHours;
+                                $totalNormal += $normal;
                             } else {
-                                $normal = 3; $double = $totalHours - 3;
-                                $totalNormal += $normal; $totalDouble += $double;
+                                $normal = 3;
+                                $double = $totalHours - 3;
+                                $totalNormal += $normal;
+                                $totalDouble += $double;
                             }
                         }
                     }
                 }
 
                 $rows[] = [
-                    '', '', // A, B
+                    '',
+                    '', // A, B
                     $employee->emp_id ?? $employee->id, // C
                     $employee->name, // D
                     $dayName, // E
@@ -160,7 +172,12 @@ class SheetReportExport implements FromArray, WithEvents
 
             // Baris TOTAL
             $rows[] = [
-                '', '', '', '', '', '', 
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
                 $employee->name, // G
                 'TOTAL', // H
                 $totalNormal ?: 0, // I
@@ -176,7 +193,7 @@ class SheetReportExport implements FromArray, WithEvents
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => function(AfterSheet $event) {
+            AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
                 $sheet->getParent()->getActiveSheet()->setTitle('Sheet Report');
 
