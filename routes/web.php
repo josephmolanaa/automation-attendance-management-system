@@ -2,6 +2,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FingerDevicesControlller;
 use App\Http\Controllers\SheetReportController;
+use App\Http\Controllers\LatenessController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -74,6 +75,14 @@ Route::group(['middleware' => ['auth', 'Role'], 'roles' => ['admin']], function 
     Route::get('/sheet-report',        [SheetReportController::class, 'index'])->name('sheet-report');
     Route::get('/sheet-report/data',   [SheetReportController::class, 'ajaxData'])->name('sheet-report.data');
     Route::get('/sheet-report/export', [SheetReportController::class, 'export'])->name('sheet-report.export');
+
+    // Attendance Lateness Management
+    Route::prefix('attendance/lateness')->name('lateness.')->group(function () {
+        Route::get('/',           [LatenessController::class, 'index'])->name('index');
+        Route::get('/recap',      [LatenessController::class, 'recap'])->name('recap');
+        Route::post('/calculate', [LatenessController::class, 'calculate'])->name('calculate');
+        Route::get('/export',     [LatenessController::class, 'export'])->name('export');
+    });
 
     // Import Absensi via CSV
     Route::get('/scanlog-upload',           [\App\Http\Controllers\ScanlogUploadController::class, 'index'])->name('scanlog.upload');

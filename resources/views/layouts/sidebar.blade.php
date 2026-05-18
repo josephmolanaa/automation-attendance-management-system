@@ -44,8 +44,13 @@
                             </li>
 
                             <li>
-                                <a href="/attendance" class="waves-effect {{ request()->is("attendance") || request()->is("attendance/*") ? "mm active" : "" }}">
+                                <a href="/attendance" class="waves-effect {{ request()->is("attendance") ? "mm active" : "" }}">
                                     <i class="ti-calendar"></i> <span> {{ __('app.attendance_logs') }} </span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('lateness.index') }}" class="waves-effect {{ request()->is("attendance/lateness") || request()->is("attendance/lateness/*") ? "mm active" : "" }}">
+                                    <i class="ti-alarm-clock"></i><span> Keterlambatan Baru </span>
                                 </a>
                             </li>
                             <li>
