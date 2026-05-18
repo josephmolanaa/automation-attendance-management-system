@@ -1,81 +1,44 @@
 @extends('layouts.master')
 
 @section('css')
+    <link href="{{ URL::asset('plugins/datatables/buttons.bootstrap4.min.css') }}" rel="stylesheet" type="text/css">
     @include('includes.datatable-controls-style')
 @endsection
 
-@section('page-title') Manajemen Keterlambatan @endsection
+@section('page-title') {{ __('app.lateness_management') }} @endsection
+
+@section('breadcrumb')
+    <div class="col-sm-6">
+        <h4 class="page-title text-left">{{ __('app.lateness_management') }}</h4>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="javascript:void(0);">{{ __('app.breadcrumb_home') }}</a></li>
+            <li class="breadcrumb-item"><a href="javascript:void(0);">{{ __('app.lateness_management') }}</a></li>
+        </ol>
+    </div>
+@endsection
+
+@section('button')
+@endsection
 
 @section('content')
-<div class="row">
-    <div class="col-12">
-        @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
+@include('includes.flash')
 
-        <div class="card mb-3">
-            <div class="card-body">
-                <form method="POST" action="{{ route('lateness.calculate') }}" class="d-flex flex-wrap align-items-end" style="gap:10px;">
-                    @csrf
-                    <div>
-                        <label>Periode Hitung</label>
-                        <input type="month" name="month" class="form-control" value="{{ sprintf('%04d-%02d', $filters['tahun'], $filters['bulan']) }}">
-                    </div>
-                    <div>
-                        <label>Karyawan</label>
-                        <select name="employee" class="form-control" style="min-width:180px;">
-                            <option value="">Semua karyawan</option>
-                            @foreach($employees as $employee)
-                                <option value="{{ $employee->id }}" {{ (string) $filters['employee'] === (string) $employee->id ? 'selected' : '' }}>
-                                    {{ $employee->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="custom-control custom-checkbox mb-2">
-                        <input type="checkbox" class="custom-control-input" id="force" name="force" value="1">
-                        <label class="custom-control-label" for="force">Hitung ulang</label>
-                    </div>
-                    <button class="btn btn-primary">
-                        <i class="mdi mdi-calculator mr-1"></i> Hitung Keterlambatan
-                    </button>
-                </form>
-            </div>
-        </div>
+    <div class="row">
+        <div class="col-12">
 
-        <div class="card">
-            <div class="card-body">
-                <div class="d-flex justify-content-between flex-wrap mb-3" style="gap:12px;">
-                    <form method="GET" action="{{ route('lateness.index') }}" class="d-flex flex-wrap align-items-end" style="gap:10px;">
+            {{-- Calculate Card --}}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <form method="POST" action="{{ route('lateness.calculate') }}" class="d-flex flex-wrap align-items-end" style="gap:10px;">
+                        @csrf
                         <div>
-                            <label>Bulan</label>
-                            <select name="bulan" class="form-control">
-                                @for($m = 1; $m <= 12; $m++)
-                                    <option value="{{ $m }}" {{ $filters['bulan'] == $m ? 'selected' : '' }}>{{ str_pad($m, 2, '0', STR_PAD_LEFT) }}</option>
-                                @endfor
-                            </select>
+                            <label>{{ __('app.calculation_period') }}</label>
+                            <input type="month" name="month" class="form-control" value="{{ sprintf('%04d-%02d', $filters['tahun'], $filters['bulan']) }}">
                         </div>
                         <div>
-                            <label>Tahun</label>
-                            <select name="tahun" class="form-control">
-                                @foreach(range(date('Y') + 1, 2024) as $year)
-                                    <option value="{{ $year }}" {{ $filters['tahun'] == $year ? 'selected' : '' }}>{{ $year }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label>Status</label>
-                            <select name="status" class="form-control">
-                                <option value="">Semua</option>
-                                <option value="terlambat" {{ $filters['status'] === 'terlambat' ? 'selected' : '' }}>Terlambat</option>
-                                <option value="tepat_waktu" {{ $filters['status'] === 'tepat_waktu' ? 'selected' : '' }}>Tepat Waktu</option>
-                                <option value="tidak_ada_scan" {{ $filters['status'] === 'tidak_ada_scan' ? 'selected' : '' }}>Tidak Ada Scan</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label>Karyawan</label>
+                            <label>{{ __('app.employee') }}</label>
                             <select name="employee" class="form-control" style="min-width:180px;">
-                                <option value="">Semua karyawan</option>
+                                <option value="">{{ __('app.all_employees') }}</option>
                                 @foreach($employees as $employee)
                                     <option value="{{ $employee->id }}" {{ (string) $filters['employee'] === (string) $employee->id ? 'selected' : '' }}>
                                         {{ $employee->name }}
@@ -83,75 +46,182 @@
                                 @endforeach
                             </select>
                         </div>
-                        <button class="btn btn-secondary">Filter</button>
+                        <div class="custom-control custom-checkbox mb-2">
+                            <input type="checkbox" class="custom-control-input" id="force" name="force" value="1">
+                            <label class="custom-control-label" for="force">{{ __('app.recalculate') }}</label>
+                        </div>
+                        <button class="btn btn-primary">
+                            <i class="mdi mdi-calculator mr-1"></i> {{ __('app.calculate_lateness') }}
+                        </button>
                     </form>
+                </div>
+            </div>
 
-                    <div class="d-flex align-items-end" style="gap:8px;">
-                        <a class="btn btn-outline-primary" href="{{ route('lateness.recap', request()->query()) }}">Rekap</a>
-                        <a class="btn btn-success" href="{{ route('lateness.export', request()->query()) }}">
-                            <i class="mdi mdi-file-excel mr-1"></i> Export Excel
-                        </a>
+            {{-- Data Table Card --}}
+            <div class="card">
+                <div class="card-body">
+
+                    {{-- Filter Bar --}}
+                    <div class="d-flex flex-wrap" style="gap:10px; align-items:flex-end; margin-bottom:16px;">
+                        <div>
+                            <label>{{ __('app.month') }}</label>
+                            <select id="filterMonth" class="form-control">
+                                <option value="">{{ __('app.all_months') }}</option>
+                                <option value="01">{{ __('app.january') }}</option>
+                                <option value="02">{{ __('app.february') }}</option>
+                                <option value="03">{{ __('app.march') }}</option>
+                                <option value="04">{{ __('app.april') }}</option>
+                                <option value="05">{{ __('app.may') }}</option>
+                                <option value="06">{{ __('app.june') }}</option>
+                                <option value="07">{{ __('app.july') }}</option>
+                                <option value="08">{{ __('app.august') }}</option>
+                                <option value="09">{{ __('app.september') }}</option>
+                                <option value="10">{{ __('app.october') }}</option>
+                                <option value="11">{{ __('app.november') }}</option>
+                                <option value="12">{{ __('app.december') }}</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>{{ __('app.year') }}</label>
+                            <select id="filterYear" class="form-control">
+                                <option value="">{{ __('app.all_years') }}</option>
+                                @foreach(range(date('Y'), 2024) as $year)
+                                    <option value="{{ $year }}" {{ $year == date('Y') ? 'selected' : '' }}>{{ $year }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label>{{ __('app.status') }}</label>
+                            <select id="filterStatus" class="form-control">
+                                <option value="">{{ __('app.all_status') }}</option>
+                                <option value="terlambat">{{ __('app.status_late') }}</option>
+                                <option value="tepat_waktu">{{ __('app.status_on_time') }}</option>
+                                <option value="tidak_ada_scan">{{ __('app.status_no_scan') }}</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>{{ __('app.employee') }}</label>
+                            <select id="filterEmployee" class="form-control" style="min-width:180px;">
+                                <option value="">{{ __('app.all_employees') }}</option>
+                                @foreach($employees as $employee)
+                                    <option value="{{ $employee->id }}">{{ $employee->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label>&nbsp;</label>
+                            <button id="btnReset" class="btn btn-secondary d-block">{{ __('app.reset') }}</button>
+                        </div>
+                        <div class="ml-auto d-flex align-items-end" style="gap:8px;">
+                            <a class="btn btn-outline-primary" href="{{ route('lateness.recap', request()->query()) }}">
+                                <i class="mdi mdi-chart-bar mr-1"></i>{{ __('app.view_recap') }}
+                            </a>
+                            <a class="btn btn-success" href="{{ route('lateness.export', request()->query()) }}">
+                                <i class="mdi mdi-file-excel mr-1"></i> {{ __('app.export_excel') }}
+                            </a>
+                        </div>
                     </div>
-                </div>
 
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped" style="font-size:13px;">
-                        <thead>
-                            <tr>
-                                <th>NIP</th>
-                                <th>Nama</th>
-                                <th>Jabatan</th>
-                                <th>Tanggal</th>
-                                <th>Hari</th>
-                                <th>Scan Masuk</th>
-                                <th>Scan Keluar</th>
-                                <th>Shift</th>
-                                <th>Jadwal Masuk</th>
-                                <th>Status</th>
-                                <th>Durasi</th>
-                                <th>Menit</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($records as $record)
-                                @php
-                                    $statusClass = [
-                                        'terlambat' => 'danger',
-                                        'tepat_waktu' => 'success',
-                                        'tidak_ada_scan' => 'secondary',
-                                    ][$record->status] ?? 'secondary';
-                                    $statusText = [
-                                        'terlambat' => 'Terlambat',
-                                        'tepat_waktu' => 'Tepat Waktu',
-                                        'tidak_ada_scan' => 'Tidak Ada Scan',
-                                    ][$record->status] ?? $record->status;
-                                @endphp
-                                <tr>
-                                    <td>{{ $record->employee->emp_id ?? $record->employee->id ?? '-' }}</td>
-                                    <td>{{ $record->employee->name ?? '-' }}</td>
-                                    <td>{{ $record->employee->position ?? '-' }}</td>
-                                    <td>{{ optional($record->date)->format('d/m/Y') }}</td>
-                                    <td>{{ optional($record->date)->locale('id')->isoFormat('dddd') }}</td>
-                                    <td>{{ $record->actual_scan_in ? $record->actual_scan_in->format('H:i:s') : '-' }}</td>
-                                    <td>{{ optional(optional($record->check)->leave_time ? \Carbon\Carbon::parse($record->check->leave_time) : null)->format('H:i:s') ?: '-' }}</td>
-                                    <td>{{ $record->schedule->slug ?? '-' }}</td>
-                                    <td>{{ $record->scheduled_in ? $record->scheduled_in->format('H:i:s') : '-' }}</td>
-                                    <td><span class="badge badge-{{ $statusClass }}">{{ $statusText }}</span></td>
-                                    <td>{{ $record->late_duration }}</td>
-                                    <td>{{ $record->late_minutes }}</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="12" class="text-center text-muted">Belum ada data. Jalankan hitung keterlambatan untuk periode ini.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+                    <div class="table-rep-plugin">
+                        <div class="table-responsive mb-0">
+                            <table id="lateness-table" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%;font-size:14px;">
+                                <thead>
+                                    <tr>
+                                        <th>{{ __('app.nip') }}</th>
+                                        <th>{{ __('app.name') }}</th>
+                                        <th>{{ __('app.position') }}</th>
+                                        <th>{{ __('app.date') }}</th>
+                                        <th>{{ __('app.day') }}</th>
+                                        <th>{{ __('app.scan_in') }}</th>
+                                        <th>{{ __('app.scan_out') }}</th>
+                                        <th>{{ __('app.shift') }}</th>
+                                        <th>{{ __('app.schedule_in') }}</th>
+                                        <th>{{ __('app.status') }}</th>
+                                        <th>{{ __('app.late_duration') }}</th>
+                                        <th>{{ __('app.late_minutes') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
 
-                {{ $records->links() }}
+                </div>
             </div>
         </div>
     </div>
-</div>
+@endsection
+
+@section('script-bottom')
+<script>
+$(function() {
+    var table = $('#lateness-table').DataTable({
+        destroy: true,
+        processing: false,
+        serverSide: false,
+        ajax: {
+            url: '{{ route("lateness.data") }}',
+            type: 'GET',
+            data: function(d) {
+                d.bulan    = $('#filterMonth').val();
+                d.tahun    = $('#filterYear').val();
+                d.status   = $('#filterStatus').val();
+                d.employee = $('#filterEmployee').val();
+            }
+        },
+        columns: [
+            { data: 'nip' },
+            { data: 'name' },
+            { data: 'position' },
+            { data: 'date' },
+            { data: 'day' },
+            { data: 'scan_in' },
+            { data: 'scan_out' },
+            { data: 'shift' },
+            { data: 'schedule_in' },
+            { data: 'status', orderable: false },
+            { data: 'late_duration', orderable: false },
+            { data: 'late_minutes' },
+        ],
+        pageLength: 25,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, '{{ __('app.all') }}']],
+        dom: '<"d-flex justify-content-between align-items-center mb-2"lBf>rtip',
+        buttons: [
+            { extend: 'copy',  text: '<i class="mdi mdi-content-copy mr-1"></i> {{ __('app.copy') }}',  className: 'btn btn-sm btn-secondary' },
+            { extend: 'excel', text: '<i class="mdi mdi-file-excel mr-1"></i> Excel',   className: 'btn btn-sm btn-success', title: '{{ __('app.lateness_data') }}' },
+            { extend: 'pdf',   text: '<i class="mdi mdi-file-pdf mr-1"></i> PDF',       className: 'btn btn-sm btn-danger',  title: '{{ __('app.lateness_data') }}', orientation: 'landscape', pageSize: 'A4' },
+        ],
+        order: [[3, 'desc']],
+        language: window.DataTableLang,
+    });
+
+    $('#filterMonth, #filterYear, #filterStatus, #filterEmployee').on('change', function() {
+        table.ajax.reload();
+    });
+
+    $('#btnReset').on('click', function() {
+        $('#filterMonth').val('');
+        $('#filterYear').val('{{ date("Y") }}');
+        $('#filterStatus').val('');
+        $('#filterEmployee').val('');
+        table.ajax.reload();
+    });
+
+    // Set initial filters from URL params
+    var urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('bulan')) {
+        $('#filterMonth').val(String(urlParams.get('bulan')).padStart(2, '0'));
+    }
+    if (urlParams.get('tahun')) {
+        $('#filterYear').val(urlParams.get('tahun'));
+    }
+    if (urlParams.get('status')) {
+        $('#filterStatus').val(urlParams.get('status'));
+    }
+    if (urlParams.get('employee')) {
+        $('#filterEmployee').val(urlParams.get('employee'));
+    }
+    table.ajax.reload();
+});
+</script>
 @endsection
