@@ -28,6 +28,34 @@ class LatenessController extends Controller
         ]);
     }
 
+    public function data(Request $request)
+    {
+        $filters = $this->filters($request);
+        $records = $this->baseQuery($filters)
+            ->orderBy('date', 'desc')
+            ->orderBy('actual_scan_in', 'desc')
+            ->get();
+
+        $data = $records->map(function ($record) {
+            return [
+                'nip' => $record->employee->emp_id ?? $record->employee->id ?? '-',
+                'name' => $record->employee->name ?? '-',
+                'position' => $record->employee->position ?? '-',
+                'date' => $record->date ? \Carbon\Carbon::parse($record->date)->format('Y-m-d') : '-',
+                'day' => $record->date ? __('app.' . strtolower(\Carbon\Carbon::parse($record->date)->format('l'))) : '-',
+                'scan_in' => $record->actual_scan_in ?? '-',
+                'scan_out' => $record->actual_scan_out ?? '-',
+                'shift' => $record->schedule->slug ?? '-',
+                'schedule_in' => $record->schedule_time_in ?? '-',
+                'status' => $this->formatStatus($record->status),
+                'late_duration' => $record->late_duration ?? '-',
+                'late_minutes' => $record->late_minutes ?? 0,
+            ];
+        });
+
+        return response()->json(['data' => $data]);
+    }
+
     public function recap(Request $request)
     {
         $filters = $this->filters($request);
@@ -77,7 +105,7 @@ class LatenessController extends Controller
                 'tahun' => $start->format('Y'),
                 'employee' => $request->input('employee'),
             ])
-            ->with('success', $records->count() . ' record keterlambatan berhasil dihitung.');
+            ->with('success', __('app.lateness_calculated', ['count' => $records->count()]));
     }
 
     public function export(Request $request)
@@ -124,5 +152,16 @@ class LatenessController extends Controller
         $remaining = $minutes % 60;
 
         return sprintf('%02d:%02d:00', $hours, $remaining);
+    }
+
+    private function formatStatus(string $status): string
+    {
+        $statusMap = [
+            'terlambat' => '<span class="badge badge-danger">' . __('app.status_late') . '</span>',
+            'tepat_waktu' => '<span class="badge badge-success">' . __('app.status_on_time') . '</span>',
+            'tidak_ada_scan' => '<span class="badge badge-secondary">' . __('app.status_no_scan') . '</span>',
+        ];
+
+        return $statusMap[$status] ?? '<span class="badge badge-secondary">' . $status . '</span>';
     }
 }

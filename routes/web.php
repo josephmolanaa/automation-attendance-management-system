@@ -79,6 +79,7 @@ Route::group(['middleware' => ['auth', 'Role'], 'roles' => ['admin']], function 
     // Attendance Lateness Management
     Route::prefix('attendance/lateness')->name('lateness.')->group(function () {
         Route::get('/',           [LatenessController::class, 'index'])->name('index');
+        Route::get('/data',       [LatenessController::class, 'data'])->name('data');
         Route::get('/recap',      [LatenessController::class, 'recap'])->name('recap');
         Route::post('/calculate', [LatenessController::class, 'calculate'])->name('calculate');
         Route::get('/export',     [LatenessController::class, 'export'])->name('export');
