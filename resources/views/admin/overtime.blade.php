@@ -19,52 +19,51 @@
 @section('content')
     <div class="row">
         <div class="col-12">
+            {{-- Filter Bar --}}
+            <div class="management-filter-bar d-flex flex-wrap">
+                <div>
+                    <label>{{ __('app.month') }}</label>
+                    <select id="filterMonth" class="form-control">
+                        <option value="">{{ __('app.all_months') }}</option>
+                        <option value="01">{{ __('app.january') }}</option>
+                        <option value="02">{{ __('app.february') }}</option>
+                        <option value="03">{{ __('app.march') }}</option>
+                        <option value="04">{{ __('app.april') }}</option>
+                        <option value="05">{{ __('app.may') }}</option>
+                        <option value="06">{{ __('app.june') }}</option>
+                        <option value="07">{{ __('app.july') }}</option>
+                        <option value="08">{{ __('app.august') }}</option>
+                        <option value="09">{{ __('app.september') }}</option>
+                        <option value="10">{{ __('app.october') }}</option>
+                        <option value="11">{{ __('app.november') }}</option>
+                        <option value="12">{{ __('app.december') }}</option>
+                    </select>
+                </div>
+                <div>
+                    <label>{{ __('app.year') }}</label>
+                    <select id="filterYear" class="form-control">
+                        <option value="">{{ __('app.all_years') }}</option>
+                        @foreach(range(date('Y'), 2024) as $year)
+                            <option value="{{ $year }}" {{ $year == date('Y') ? 'selected' : '' }}>{{ $year }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label>{{ __('app.from_date') }}</label>
+                    <input type="date" id="filterDateFrom" class="form-control">
+                </div>
+                <div>
+                    <label>{{ __('app.to_date') }}</label>
+                    <input type="date" id="filterDateTo" class="form-control">
+                </div>
+                <div>
+                    <label>&nbsp;</label>
+                    <button id="btnReset" class="btn btn-secondary d-block">{{ __('app.reset') }}</button>
+                </div>
+            </div>
+
             <div class="card">
                 <div class="card-body">
-
-                    {{-- Filter Bar --}}
-                    <div class="d-flex flex-wrap" style="gap:10px; align-items:flex-end; margin-bottom:16px;">
-                        <div>
-                            <label>{{ __('app.month') }}</label>
-                            <select id="filterMonth" class="form-control">
-                                <option value="">{{ __('app.all_months') }}</option>
-                                <option value="01">{{ __('app.january') }}</option>
-                                <option value="02">{{ __('app.february') }}</option>
-                                <option value="03">{{ __('app.march') }}</option>
-                                <option value="04">{{ __('app.april') }}</option>
-                                <option value="05">{{ __('app.may') }}</option>
-                                <option value="06">{{ __('app.june') }}</option>
-                                <option value="07">{{ __('app.july') }}</option>
-                                <option value="08">{{ __('app.august') }}</option>
-                                <option value="09">{{ __('app.september') }}</option>
-                                <option value="10">{{ __('app.october') }}</option>
-                                <option value="11">{{ __('app.november') }}</option>
-                                <option value="12">{{ __('app.december') }}</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label>{{ __('app.year') }}</label>
-                            <select id="filterYear" class="form-control">
-                                <option value="">{{ __('app.all_years') }}</option>
-                                @foreach(range(date('Y'), 2024) as $year)
-                                    <option value="{{ $year }}" {{ $year == date('Y') ? 'selected' : '' }}>{{ $year }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label>{{ __('app.from_date') }}</label>
-                            <input type="date" id="filterDateFrom" class="form-control">
-                        </div>
-                        <div>
-                            <label>{{ __('app.to_date') }}</label>
-                            <input type="date" id="filterDateTo" class="form-control">
-                        </div>
-                        <div>
-                            <label>&nbsp;</label>
-                            <button id="btnReset" class="btn btn-secondary d-block">{{ __('app.reset') }}</button>
-                        </div>
-                    </div>
-
                     <div class="table-rep-plugin">
                         <div class="table-responsive mb-0">
                             <table id="overtime-table" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%;font-size:14px;">
