@@ -26,53 +26,53 @@
 
 <div class="row">
     <div class="col-12">
+        <div class="management-filter-bar d-flex justify-content-between flex-wrap">
+            <form method="GET" action="{{ route('lateness.recap') }}" class="d-flex flex-wrap align-items-end" style="gap:10px;">
+                <div>
+                    <label>{{ __('app.month') }}</label>
+                    <select name="bulan" class="form-control">
+                        @for($m = 1; $m <= 12; $m++)
+                            <option value="{{ $m }}" {{ $filters['bulan'] == $m ? 'selected' : '' }}>{{ str_pad($m, 2, '0', STR_PAD_LEFT) }}</option>
+                        @endfor
+                    </select>
+                </div>
+                <div>
+                    <label>{{ __('app.year') }}</label>
+                    <select name="tahun" class="form-control">
+                        @foreach(range(date('Y') + 1, 2024) as $year)
+                            <option value="{{ $year }}" {{ $filters['tahun'] == $year ? 'selected' : '' }}>{{ $year }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label>{{ __('app.employee') }}</label>
+                    <select name="employee" class="form-control" style="min-width:180px;">
+                        <option value="">{{ __('app.all_employees') }}</option>
+                        @foreach($employees as $employee)
+                            <option value="{{ $employee->id }}" {{ (string) $filters['employee'] === (string) $employee->id ? 'selected' : '' }}>
+                                {{ $employee->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label>&nbsp;</label>
+                    <button class="btn btn-secondary d-block">{{ __('app.filter') }}</button>
+                </div>
+            </form>
+
+            <div class="d-flex align-items-end" style="gap:8px;">
+                <a class="btn btn-outline-primary" href="{{ route('lateness.index', request()->query()) }}">
+                    <i class="mdi mdi-table mr-1"></i>{{ __('app.view_scanlog') }}
+                </a>
+                <a class="btn btn-success" href="{{ route('lateness.export', request()->query()) }}">
+                    <i class="mdi mdi-file-excel mr-1"></i> {{ __('app.export_excel') }}
+                </a>
+            </div>
+        </div>
+
         <div class="card">
             <div class="card-body">
-                <div class="d-flex justify-content-between flex-wrap mb-3" style="gap:12px;">
-                    <form method="GET" action="{{ route('lateness.recap') }}" class="d-flex flex-wrap align-items-end" style="gap:10px;">
-                        <div>
-                            <label>{{ __('app.month') }}</label>
-                            <select name="bulan" class="form-control">
-                                @for($m = 1; $m <= 12; $m++)
-                                    <option value="{{ $m }}" {{ $filters['bulan'] == $m ? 'selected' : '' }}>{{ str_pad($m, 2, '0', STR_PAD_LEFT) }}</option>
-                                @endfor
-                            </select>
-                        </div>
-                        <div>
-                            <label>{{ __('app.year') }}</label>
-                            <select name="tahun" class="form-control">
-                                @foreach(range(date('Y') + 1, 2024) as $year)
-                                    <option value="{{ $year }}" {{ $filters['tahun'] == $year ? 'selected' : '' }}>{{ $year }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label>{{ __('app.employee') }}</label>
-                            <select name="employee" class="form-control" style="min-width:180px;">
-                                <option value="">{{ __('app.all_employees') }}</option>
-                                @foreach($employees as $employee)
-                                    <option value="{{ $employee->id }}" {{ (string) $filters['employee'] === (string) $employee->id ? 'selected' : '' }}>
-                                        {{ $employee->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label>&nbsp;</label>
-                            <button class="btn btn-secondary d-block">{{ __('app.filter') }}</button>
-                        </div>
-                    </form>
-
-                    <div class="d-flex align-items-end" style="gap:8px;">
-                        <a class="btn btn-outline-primary" href="{{ route('lateness.index', request()->query()) }}">
-                            <i class="mdi mdi-table mr-1"></i>{{ __('app.view_scanlog') }}
-                        </a>
-                        <a class="btn btn-success" href="{{ route('lateness.export', request()->query()) }}">
-                            <i class="mdi mdi-file-excel mr-1"></i> {{ __('app.export_excel') }}
-                        </a>
-                    </div>
-                </div>
-
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped" style="font-size:13px;">
                         <thead>
