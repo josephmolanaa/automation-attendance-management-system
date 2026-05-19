@@ -58,7 +58,7 @@ class LatenessController extends Controller
         $filters = $this->filters($request);
         $this->syncCalculatedRecords($filters, $service);
 
-        $records = $this->baseQuery($filters)->get();
+        $records = $this->baseQuery($filters, false)->get();
         $recap = $records
             ->groupBy('employee_id')
             ->map(function ($items) {
@@ -131,7 +131,7 @@ class LatenessController extends Controller
         ];
     }
 
-    private function baseQuery(array $filters)
+    private function baseQuery(array $filters, bool $lateOnly = true)
     {
         $query = LatenessRecord::with(['employee', 'check', 'schedule']);
 
@@ -152,6 +152,9 @@ class LatenessController extends Controller
 
         if (!empty($filters['status'])) {
             $query->where('status', $filters['status']);
+        } elseif ($lateOnly) {
+            // Default: only show late records in the main table
+            $query->where('status', 'terlambat');
         }
 
         return $query;
