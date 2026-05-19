@@ -606,6 +606,40 @@ label {
   margin-bottom: 6px !important;
 }
 
+/* Management filter bars */
+.management-filter-bar {
+  background: var(--surface) !important;
+  border: 1px solid var(--border2) !important;
+  border-radius: 10px !important;
+  padding: 14px 18px !important;
+  margin-bottom: 14px !important;
+  gap: 10px !important;
+  align-items: flex-end !important;
+}
+.management-filter-bar label {
+  display: block !important;
+  color: var(--text3) !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  text-transform: uppercase !important;
+  margin-bottom: 4px !important;
+}
+.management-filter-bar .form-control {
+  min-height: 34px !important;
+  height: 34px !important;
+  padding: 4px 10px !important;
+  font-size: 13px !important;
+}
+.management-filter-bar .btn {
+  min-height: 34px !important;
+  padding: 5px 12px !important;
+  line-height: 1.3 !important;
+}
+.management-filter-bar > div {
+  margin-bottom: 0 !important;
+}
+
 /* ═══════ PAGE HEADER ═══════ */
 .page-title {
   font-weight: 600 !important;
