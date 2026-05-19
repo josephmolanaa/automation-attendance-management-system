@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 use App\Models\Employee;
 use App\Models\Check;
+use App\Services\LatenessCalculatorService;
 use App\Services\ShiftDetectionService;
 
 class ScanlogUploadController extends Controller
@@ -234,6 +235,7 @@ class ScanlogUploadController extends Controller
         $totalSkipped     = 0;
         $totalNotFound    = 0;
         $totalEmpCreated  = 0;
+        $affectedCheckIds = [];
         $details          = [];
 
         foreach ($employees as $emp) {
@@ -299,16 +301,18 @@ class ScanlogUploadController extends Controller
                     ->first();
 
                 if (!$existing) {
-                    Check::create([
+                    $check = Check::create([
                         'emp_id'          => $dbEmpId,
                         'attendance_time' => $attTime,
                         'leave_time'      => $leaveTime,
                         'schedule_id'     => $scheduleId,
                     ]);
+                    $affectedCheckIds[] = $check->id;
                     $empInserted++; $totalInserted++;
 
                 } elseif (!$existing->leave_time && $leaveTime) {
                     $existing->update(['leave_time' => $leaveTime]);
+                    $affectedCheckIds[] = $existing->id;
                     $empUpdated++; $totalUpdated++;
 
                 } else {
@@ -327,12 +331,27 @@ class ScanlogUploadController extends Controller
             ];
         }
 
+        $latenessCalculated = 0;
+        $affectedCheckIds = array_values(array_unique($affectedCheckIds));
+        if (!empty($affectedCheckIds)) {
+            $latenessCalculator = app(LatenessCalculatorService::class);
+            $affectedChecks = Check::whereIn('id', $affectedCheckIds)->get();
+
+            foreach ($affectedChecks as $check) {
+                if ($latenessCalculator->calculate($check, true)) {
+                    $latenessCalculated++;
+                }
+            }
+        }
+
         Log::info('[CSV Import] emp_created=' . $totalEmpCreated . ' inserted=' . $totalInserted
-            . ' updated=' . $totalUpdated . ' skipped=' . $totalSkipped . ' not_found=' . $totalNotFound);
+            . ' updated=' . $totalUpdated . ' skipped=' . $totalSkipped . ' not_found=' . $totalNotFound
+            . ' lateness_calculated=' . $latenessCalculated);
 
         $msg = __('app.import_done_summary', ['inserted' => $totalInserted, 'updated' => $totalUpdated, 'skipped' => $totalSkipped]);
         if ($totalEmpCreated > 0) $msg .= __('app.employees_created_suffix', ['count' => $totalEmpCreated]);
         if ($totalNotFound    > 0) $msg .= __('app.not_found_suffix', ['count' => $totalNotFound]);
+        if ($latenessCalculated > 0) $msg .= ' ' . __('app.lateness_calculated', ['count' => $latenessCalculated]);
 
         return response()->json([
             'success' => true,
@@ -342,6 +361,7 @@ class ScanlogUploadController extends Controller
                 'updated'     => $totalUpdated,
                 'skipped'     => $totalSkipped,
                 'not_found'   => $totalNotFound,
+                'lateness_calculated' => $latenessCalculated,
             ],
             'details' => $details,
             'message' => $msg,
