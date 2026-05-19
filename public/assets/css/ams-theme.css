@@ -438,7 +438,7 @@ hr { border-color: var(--border2) !important; }
 .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
   background: var(--accent) !important;
   border-color: var(--accent) !important;
-  color: #fff !important;
+  color: var(--accent-text) !important;
 }
 .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
   color: var(--text3) !important;
@@ -461,7 +461,7 @@ hr { border-color: var(--border2) !important; }
 .dataTables_wrapper .pagination .page-item.active .page-link {
   background: var(--accent) !important;
   border-color: var(--accent) !important;
-  color: #fff !important;
+  color: var(--accent-text) !important;
 }
 .dataTables_wrapper .pagination .page-item.disabled .page-link {
   background: transparent !important;
