@@ -25,38 +25,6 @@
 
     <div class="row">
         <div class="col-12">
-
-            {{-- Calculate Card --}}
-            <div class="card mb-3">
-                <div class="card-body">
-                    <form method="POST" action="{{ route('lateness.calculate') }}" class="d-flex flex-wrap align-items-end" style="gap:10px;">
-                        @csrf
-                        <div>
-                            <label>{{ __('app.calculation_period') }}</label>
-                            <input type="month" name="month" class="form-control" value="{{ sprintf('%04d-%02d', $filters['tahun'], $filters['bulan']) }}">
-                        </div>
-                        <div>
-                            <label>{{ __('app.employee') }}</label>
-                            <select name="employee" class="form-control" style="min-width:180px;">
-                                <option value="">{{ __('app.all_employees') }}</option>
-                                @foreach($employees as $employee)
-                                    <option value="{{ $employee->id }}" {{ (string) $filters['employee'] === (string) $employee->id ? 'selected' : '' }}>
-                                        {{ $employee->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="custom-control custom-checkbox mb-2">
-                            <input type="checkbox" class="custom-control-input" id="force" name="force" value="1">
-                            <label class="custom-control-label" for="force">{{ __('app.recalculate') }}</label>
-                        </div>
-                        <button class="btn btn-primary">
-                            <i class="mdi mdi-calculator mr-1"></i> {{ __('app.calculate_lateness') }}
-                        </button>
-                    </form>
-                </div>
-            </div>
-
             {{-- Filter Bar --}}
             <div class="management-filter-bar d-flex flex-wrap">
                 <div>

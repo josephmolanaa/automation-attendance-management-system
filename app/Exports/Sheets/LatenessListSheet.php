@@ -30,27 +30,29 @@ class LatenessListSheet implements FromArray, ShouldAutoSize, WithEvents, WithTi
 
     public function array(): array
     {
-        $monthName = $this->monthName($this->filters['bulan']);
+        $periodLabel = $this->periodLabel($this->filters);
         $rows = [
             [],
             [],
-            ['', '', '', "DAFTAR NAMA KARYAWAN YANG TERLAMBAT BULAN {$monthName} {$this->filters['tahun']}"],
+            ['', '', '', "DAFTAR NAMA KARYAWAN YANG TERLAMBAT {$periodLabel}"],
             [],
             [],
             ['', '', 'NO', 'NAMA KARYAWAN TELAT', 'HARI', 'TGL', 'JAM', 'TELAT', 'TOTAL'],
             [],
         ];
 
-        $totals = LatenessRecord::late()
-            ->forMonth($this->filters['tahun'], $this->filters['bulan'])
-            ->get()
+        $totalsQuery = LatenessRecord::late();
+        $this->applyPeriodFilters($totalsQuery, $this->filters);
+        $totals = $totalsQuery->get()
             ->groupBy('employee_id')
             ->map(fn ($items) => $items->sum('late_minutes'));
 
         $records = LatenessRecord::with(['employee'])
-            ->late()
-            ->forMonth($this->filters['tahun'], $this->filters['bulan'])
-            ->orderBy('date')
+            ->late();
+
+        $this->applyPeriodFilters($records, $this->filters);
+
+        $records = $records->orderBy('date')
             ->orderBy('employee_id')
             ->get();
 

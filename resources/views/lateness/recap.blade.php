@@ -31,6 +31,7 @@
                 <div>
                     <label>{{ __('app.month') }}</label>
                     <select name="bulan" class="form-control">
+                        <option value="" {{ empty($filters['bulan']) ? 'selected' : '' }}>{{ __('app.all_months') }}</option>
                         @for($m = 1; $m <= 12; $m++)
                             <option value="{{ $m }}" {{ $filters['bulan'] == $m ? 'selected' : '' }}>{{ str_pad($m, 2, '0', STR_PAD_LEFT) }}</option>
                         @endfor
@@ -39,6 +40,7 @@
                 <div>
                     <label>{{ __('app.year') }}</label>
                     <select name="tahun" class="form-control">
+                        <option value="" {{ empty($filters['tahun']) ? 'selected' : '' }}>{{ __('app.all_years') }}</option>
                         @foreach(range(date('Y') + 1, 2024) as $year)
                             <option value="{{ $year }}" {{ $filters['tahun'] == $year ? 'selected' : '' }}>{{ $year }}</option>
                         @endforeach

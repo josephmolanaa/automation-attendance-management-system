@@ -35,9 +35,10 @@ class LatenessRecapSheet implements FromArray, ShouldAutoSize, WithEvents, WithT
         ];
 
         $records = LatenessRecord::with('employee')
-            ->late()
-            ->forMonth($this->filters['tahun'], $this->filters['bulan'])
-            ->get();
+            ->late();
+
+        $this->applyPeriodFilters($records, $this->filters);
+        $records = $records->get();
 
         $records->groupBy('employee_id')
             ->map(function ($items) {

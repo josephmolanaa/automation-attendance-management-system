@@ -12,8 +12,12 @@ trait LatenessSheetHelpers
         return $map[Carbon::parse($date)->dayOfWeek] ?? '-';
     }
 
-    protected function monthName(int $month): string
+    protected function monthName(?int $month): string
     {
+        if (!$month) {
+            return 'SEMUA BULAN';
+        }
+
         $map = [
             1 => 'JANUARI', 2 => 'FEBRUARI', 3 => 'MARET', 4 => 'APRIL',
             5 => 'MEI', 6 => 'JUNI', 7 => 'JULI', 8 => 'AGUSTUS',
@@ -21,6 +25,27 @@ trait LatenessSheetHelpers
         ];
 
         return $map[$month] ?? (string) $month;
+    }
+
+    protected function periodLabel(array $filters): string
+    {
+        $month = $this->monthName($filters['bulan'] ?? null);
+        $year = $filters['tahun'] ?? 'SEMUA TAHUN';
+
+        return trim("{$month} {$year}");
+    }
+
+    protected function applyPeriodFilters($query, array $filters, string $column = 'date')
+    {
+        if (!empty($filters['tahun'])) {
+            $query->whereYear($column, $filters['tahun']);
+        }
+
+        if (!empty($filters['bulan'])) {
+            $query->whereMonth($column, $filters['bulan']);
+        }
+
+        return $query;
     }
 
     protected function formatDate($date): string

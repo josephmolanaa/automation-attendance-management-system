@@ -103,9 +103,11 @@ class LatenessScanlogSheet implements FromArray, ShouldAutoSize, WithEvents, Wit
 
     private function records()
     {
-        $query = LatenessRecord::with(['employee', 'check', 'schedule'])
-            ->forMonth($this->filters['tahun'], $this->filters['bulan'])
-            ->orderBy('date')
+        $query = LatenessRecord::with(['employee', 'check', 'schedule']);
+
+        $this->applyPeriodFilters($query, $this->filters);
+
+        $query->orderBy('date')
             ->orderBy('employee_id');
 
         if (!empty($this->filters['employee'])) {

@@ -9,6 +9,8 @@ use Maatwebsite\Excel\Concerns\WithTitle;
 
 class LatenessHolidaySheet implements FromArray, ShouldAutoSize, WithTitle
 {
+    use LatenessSheetHelpers;
+
     private array $filters;
 
     public function __construct(array $filters)
@@ -25,10 +27,9 @@ class LatenessHolidaySheet implements FromArray, ShouldAutoSize, WithTitle
     {
         $rows = [['TANGGAL', 'ORIGINAL TYPE', 'OVERRIDE TYPE', 'SCHEDULE ID', 'CATATAN']];
 
-        $overrides = HolidayOverride::whereYear('date', $this->filters['tahun'])
-            ->whereMonth('date', $this->filters['bulan'])
-            ->orderBy('date')
-            ->get();
+        $overrides = HolidayOverride::query();
+        $this->applyPeriodFilters($overrides, $this->filters);
+        $overrides = $overrides->orderBy('date')->get();
 
         foreach ($overrides as $override) {
             $rows[] = [

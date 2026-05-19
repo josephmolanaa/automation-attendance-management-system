@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\LatenessExport;
+use App\Models\Check;
 use App\Models\Employee;
 use App\Models\LatenessRecord;
 use App\Services\LatenessCalculatorService;
@@ -15,22 +16,18 @@ class LatenessController extends Controller
     public function index(Request $request)
     {
         $filters = $this->filters($request);
-        $records = $this->baseQuery($filters)
-            ->orderBy('date', 'desc')
-            ->orderBy('actual_scan_in', 'desc')
-            ->paginate(50)
-            ->appends($request->query());
 
         return view('lateness.index', [
-            'records' => $records,
             'employees' => Employee::orderBy('name')->get(),
             'filters' => $filters,
         ]);
     }
 
-    public function data(Request $request)
+    public function data(Request $request, LatenessCalculatorService $service)
     {
         $filters = $this->filters($request);
+        $this->syncCalculatedRecords($filters, $service);
+
         $records = $this->baseQuery($filters)
             ->orderBy('date', 'desc')
             ->orderBy('actual_scan_in', 'desc')
@@ -46,7 +43,7 @@ class LatenessController extends Controller
                 'scan_in' => $record->actual_scan_in ?? '-',
                 'scan_out' => $record->actual_scan_out ?? '-',
                 'shift' => $record->schedule->slug ?? '-',
-                'schedule_in' => $record->schedule_time_in ?? '-',
+                'schedule_in' => $record->scheduled_in ? \Carbon\Carbon::parse($record->scheduled_in)->format('H:i:s') : '-',
                 'status' => $this->formatStatus($record->status),
                 'late_duration' => $record->late_duration ?? '-',
                 'late_minutes' => $record->late_minutes ?? 0,
@@ -56,9 +53,11 @@ class LatenessController extends Controller
         return response()->json(['data' => $data]);
     }
 
-    public function recap(Request $request)
+    public function recap(Request $request, LatenessCalculatorService $service)
     {
         $filters = $this->filters($request);
+        $this->syncCalculatedRecords($filters, $service);
+
         $records = $this->baseQuery($filters)->get();
         $recap = $records
             ->groupBy('employee_id')
@@ -108,20 +107,25 @@ class LatenessController extends Controller
             ->with('success', __('app.lateness_calculated', ['count' => $records->count()]));
     }
 
-    public function export(Request $request)
+    public function export(Request $request, LatenessCalculatorService $service)
     {
         $filters = $this->filters($request);
-        $monthName = Carbon::createFromDate($filters['tahun'], $filters['bulan'], 1)->format('Y_m');
-        $filename = "Lateness_Report_{$monthName}.xlsx";
+        $this->syncCalculatedRecords($filters, $service);
+
+        $period = ($filters['tahun'] ?: 'all_years') . '_' . ($filters['bulan'] ? str_pad($filters['bulan'], 2, '0', STR_PAD_LEFT) : 'all_months');
+        $filename = "Lateness_Report_{$period}.xlsx";
 
         return Excel::download(new LatenessExport($filters), $filename);
     }
 
     private function filters(Request $request): array
     {
+        $month = $request->has('bulan') ? $request->input('bulan') : null;
+        $year = $request->has('tahun') ? $request->input('tahun') : now()->format('Y');
+
         return [
-            'bulan' => (int) ($request->input('bulan') ?: now()->format('m')),
-            'tahun' => (int) ($request->input('tahun') ?: now()->format('Y')),
+            'bulan' => $month !== null && $month !== '' ? (int) $month : null,
+            'tahun' => $year !== null && $year !== '' ? (int) $year : null,
             'employee' => $request->input('employee'),
             'status' => $request->input('status'),
         ];
@@ -129,8 +133,15 @@ class LatenessController extends Controller
 
     private function baseQuery(array $filters)
     {
-        $query = LatenessRecord::with(['employee', 'check', 'schedule'])
-            ->forMonth($filters['tahun'], $filters['bulan']);
+        $query = LatenessRecord::with(['employee', 'check', 'schedule']);
+
+        if (!empty($filters['tahun'])) {
+            $query->whereYear('date', $filters['tahun']);
+        }
+
+        if (!empty($filters['bulan'])) {
+            $query->whereMonth('date', $filters['bulan']);
+        }
 
         if (!empty($filters['employee'])) {
             $employee = $filters['employee'];
@@ -144,6 +155,60 @@ class LatenessController extends Controller
         }
 
         return $query;
+    }
+
+    private function syncCalculatedRecords(array $filters, LatenessCalculatorService $service): void
+    {
+        $query = Check::query()
+            ->where(function ($query) {
+                $query->whereNotNull('attendance_time')
+                    ->orWhereNotNull('leave_time');
+            })
+            ->orderBy('attendance_time');
+
+        $this->applyCheckPeriodFilters($query, $filters);
+
+        if (!empty($filters['employee'])) {
+            $employee = $filters['employee'];
+            $query->whereHas('employee', function ($query) use ($employee) {
+                $query->where('id', $employee)->orWhere('emp_id', $employee);
+            });
+        }
+
+        $query->get()->each(function (Check $check) use ($service) {
+            $service->calculate($check, true);
+        });
+    }
+
+    private function applyCheckPeriodFilters($query, array $filters): void
+    {
+        if (!empty($filters['tahun'])) {
+            $start = !empty($filters['bulan'])
+                ? Carbon::createFromDate($filters['tahun'], $filters['bulan'], 1)->startOfMonth()
+                : Carbon::createFromDate($filters['tahun'], 1, 1)->startOfYear();
+
+            $end = !empty($filters['bulan'])
+                ? $start->copy()->endOfMonth()
+                : Carbon::createFromDate($filters['tahun'], 12, 31)->endOfYear();
+
+            $query->where(function ($query) use ($start, $end) {
+                $query->whereBetween('attendance_time', [$start, $end])
+                    ->orWhere(function ($query) use ($start, $end) {
+                        $query->whereNull('attendance_time')
+                            ->whereBetween('leave_time', [$start, $end]);
+                    })
+                    ->orWhereBetween('leave_time', [$start, $end]);
+            });
+
+            return;
+        }
+
+        if (!empty($filters['bulan'])) {
+            $query->where(function ($query) use ($filters) {
+                $query->whereMonth('attendance_time', $filters['bulan'])
+                    ->orWhereMonth('leave_time', $filters['bulan']);
+            });
+        }
     }
 
     private function formatMinutes(int $minutes): string
