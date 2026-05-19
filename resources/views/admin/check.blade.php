@@ -24,9 +24,6 @@
     }
 
     /* ── Filter bar ── */
-    .filter-bar { background: var(--surface); border:1px solid var(--border2); border-radius:10px; padding:14px 18px; margin-bottom:14px; }
-    .filter-bar label { font-size:10px; font-weight:600; color:var(--text3); margin-bottom:4px; display:block; text-transform:uppercase; letter-spacing:.5px; }
-    .filter-bar select, .filter-bar input { font-size:13px; height:34px; padding:4px 10px; }
     .filter-actions { gap: 8px; flex-wrap: wrap; }
     .sheet-summary {
         display: flex;
@@ -492,7 +489,7 @@
     <div class="col-12">
 
         {{-- Filter Bar --}}
-        <div class="filter-bar d-flex flex-wrap align-items-end">
+        <div class="management-filter-bar d-flex flex-wrap">
             {{-- Bulan --}}
             <div class="mr-3 mb-2">
                 <label>{{ __('app.month') }}</label>
