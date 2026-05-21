@@ -38,8 +38,13 @@ class SheetReportExport implements FromArray, WithEvents
         $allSchedules = Schedule::all();
         $daysInMonth = Carbon::createFromDate($tahun, $bulan, 1)->daysInMonth;
 
-        $checks = Check::whereYear('attendance_time', $tahun)
-            ->whereMonth('attendance_time', $bulan)
+        $monthStart = Carbon::createFromDate($tahun, $bulan, 1)->startOfDay();
+        $monthEnd = Carbon::createFromDate($tahun, $bulan, 1)->endOfMonth()->endOfDay();
+
+        $checks = Check::where(function ($query) use ($monthStart, $monthEnd) {
+                $query->whereBetween('attendance_time', [$monthStart, $monthEnd])
+                    ->orWhereBetween('leave_time', [$monthStart, $monthEnd]);
+            })
             ->get()->groupBy('emp_id');
 
         $leaves = IzinDanCuti::whereYear('leave_date', $tahun)
@@ -47,32 +52,33 @@ class SheetReportExport implements FromArray, WithEvents
             ->get()->groupBy('emp_id');
 
         $rows = [];
-        $rows[] = [' ', '', '', '', '', '', '', '', '', '', '']; // Row 1
+        $rows[] = [' ', '', '', '', '', '', '', '', '', '', '', '']; // Row 1
         $this->rowMeta[] = ['type' => 'empty'];
 
-        $rows[] = [' ', '', '', '', '', '', '', '', '', '', '']; // Row 2
+        $rows[] = [' ', '', '', '', '', '', '', '', '', '', '', '']; // Row 2
         $this->rowMeta[] = ['type' => 'empty'];
 
         $rows[] = ['', '', 'DATA SCANLOG']; // Row 3
         $this->rowMeta[] = ['type' => 'title'];
 
-        $headerRow = ['', '', 'NIP', 'NAMA', 'HARI', 'TANGGAL', 'SCAN 1', 'SCAN 2', 'NORMAL ', 'DOUBLE ', 'MINGGU '];
+        $headerRow = ['', '', 'NIP', 'NAMA', 'HARI', 'TANGGAL', 'SCAN 1', 'SCAN 2', 'LATE TIME', 'NORMAL ', 'DOUBLE ', 'MINGGU '];
 
         foreach ($employees as $index => $employee) {
             $empChecks = $checks->get($employee->id, collect());
             $empLeaves = $leaves->get($employee->id, collect());
 
             $checksByDate = $empChecks->groupBy(function ($c) {
-                return Carbon::parse($c->attendance_time)->format('Y-m-d');
+                $scanDate = $c->attendance_time ?: $c->leave_time;
+                return Carbon::parse($scanDate)->format('Y-m-d');
             });
             $leavesByDate = $empLeaves->keyBy(function ($l) {
                 return Carbon::parse($l->leave_date)->format('Y-m-d');
             });
 
             if ($index > 0) {
-                $rows[] = [' ', '', '', '', '', '', '', '', '', '', ''];
+                $rows[] = [' ', '', '', '', '', '', '', '', '', '', '', ''];
                 $this->rowMeta[] = ['type' => 'empty'];
-                $rows[] = [' ', '', '', '', '', '', '', '', '', '', ''];
+                $rows[] = [' ', '', '', '', '', '', '', '', '', '', '', ''];
                 $this->rowMeta[] = ['type' => 'empty'];
             }
 
@@ -103,13 +109,14 @@ class SheetReportExport implements FromArray, WithEvents
                 $normal = null;
                 $double = null;
                 $minggu = null;
+                $lateTime = null;
                 $izinCuti = null;
                 $isSunday = $dayOfWeek === 0;
 
                 if ($leave) {
                     $izinCuti = strtoupper($leave->reason ?? 'IZIN');
                     $totalIzin++;
-                } elseif ($scan1 && $scan1->leave_time) {
+                } elseif ($scan1 && $scan1->attendance_time && $scan1->leave_time) {
                     $scanIn = Carbon::parse($scan1->attendance_time);
                     $scanOut = Carbon::parse($scan1->leave_time);
 
@@ -126,6 +133,8 @@ class SheetReportExport implements FromArray, WithEvents
                     }
 
                     if ($matchedSchedule) {
+                        $lateTime = $this->calculateLateTime($dateStr, $scanIn, $matchedSchedule);
+
                         $schedOut = Carbon::parse($dateStr . ' ' . $matchedSchedule->time_out);
                         if ($schedOut->lt(Carbon::parse($dateStr . ' ' . $matchedSchedule->time_in))) {
                             $schedOut->addDay();
@@ -159,15 +168,16 @@ class SheetReportExport implements FromArray, WithEvents
                     Carbon::parse($dateStr)->format('d/m/Y'), // F
                     $scan1Time, // G
                     $scan2Time, // H
-                    $normal, // I
-                    $double, // J
-                    $minggu // K
+                    $lateTime, // I
+                    $normal, // J
+                    $double, // K
+                    $minggu // L
                 ];
                 $this->rowMeta[] = ['type' => 'data', 'is_sunday' => $isSunday];
             }
 
             // NIP before TOTAL
-            $rows[] = [' ', '', $employee->emp_id ?? $employee->id, '', '', '', '', '', '', '', ''];
+            $rows[] = [' ', '', $employee->emp_id ?? $employee->id, '', '', '', '', '', '', '', '', ''];
             $this->rowMeta[] = ['type' => 'empty_before_total'];
 
             // Baris TOTAL
@@ -180,9 +190,10 @@ class SheetReportExport implements FromArray, WithEvents
                 '',
                 $employee->name, // G
                 'TOTAL', // H
-                $totalNormal ?: 0, // I
-                $totalDouble ?: 0, // J
-                $totalMinggu ?: 0 // K
+                '', // I
+                $totalNormal ?: 0, // J
+                $totalDouble ?: 0, // K
+                $totalMinggu ?: 0 // L
             ];
             $this->rowMeta[] = ['type' => 'total'];
         }
@@ -197,13 +208,13 @@ class SheetReportExport implements FromArray, WithEvents
                 $sheet = $event->sheet->getDelegate();
                 $sheet->getParent()->getActiveSheet()->setTitle('Sheet Report');
 
-                foreach (range('C', 'K') as $col) {
+                foreach (range('C', 'L') as $col) {
                     $sheet->getColumnDimension($col)->setAutoSize(true);
                 }
 
                 foreach ($this->rowMeta as $i => $meta) {
                     $excelRow = $i + 1;
-                    $range = "C{$excelRow}:K{$excelRow}";
+                    $range = "C{$excelRow}:L{$excelRow}";
 
                     if ($meta['type'] === 'title') {
                         $sheet->getStyle("C{$excelRow}")->getFont()->setBold(true)->setSize(11);
@@ -237,7 +248,7 @@ class SheetReportExport implements FromArray, WithEvents
                         $sheet->getRowDimension($excelRow)->setRowHeight(14);
 
                     } elseif ($meta['type'] === 'total') {
-                        $totalRange = "G{$excelRow}:K{$excelRow}";
+                        $totalRange = "G{$excelRow}:L{$excelRow}";
                         $sheet->getStyle($totalRange)->applyFromArray([
                             'font' => ['bold' => true, 'size' => 10],
                             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '00B0F0']],
@@ -249,5 +260,21 @@ class SheetReportExport implements FromArray, WithEvents
                 }
             }
         ];
+    }
+
+    private function calculateLateTime(string $dateStr, Carbon $scanIn, Schedule $schedule): ?string
+    {
+        $schedIn = Carbon::parse($dateStr . ' ' . $schedule->time_in);
+        $totalSeconds = $schedIn->diffInSeconds($scanIn, false);
+
+        if ($totalSeconds <= 60) {
+            return null;
+        }
+
+        $lateHours = floor($totalSeconds / 3600);
+        $lateMins = floor(($totalSeconds % 3600) / 60);
+        $lateSecs = $totalSeconds % 60;
+
+        return sprintf('%02d:%02d:%02d', $lateHours, $lateMins, $lateSecs);
     }
 }
