@@ -194,6 +194,11 @@
                     { data: 'time_in' },
                     { data: 'time_out' },
                 ],
+                columnDefs: [
+                    { targets: 0, width: '85px', className: 'text-center text-nowrap' },
+                    { targets: 4, width: '105px', className: 'text-center text-nowrap' },
+                    { targets: [5, 6], width: '90px', className: 'text-center text-nowrap' },
+                ],
                 autoWidth: false,
                 pageLength: 25,
                 lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],

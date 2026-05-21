@@ -115,6 +115,12 @@ $(function () {
             { data: 'actual_time_out' },
             { data: 'overtime_duration', orderable: false },
         ],
+        columnDefs: [
+            { targets: 0, width: '105px', className: 'text-center text-nowrap' },
+            { targets: 1, width: '85px', className: 'text-center text-nowrap' },
+            { targets: [4, 5, 6], width: '105px', className: 'text-center text-nowrap' },
+        ],
+        autoWidth: false,
         pageLength: 25,
         lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, '{{ __('app.all') }}']],
         dom: '<"d-flex justify-content-between align-items-center mb-2"lBf>rtip',

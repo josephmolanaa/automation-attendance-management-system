@@ -107,6 +107,12 @@ $(document).ready(function() {
             { data: 'time_in' },
             { data: 'time_out' },
         ],
+        columnDefs: [
+            { targets: 0, width: '105px', className: 'text-center text-nowrap' },
+            { targets: 1, width: '85px', className: 'text-center text-nowrap' },
+            { targets: [3, 4, 5], width: '95px', className: 'text-center text-nowrap' },
+        ],
+        autoWidth: false,
         order: [[0, 'desc']],
         pageLength: 25,
         lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, '{{ __('app.all') }}']],

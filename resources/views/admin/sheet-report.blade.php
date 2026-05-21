@@ -78,6 +78,7 @@
                                         <th>{{ __('app.double') }}</th>
                                         <th>{{ __('app.sunday_label') }}</th>
                                         <th>{{ __('app.izin_cuti') }}</th>
+                                        <th>{{ __('app.action') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -85,6 +86,56 @@
                         </div>
                     </div>
 
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="sheetReportEditModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Data Absensi</h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editEmployeeId">
+                    <div class="form-group">
+                        <label>Karyawan</label>
+                        <input type="text" id="editEmployeeName" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Tanggal</label>
+                        <input type="date" id="editDate" class="form-control" readonly>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label>Jam Masuk</label>
+                            <input type="time" id="editTimeIn" class="form-control">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>Jam Keluar</label>
+                            <input type="time" id="editTimeOut" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Izin/Cuti</label>
+                        <select id="editReason" class="form-control">
+                            <option value="">Tidak ada</option>
+                            <option value="sakit">Sakit</option>
+                            <option value="izin">Izin</option>
+                            <option value="cuti">Cuti</option>
+                            <option value="dinas">Dinas</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Catatan</label>
+                        <textarea id="editNote" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="btnSaveSheetReportRow">Simpan</button>
                 </div>
             </div>
         </div>
@@ -145,7 +196,25 @@ $(function() {
                     return '<span class="badge badge-' + color + ' badge-pill">' + val + '</span>';
                 }
             },
+            {
+                data: null,
+                orderable: false,
+                searchable: false,
+                render: function() {
+                    return '<button type="button" class="btn btn-sm btn-primary btn-edit-sheet-row"><i class="mdi mdi-pencil"></i> Edit</button>';
+                }
+            },
         ],
+        columnDefs: [
+            { targets: 0, width: '78px', className: 'text-center text-nowrap' },
+            { targets: 4, width: '100px', className: 'text-center text-nowrap' },
+            { targets: [5, 6, 7], width: '82px', className: 'text-center text-nowrap' },
+            { targets: 8, width: '86px', className: 'text-center text-nowrap' },
+            { targets: [9, 10, 11], width: '70px', className: 'text-center text-nowrap' },
+            { targets: 12, width: '92px', className: 'text-center text-nowrap' },
+            { targets: 13, width: '78px', className: 'text-center text-nowrap' },
+        ],
+        autoWidth: false,
         order: [[4, 'desc']],
         pageLength: 25,
         lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, '{{ __('app.all') }}']],
@@ -166,6 +235,51 @@ $(function() {
 
     $('#filterMonth, #filterYear').on('change', function() {
         table.ajax.reload();
+    });
+
+    $('#sheet-report-table').on('click', '.btn-edit-sheet-row', function() {
+        var row = table.row($(this).closest('tr')).data();
+        if (!row) return;
+
+        $('#editEmployeeId').val(row.employee_id);
+        $('#editEmployeeName').val(row.emp_id + ' - ' + row.name);
+        $('#editDate').val(row.tanggal);
+        $('#editTimeIn').val(row.scan_1 && row.scan_1 !== '-' ? row.scan_1.substring(0, 5) : '');
+        $('#editTimeOut').val(row.scan_2 && row.scan_2 !== '-' ? row.scan_2.substring(0, 5) : '');
+        $('#editReason').val(row.izin_cuti && row.izin_cuti !== '-' ? row.izin_cuti.toLowerCase() : '');
+        $('#editNote').val('');
+        $('#sheetReportEditModal').modal('show');
+    });
+
+    $('#btnSaveSheetReportRow').on('click', function() {
+        var btn = $(this);
+        btn.prop('disabled', true).text('Menyimpan...');
+
+        $.ajax({
+            url: '{{ route("sheet-report.update-row") }}',
+            method: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                employee_id: $('#editEmployeeId').val(),
+                date: $('#editDate').val(),
+                time_in: $('#editTimeIn').val(),
+                time_out: $('#editTimeOut').val(),
+                reason: $('#editReason').val(),
+                note: $('#editNote').val()
+            },
+            success: function(res) {
+                $('#sheetReportEditModal').modal('hide');
+                table.ajax.reload(null, false);
+                if (window.toastr) toastr.success(res.message || 'Data berhasil disimpan.');
+            },
+            error: function(xhr) {
+                var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Gagal menyimpan data.';
+                if (window.toastr) toastr.error(msg); else alert(msg);
+            },
+            complete: function() {
+                btn.prop('disabled', false).text('Simpan');
+            }
+        });
     });
 
     $('#btnReset').on('click', function() {

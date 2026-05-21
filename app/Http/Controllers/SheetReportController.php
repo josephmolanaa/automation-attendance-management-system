@@ -237,6 +237,7 @@ class SheetReportController extends Controller
                 }
 
                 $data[] = [
+                    'employee_id' => $employee->id,
                     'emp_id'    => $employee->emp_id ?? $employee->id,
                     'name'      => $employee->name,
                     'position'  => $employee->position ?? '-',
@@ -261,6 +262,118 @@ class SheetReportController extends Controller
         });
 
         return response()->json(['data' => $data]);
+    }
+
+    public function updateRow(Request $request)
+    {
+        $employeeId = $request->input('employee_id');
+        $date = $request->input('date');
+        $timeIn = $this->normalizeTimeInput($request->input('time_in', ''));
+        $timeOut = $this->normalizeTimeInput($request->input('time_out', ''));
+        $reason = strtolower((string) $request->input('reason', ''));
+        $note = $request->input('note');
+
+        if (!$employeeId || !$date || !Employee::whereKey($employeeId)->exists()) {
+            return response()->json(['success' => false, 'message' => 'Data karyawan/tanggal tidak valid.'], 422);
+        }
+
+        if ($timeIn === null || $timeOut === null) {
+            return response()->json(['success' => false, 'message' => 'Format jam harus HH:MM.'], 422);
+        }
+
+        $this->upsertCheck($employeeId, $date, $timeIn, $timeOut);
+        $this->upsertLeave($employeeId, $date, $reason, $note);
+
+        return response()->json(['success' => true, 'message' => 'Data berhasil disimpan.']);
+    }
+
+    private function normalizeTimeInput($value)
+    {
+        $time = trim((string) $value);
+
+        if ($time === '' || $time === '-') {
+            return '';
+        }
+
+        if (preg_match('/^([01]\d|2[0-3]):([0-5]\d)$/', $time)) {
+            return $time . ':00';
+        }
+
+        if (preg_match('/^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/', $time)) {
+            return $time;
+        }
+
+        return null;
+    }
+
+    private function upsertCheck($employeeId, string $date, string $timeIn, string $timeOut): void
+    {
+        $check = Check::where('emp_id', $employeeId)
+            ->where(function ($query) use ($date) {
+                $query->whereDate('attendance_time', $date)
+                    ->orWhere(function ($query) use ($date) {
+                        $query->whereNull('attendance_time')
+                            ->whereDate('leave_time', $date);
+                    });
+            })
+            ->orderByRaw('COALESCE(attendance_time, leave_time) asc')
+            ->first();
+
+        if ($timeIn === '' && $timeOut === '') {
+            if ($check) {
+                $check->delete();
+            }
+            return;
+        }
+
+        $attendanceTimestamp = $timeIn !== '' ? $date . ' ' . $timeIn : null;
+        $leaveTimestamp = $timeOut !== '' ? $date . ' ' . $timeOut : null;
+
+        if ($attendanceTimestamp && $leaveTimestamp) {
+            $scanIn = Carbon::parse($attendanceTimestamp);
+            $scanOut = Carbon::parse($leaveTimestamp);
+            if ($scanOut->lt($scanIn)) {
+                $leaveTimestamp = $scanOut->addDay()->toDateTimeString();
+            }
+        }
+
+        if (!$check) {
+            $check = new Check();
+            $check->emp_id = $employeeId;
+        }
+
+        $check->attendance_time = $attendanceTimestamp;
+        $check->leave_time = $leaveTimestamp;
+        $check->save();
+    }
+
+    private function upsertLeave($employeeId, string $date, string $reason, $note): void
+    {
+        $leave = IzinDanCuti::where('emp_id', $employeeId)
+            ->whereDate('leave_date', $date)
+            ->first();
+
+        if ($reason === '') {
+            if ($leave) {
+                $leave->delete();
+            }
+            return;
+        }
+
+        if (!in_array($reason, ['sakit', 'izin', 'cuti', 'dinas'], true)) {
+            return;
+        }
+
+        if (!$leave) {
+            $leave = new IzinDanCuti();
+            $leave->emp_id = $employeeId;
+            $leave->leave_date = $date;
+        }
+
+        $leave->reason = $reason;
+        $leave->note = $note;
+        $leave->status = 1;
+        $leave->save();
     }
 
     private function calculateLateTime(string $dateStr, Carbon $scanIn, Schedule $schedule): string

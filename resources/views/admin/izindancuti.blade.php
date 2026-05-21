@@ -172,6 +172,13 @@ $(function() {
             { extend: 'excel', text: '<i class="mdi mdi-file-excel mr-1"></i> Excel',   className: 'btn btn-sm btn-success', title: '{{ __('app.leave_permission') }}' },
             { extend: 'pdf',   text: '<i class="mdi mdi-file-pdf mr-1"></i> PDF',       className: 'btn btn-sm btn-danger',  title: '{{ __('app.leave_permission') }}', orientation: 'landscape' },
         ],
+        columnDefs: [
+            { targets: 0, width: '105px', className: 'text-center text-nowrap' },
+            { targets: 1, width: '85px', className: 'text-center text-nowrap' },
+            { targets: 3, width: '90px', className: 'text-center text-nowrap' },
+            { targets: 5, width: '75px', className: 'text-center text-nowrap' },
+        ],
+        autoWidth: false,
         order: [[0, 'desc']],
         language: window.DataTableLang,
     });
