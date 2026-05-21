@@ -17,8 +17,7 @@ use App\Jobs\GetAttendanceJob;
 use App\Models\FingerDevices;
 
 use App\Models\Employee;
-use App\Models\Attendance;
-use App\Models\Leave;
+use App\Models\Check;
 
 use Gate;
 
@@ -140,60 +139,39 @@ class BiometricDeviceController extends Controller
 
         $data = $device->getAttendance();
         
-        foreach ($data as $key => $value) {
-            if( $value['type']==0){
-            if ($employee = Employee::whereId($value['id'])->first()) {
-                if (
-                    !Attendance::whereAttendance_date(date('Y-m-d', strtotime($value['timestamp'])))
-                        ->whereEmp_id($value['id'])
-                        ->whereType(0)
-                        ->first()
-                ) {
-                    $att_table = new Attendance();
-                    $att_table->uid = $value['uid'];
-                    $att_table->emp_id = $value['id'];
-                    $att_table->state = $value['state'];
-                    $att_table->attendance_time = date('H:i:s', strtotime($value['timestamp']));
-                    $att_table->attendance_date = date('Y-m-d', strtotime($value['timestamp']));
-                    $att_table->type = $value['type'];
-
-                    if (!($employee->schedules->first()->time_in >= $att_table->attendance_time)) {
-                        $att_table->status = 0;
-                        AttendanceController::lateTimeDevice($value['timestamp'],$employee);
-                    }
-                    $att_table->save();
-                }
+        foreach ($data as $value) {
+            if (!Employee::whereId($value['id'])->exists()) {
+                continue;
             }
-        }
-    
-        else{
-       
-            if ($employee = Employee::whereId($value['id'])->first()) {
-                if (
-                    !Leave::whereLeave_date(date('Y-m-d', strtotime($value['timestamp'])))
-                        ->whereEmp_id($value['id'])
-                        ->whereType(1)
-                        ->first()
-                ) {
-                    $lve_table = new Leave();
-                    $lve_table->uid = $value['uid'];
-                    $lve_table->emp_id = $value['id'];
-                    $lve_table->state = $value['state'];
-                    $lve_table->leave_time = date('H:i:s', strtotime($value['timestamp']));
-                    $lve_table->leave_date = date('Y-m-d', strtotime($value['timestamp']));
-                    $lve_table->type = $value['type'];
 
-                    if (!($employee->schedules->first()->time_out<=$lve_table->leave_time)) {
-                        $lve_table->status = 0;
-                        
-                    } 
-                    else {
-                        leaveController::overTimeDevice($value['timestamp'],$employee);
-                    }
-                    $lve_table->save();
-                }
+            $timestamp = date('Y-m-d H:i:s', strtotime($value['timestamp']));
+            $date = date('Y-m-d', strtotime($value['timestamp']));
+
+            if ($value['type'] == 0) {
+                Check::firstOrCreate(
+                    ['emp_id' => $value['id'], 'attendance_time' => $timestamp],
+                    ['leave_time' => null]
+                );
+                continue;
             }
-        }
+
+            $check = Check::where('emp_id', $value['id'])
+                ->whereDate('attendance_time', $date)
+                ->whereNull('leave_time')
+                ->latest('attendance_time')
+                ->first();
+
+            if (!$check) {
+                $check = Check::where('emp_id', $value['id'])
+                    ->whereNull('leave_time')
+                    ->latest('attendance_time')
+                    ->first();
+            }
+
+            if ($check) {
+                $check->leave_time = $timestamp;
+                $check->save();
+            }
         }
 
         
