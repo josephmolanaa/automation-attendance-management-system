@@ -24,23 +24,42 @@
         display: inline-flex !important;
         align-items: center !important;
     }
+    div.dataTables_wrapper { position: relative; }
     div.dataTables_processing {
         position: absolute !important;
         top: 50% !important;
         left: 50% !important;
-        z-index: 20 !important;
+        z-index: 30 !important;
         width: auto !important;
-        min-width: 180px !important;
+        min-width: 170px !important;
         margin: 0 !important;
         transform: translate(-50%, -50%) !important;
-        padding: 10px 18px !important;
-        border: 1px solid #c8d3e1 !important;
-        border-radius: 8px !important;
-        background: rgba(255, 255, 255, 0.95) !important;
-        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.18) !important;
-        color: #1f2937 !important;
-        font-size: 14px !important;
-        font-weight: 600 !important;
+        padding: 12px 18px 12px 46px !important;
+        border: 1px solid rgba(226, 232, 240, 0.95) !important;
+        border-radius: 999px !important;
+        background: rgba(255, 255, 255, 0.98) !important;
+        box-shadow: 0 14px 40px rgba(15, 23, 42, 0.16), 0 2px 8px rgba(15, 23, 42, 0.06) !important;
+        color: #334155 !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        letter-spacing: .01em !important;
         text-align: center !important;
+        backdrop-filter: blur(8px) !important;
+    }
+    div.dataTables_processing:before {
+        content: "" !important;
+        position: absolute !important;
+        left: 16px !important;
+        top: 50% !important;
+        width: 16px !important;
+        height: 16px !important;
+        margin-top: -8px !important;
+        border: 2px solid #dbeafe !important;
+        border-top-color: #2563eb !important;
+        border-radius: 50% !important;
+        animation: ams-dt-spin .75s linear infinite !important;
+    }
+    @keyframes ams-dt-spin {
+        to { transform: rotate(360deg); }
     }
 </style>

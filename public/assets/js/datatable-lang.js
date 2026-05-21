@@ -15,8 +15,8 @@
             infoEmpty: "Showing 0 results",
             infoFiltered: "(filtered from _MAX_ total results)",
             lengthMenu: "Show _MENU_ entries",
-            loadingRecords: "Loading data...",
-            processing: "Loading data...",
+            loadingRecords: "Loading...",
+            processing: "Loading...",
             search: "Search:",
             zeroRecords: "No matching records found",
             paginate: {
@@ -36,8 +36,8 @@
             infoEmpty: "Menampilkan 0 hasil",
             infoFiltered: "(disaring dari _MAX_ total hasil)",
             lengthMenu: "Tampilkan _MENU_ data",
-            loadingRecords: "Memuat data...",
-            processing: "Memuat data...",
+            loadingRecords: "Memuat...",
+            processing: "Memuat...",
             search: "Cari:",
             zeroRecords: "Tidak ada data yang cocok",
             paginate: {
