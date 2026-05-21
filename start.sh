@@ -9,9 +9,15 @@ rm -f /etc/apache2/mods-enabled/mpm_event.conf \
 a2enmod mpm_prefork 2>/dev/null || true
 echo "==> MPM prefork enabled."
 
-echo "==> Updating Apache port to ${PORT:-80}..."
-sed -i "s/Listen 80/Listen ${PORT:-80}/g" /etc/apache2/ports.conf
-sed -i "s/:80>/:${PORT:-80}>/g" /etc/apache2/sites-available/000-default.conf
+APACHE_PORT="${PORT:-80}"
+if ! [[ "$APACHE_PORT" =~ ^[0-9]+$ ]] || [ "$APACHE_PORT" -lt 1 ] || [ "$APACHE_PORT" -gt 65535 ]; then
+    echo "ERROR: Invalid PORT value: '$APACHE_PORT'"
+    exit 1
+fi
+
+echo "==> Updating Apache port to ${APACHE_PORT}..."
+printf "Listen %s\n" "$APACHE_PORT" > /etc/apache2/ports.conf
+sed -i -E "s/<VirtualHost [^>]+>/<VirtualHost *:${APACHE_PORT}>/g" /etc/apache2/sites-available/000-default.conf
 
 echo "==> Running database migrations..."
 php artisan migrate --force --no-interaction
