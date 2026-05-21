@@ -52,16 +52,16 @@ class SheetReportExport implements FromArray, WithEvents
             ->get()->groupBy('emp_id');
 
         $rows = [];
-        $rows[] = [' ', '', '', '', '', '', '', '', '', '', '', '']; // Row 1
+        $rows[] = [' ', '', '', '', '', '', '', '', '', '', '', '', '']; // Row 1
         $this->rowMeta[] = ['type' => 'empty'];
 
-        $rows[] = [' ', '', '', '', '', '', '', '', '', '', '', '']; // Row 2
+        $rows[] = [' ', '', '', '', '', '', '', '', '', '', '', '', '']; // Row 2
         $this->rowMeta[] = ['type' => 'empty'];
 
         $rows[] = ['', '', 'DATA SCANLOG']; // Row 3
         $this->rowMeta[] = ['type' => 'title'];
 
-        $headerRow = ['', '', 'NIP', 'NAMA', 'HARI', 'TANGGAL', 'SCAN 1', 'SCAN 2', 'LATE TIME', 'NORMAL ', 'DOUBLE ', 'MINGGU '];
+        $headerRow = ['', '', 'NIP', 'NAMA', 'HARI', 'TANGGAL', 'SCAN 1', 'SCAN 2', 'LATE TIME', 'NORMAL ', 'DOUBLE ', 'MINGGU ', 'IZIN/CUTI'];
 
         foreach ($employees as $index => $employee) {
             $empChecks = $checks->get($employee->id, collect());
@@ -76,9 +76,9 @@ class SheetReportExport implements FromArray, WithEvents
             });
 
             if ($index > 0) {
-                $rows[] = [' ', '', '', '', '', '', '', '', '', '', '', ''];
+                $rows[] = [' ', '', '', '', '', '', '', '', '', '', '', '', ''];
                 $this->rowMeta[] = ['type' => 'empty'];
-                $rows[] = [' ', '', '', '', '', '', '', '', '', '', '', ''];
+                $rows[] = [' ', '', '', '', '', '', '', '', '', '', '', '', ''];
                 $this->rowMeta[] = ['type' => 'empty'];
             }
 
@@ -171,13 +171,14 @@ class SheetReportExport implements FromArray, WithEvents
                     $lateTime, // I
                     $normal, // J
                     $double, // K
-                    $minggu // L
+                    $minggu, // L
+                    $izinCuti // M
                 ];
                 $this->rowMeta[] = ['type' => 'data', 'is_sunday' => $isSunday];
             }
 
             // NIP before TOTAL
-            $rows[] = [' ', '', $employee->emp_id ?? $employee->id, '', '', '', '', '', '', '', '', ''];
+            $rows[] = [' ', '', $employee->emp_id ?? $employee->id, '', '', '', '', '', '', '', '', '', ''];
             $this->rowMeta[] = ['type' => 'empty_before_total'];
 
             // Baris TOTAL
@@ -193,7 +194,8 @@ class SheetReportExport implements FromArray, WithEvents
                 '', // I
                 $totalNormal ?: 0, // J
                 $totalDouble ?: 0, // K
-                $totalMinggu ?: 0 // L
+                $totalMinggu ?: 0, // L
+                $totalIzin ?: 0 // M
             ];
             $this->rowMeta[] = ['type' => 'total'];
         }
@@ -208,13 +210,15 @@ class SheetReportExport implements FromArray, WithEvents
                 $sheet = $event->sheet->getDelegate();
                 $sheet->getParent()->getActiveSheet()->setTitle('Sheet Report');
 
-                foreach (range('C', 'L') as $col) {
+                foreach (range('C', 'M') as $col) {
                     $sheet->getColumnDimension($col)->setAutoSize(true);
                 }
+                $sheet->getColumnDimension('G')->setAutoSize(false)->setWidth(12);
+                $sheet->getColumnDimension('H')->setAutoSize(false)->setWidth(12);
 
                 foreach ($this->rowMeta as $i => $meta) {
                     $excelRow = $i + 1;
-                    $range = "C{$excelRow}:L{$excelRow}";
+                    $range = "C{$excelRow}:M{$excelRow}";
 
                     if ($meta['type'] === 'title') {
                         $sheet->getStyle("C{$excelRow}")->getFont()->setBold(true)->setSize(11);
@@ -234,6 +238,9 @@ class SheetReportExport implements FromArray, WithEvents
                             'font' => ['size' => 9],
                             'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
                         ]);
+                        $sheet->getStyle("G{$excelRow}:M{$excelRow}")->getAlignment()
+                            ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+                            ->setVertical(Alignment::VERTICAL_CENTER);
 
                         if ($meta['is_sunday']) {
                             // Warna background pink muda untuk baris Minggu
@@ -248,7 +255,7 @@ class SheetReportExport implements FromArray, WithEvents
                         $sheet->getRowDimension($excelRow)->setRowHeight(14);
 
                     } elseif ($meta['type'] === 'total') {
-                        $totalRange = "G{$excelRow}:L{$excelRow}";
+                        $totalRange = "G{$excelRow}:M{$excelRow}";
                         $sheet->getStyle($totalRange)->applyFromArray([
                             'font' => ['bold' => true, 'size' => 10],
                             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '00B0F0']],

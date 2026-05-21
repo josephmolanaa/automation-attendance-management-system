@@ -49,11 +49,6 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('lateness.index') }}" class="waves-effect {{ request()->is("attendance/lateness") || request()->is("attendance/lateness/*") ? "mm active" : "" }}">
-                                    <i class="ti-alarm-clock"></i><span> {{ __('app.lateness_management') }} </span>
-                                </a>
-                            </li>
-                            <li>
                                 <a href="/latetime" class="waves-effect {{ request()->is("latetime") || request()->is("latetime/*") ? "mm active" : "" }}">
                                     <i class="ti-alert"></i><span> {{ __('app.late_time_menu') }} </span>
                                 </a>
