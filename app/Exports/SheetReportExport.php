@@ -90,6 +90,7 @@ class SheetReportExport implements FromArray, WithEvents
             $totalDouble = 0;
             $totalMinggu = 0;
             $totalIzin = 0;
+            $totalLateSeconds = 0;
 
             for ($d = 1; $d <= $daysInMonth; $d++) {
                 $dateStr = Carbon::createFromDate($tahun, $bulan, $d)->format('Y-m-d');
@@ -134,6 +135,7 @@ class SheetReportExport implements FromArray, WithEvents
 
                     if ($matchedSchedule) {
                         $lateTime = $this->calculateLateTime($dateStr, $scanIn, $matchedSchedule);
+                        $totalLateSeconds += $this->calculateLateSeconds($dateStr, $scanIn, $matchedSchedule);
 
                         $schedOut = Carbon::parse($dateStr . ' ' . $matchedSchedule->time_out);
                         if ($schedOut->lt(Carbon::parse($dateStr . ' ' . $matchedSchedule->time_in))) {
@@ -191,7 +193,7 @@ class SheetReportExport implements FromArray, WithEvents
                 '',
                 $employee->name, // G
                 'TOTAL', // H
-                '', // I
+                $this->formatDuration($totalLateSeconds), // I
                 $totalNormal ?: 0, // J
                 $totalDouble ?: 0, // K
                 $totalMinggu ?: 0, // L
@@ -271,10 +273,26 @@ class SheetReportExport implements FromArray, WithEvents
 
     private function calculateLateTime(string $dateStr, Carbon $scanIn, Schedule $schedule): ?string
     {
+        $totalSeconds = $this->calculateLateSeconds($dateStr, $scanIn, $schedule);
+
+        if ($totalSeconds <= 60) {
+            return null;
+        }
+
+        return $this->formatDuration($totalSeconds);
+    }
+
+    private function calculateLateSeconds(string $dateStr, Carbon $scanIn, Schedule $schedule): int
+    {
         $schedIn = Carbon::parse($dateStr . ' ' . $schedule->time_in);
         $totalSeconds = $schedIn->diffInSeconds($scanIn, false);
 
-        if ($totalSeconds <= 60) {
+        return $totalSeconds > 60 ? $totalSeconds : 0;
+    }
+
+    private function formatDuration(int $totalSeconds): ?string
+    {
+        if ($totalSeconds <= 0) {
             return null;
         }
 
