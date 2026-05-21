@@ -99,7 +99,7 @@ $(function() {
     $('#filterMonth').val(nowMonth);
 
     var table = $('#sheet-report-table').DataTable({
-        processing: false,
+        processing: true,
         serverSide: false,
         ajax: {
             url: '/sheet-report/data',

@@ -24,4 +24,23 @@
         display: inline-flex !important;
         align-items: center !important;
     }
+    div.dataTables_processing {
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        z-index: 20 !important;
+        width: auto !important;
+        min-width: 180px !important;
+        margin: 0 !important;
+        transform: translate(-50%, -50%) !important;
+        padding: 10px 18px !important;
+        border: 1px solid #c8d3e1 !important;
+        border-radius: 8px !important;
+        background: rgba(255, 255, 255, 0.95) !important;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.18) !important;
+        color: #1f2937 !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        text-align: center !important;
+    }
 </style>

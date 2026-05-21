@@ -173,7 +173,7 @@
         $(function () {
             var table = $('#attendance-table').DataTable({
                 destroy: true,
-                processing: false,
+                processing: true,
                 serverSide: false,
                 ajax: {
                     url: '/attendance/data',

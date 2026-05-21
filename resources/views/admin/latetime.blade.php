@@ -88,7 +88,7 @@
 $(document).ready(function() {
 
     var table = $('#latetime-table').DataTable({
-        processing: false,
+        processing: true,
         serverSide: false,
         ajax: {
             url: '/latetime/data',

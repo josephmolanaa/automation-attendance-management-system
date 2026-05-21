@@ -94,7 +94,7 @@
 $(function () {
     var table = $('#overtime-table').DataTable({
         destroy: true,
-        processing: false,
+        processing: true,
         serverSide: false,
         ajax: {
             url: '/overtime/data',
