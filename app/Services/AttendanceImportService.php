@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Attendance;
+use App\Models\Check;
 use Illuminate\Support\Collection;
 use Carbon\Carbon;
 
@@ -383,18 +383,30 @@ class AttendanceImportService
             return;
         }
 
-        Attendance::updateOrCreate(
-            [
-                'employee_id' => $employeeId,
-                'date' => $data['date']->format('Y-m-d')
-            ],
-            [
-                'check_in' => $data['check_in'] ?? \DB::raw('check_in'),
-                'check_out' => $data['check_out'],
-                'is_overnight' => $data['is_overnight'] ?? false,
-                'needs_review' => $data['needs_review'] ?? false,
-                'shift_hint' => $data['shift_hint'] ?? null,
-            ]
-        );
+        $date = $data['date']->format('Y-m-d');
+        $attendanceTime = !empty($data['check_in']) ? $date . ' ' . $data['check_in'] : null;
+        $leaveTime = !empty($data['check_out']) ? $date . ' ' . $data['check_out'] : null;
+
+        if (!empty($data['is_overnight']) && $leaveTime && $attendanceTime && $leaveTime < $attendanceTime) {
+            $leaveTime = $data['date']->copy()->addDay()->format('Y-m-d') . ' ' . $data['check_out'];
+        }
+
+        $check = Check::where('emp_id', $employeeId)
+            ->whereDate('attendance_time', $date)
+            ->first();
+
+        if (!$check) {
+            $check = new Check();
+            $check->emp_id = $employeeId;
+            $check->attendance_time = $attendanceTime;
+        } elseif ($attendanceTime && !$check->attendance_time) {
+            $check->attendance_time = $attendanceTime;
+        }
+
+        if ($leaveTime) {
+            $check->leave_time = $leaveTime;
+        }
+
+        $check->save();
     }
 }
