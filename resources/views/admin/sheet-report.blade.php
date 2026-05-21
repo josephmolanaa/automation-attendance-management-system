@@ -73,6 +73,7 @@
                                         <th>{{ __('app.scan_1') }}</th>
                                         <th>{{ __('app.scan_2') }}</th>
                                         <th>{{ __('app.scan_3') }}</th>
+                                        <th>{{ __('app.late_time') }}</th>
                                         <th>{{ __('app.normal') }}</th>
                                         <th>{{ __('app.double') }}</th>
                                         <th>{{ __('app.sunday_label') }}</th>
@@ -116,6 +117,7 @@ $(function() {
             { data: 'scan_1' },
             { data: 'scan_2' },
             { data: 'scan_3' },
+            { data: 'late_time' },
             {
                 data: 'normal',
                 render: function(val) {

@@ -186,6 +186,7 @@ class SheetReportController extends Controller
                 $normal = 0;
                 $double = 0;
                 $minggu = 0;
+                $lateTime = '-';
 
                 $dayType = HolidayService::getDayType($dateStr);
 
@@ -214,6 +215,8 @@ class SheetReportController extends Controller
                         }
 
                         if ($matchedSchedule) {
+                            $lateTime = $this->calculateLateTime($dateStr, $scanIn, $matchedSchedule);
+
                             $schedOut = Carbon::parse($dateStr . ' ' . $matchedSchedule->time_out);
                             if ($schedOut->lt(Carbon::parse($dateStr . ' ' . $matchedSchedule->time_in))) {
                                 $schedOut->addDay();
@@ -242,6 +245,7 @@ class SheetReportController extends Controller
                     'scan_1'    => $scan1 ?? '-',
                     'scan_2'    => $scan2 ?? '-',
                     'scan_3'    => $scan3 ?? '-',
+                    'late_time' => $lateTime,
                     'normal'    => $normal ?: '-',
                     'double'    => $double ?: '-',
                     'minggu'    => $minggu ?: '-',
@@ -257,6 +261,22 @@ class SheetReportController extends Controller
         });
 
         return response()->json(['data' => $data]);
+    }
+
+    private function calculateLateTime(string $dateStr, Carbon $scanIn, Schedule $schedule): string
+    {
+        $schedIn = Carbon::parse($dateStr . ' ' . $schedule->time_in);
+        $totalSeconds = $schedIn->diffInSeconds($scanIn, false);
+
+        if ($totalSeconds <= 60) {
+            return '-';
+        }
+
+        $lateHours = floor($totalSeconds / 3600);
+        $lateMins = floor(($totalSeconds % 3600) / 60);
+        $lateSecs = $totalSeconds % 60;
+
+        return sprintf('%02d:%02d:%02d', $lateHours, $lateMins, $lateSecs);
     }
 
     public function export(Request $request)
